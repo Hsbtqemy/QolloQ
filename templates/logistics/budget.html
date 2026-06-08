@@ -164,6 +164,10 @@
       </table>
     </div>
 
+    {% else %}
+    <div class="empty-state">Aucun poste budgétaire. Ajoutez-en un ci-contre.</div>
+    {% endif %}
+
     <div class="card" style="margin-top:1rem">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem">
         <h3 style="margin:0">Récapitulatif</h3>
@@ -196,6 +200,7 @@
           <strong>{{ envelope }} €</strong>
         </div>
         {% endif %}
+        {% if lines %}
         <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
           <span>Total prévu</span>
           <strong>{{ total_planned }} €</strong>
@@ -210,6 +215,7 @@
           <span class="text-muted">{{ total_reimbursements }} €</span>
         </div>
         {% endif %}
+        {% endif %}
         {% if envelope is not None %}
         <div style="display:flex; justify-content:space-between; padding:.4rem 0; margin-top:.2rem">
           <span style="font-weight:600">Restant (enveloppe − prévu)</span>
@@ -218,10 +224,6 @@
         {% endif %}
       </div>
     </div>
-
-    {% else %}
-    <div class="empty-state">Aucun poste budgétaire. Ajoutez-en un ci-contre.</div>
-    {% endif %}
 
   </div>
 
