@@ -1,0 +1,63 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if event.call_for_papers %}Appel à communications — {% endif %}{{ event.name }}</title>
+<link rel="stylesheet" href="{% static 'css/site_public.css' %}">
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <h1 class="site-title">{{ event.name }}</h1>
+    <p class="site-meta">
+      {{ event.start_date|date:"j F Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"j F Y" }}{% endif %}
+      {% if event.location %} &middot; {{ event.location }}{% endif %}
+    </p>
+  </div>
+</header>
+
+<main class="container">
+
+  {% if event.call_for_papers %}
+  <section class="site-section">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1rem">
+      <h2 style="margin:0">Appel à communications</h2>
+      <a href="{% url 'site_public:call_pdf' event_slug=event.slug %}" class="btn-outline">
+        ↓ Télécharger le PDF
+      </a>
+    </div>
+    <div class="prose">{{ event.call_for_papers|linebreaks }}</div>
+  </section>
+  {% endif %}
+
+  {% if event.bibliography %}
+  <section class="site-section">
+    <h2>Bibliographie</h2>
+    <div class="prose">{{ event.bibliography|linebreaks }}</div>
+  </section>
+  {% endif %}
+
+  {% if submit_url %}
+  <section class="site-section">
+    <div class="callout">
+      <h3>Soumettre une proposition</h3>
+      <p>Les soumissions sont ouvertes.{% if event.submission_deadline %} Date limite : {{ event.submission_deadline|date:"j F Y à H:i" }}.{% endif %}</p>
+      <a href="{{ submit_url }}" class="btn-primary">Déposer une proposition</a>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if not event.call_for_papers and not event.bibliography and not submit_url %}
+  <section class="site-section">
+    <p style="color:#6b7280; font-style:italic">La page de cet événement n'a pas encore été publiée.</p>
+  </section>
+  {% endif %}
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">Généré avec QolloQ</div>
+</footer>
+</body>
+</html>

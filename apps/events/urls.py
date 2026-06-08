@@ -13,4 +13,5 @@ urlpatterns = [
     path("evenements/<slug:event_slug>/membres/ajouter/", views.MemberAddView.as_view(), name="member_add"),
     path("evenements/<slug:event_slug>/membres/<int:membership_id>/role/", views.MemberUpdateView.as_view(), name="member_update"),
     path("evenements/<slug:event_slug>/membres/<int:membership_id>/retirer/", views.MemberRemoveView.as_view(), name="member_remove"),
+    path("evenements/<slug:event_slug>/contenu/", views.EventPublicSettingsView.as_view(), name="public_settings"),
 ]

@@ -4,6 +4,7 @@ import zipfile
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.programme.views import _build_programme_context
 from apps.submissions.models import Proposal
@@ -19,7 +20,8 @@ def build_site_zip(event, request):
     prog_ctx = _build_programme_context(event)
 
     submission_url = None
-    if event.submissions_open:
+    deadline = event.submission_deadline
+    if event.submissions_open and (not deadline or deadline >= timezone.now()):
         submission_url = request.build_absolute_uri(
             reverse("submissions:public_submit", kwargs={"event_slug": event.slug})
         )
@@ -33,6 +35,7 @@ def build_site_zip(event, request):
 
     pages = [
         ("index.html",       "site_public/index.html"),
+        ("appel.html",       "site_public/appel.html"),
         ("programme.html",   "site_public/programme.html"),
         ("intervenants.html","site_public/speakers.html"),
     ]

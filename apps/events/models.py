@@ -9,6 +9,8 @@ class Event(BaseModel):
     name = models.CharField(max_length=255, verbose_name="Intitulé")
     slug = models.SlugField(max_length=255, unique=True, verbose_name="Identifiant URL")
     description = models.TextField(blank=True, verbose_name="Description")
+    call_for_papers = models.TextField(blank=True, verbose_name="Appel à communications")
+    bibliography = models.TextField(blank=True, verbose_name="Bibliographie")
     location = models.CharField(max_length=255, blank=True, verbose_name="Lieu")
     start_date = models.DateField(verbose_name="Date de début")
     end_date = models.DateField(verbose_name="Date de fin")

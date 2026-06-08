@@ -99,6 +99,18 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
   transition: opacity .15s;
 }
 .btn-primary:hover { opacity: .9; }
+.btn-outline {
+  display: inline-block;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  text-decoration: none;
+  padding: .4rem 1rem;
+  border-radius: var(--radius);
+  font-size: .85rem;
+  font-weight: 500;
+  transition: background .15s;
+}
+.btn-outline:hover { background: #eff6ff; }
 
 /* Programme */
 .prog-day { margin-bottom: 2rem; }

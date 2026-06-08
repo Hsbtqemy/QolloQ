@@ -12,9 +12,10 @@
   </div>
   {% if membership.is_organizer %}
   <div class="actions">
+    <a href="{% url 'site_public:page' event_slug=event.slug %}" class="btn ghost sm" target="_blank" rel="noopener">Page publique ↗</a>
     <form method="post" action="{% url 'site_public:publish' event_slug=event.slug %}" style="display:inline">
       {% csrf_token %}
-      <button type="submit" class="btn ghost">↓ Télécharger le site</button>
+      <button type="submit" class="btn ghost">↓ Site ZIP</button>
     </form>
     <a href="{% url 'events:settings' event_slug=event.slug %}" class="btn ghost">Paramètres</a>
   </div>
@@ -38,6 +39,12 @@
     <h3>Emails</h3>
     <p class="text-muted">Campagnes email vers les membres et intervenants.</p>
   </a>
+  {% if membership.is_organizer %}
+  <a class="card" href="{% url 'events:public_settings' event_slug=event.slug %}" style="text-decoration:none; color:inherit; grid-column:span 2">
+    <h3>Page publique</h3>
+    <p class="text-muted">Appel à communications, bibliographie, téléchargement PDF.</p>
+  </a>
+  {% endif %}
 </div>
 
 {% if event.description %}

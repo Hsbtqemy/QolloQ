@@ -10,7 +10,7 @@ from django.views import View
 from apps.core.mixins import EventMemberRequiredMixin, OrganizerRequiredMixin
 from apps.documents.views import annotate_documents
 
-from .forms import EventForm, MemberAddForm
+from .forms import EventForm, EventPublicPageForm, MemberAddForm
 from .mail import send_member_invitation
 from .models import Event, Membership
 
@@ -192,3 +192,24 @@ class MemberRemoveView(OrganizerRequiredMixin, View):
         member.delete()
         messages.success(request, f"{name} retiré·e de l'événement.")
         return redirect("events:members", event_slug=event_slug)
+
+
+class EventPublicSettingsView(OrganizerRequiredMixin, View):
+    def get(self, request, event_slug):
+        return render(request, "events/public_settings.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "form": EventPublicPageForm(instance=self.event),
+        })
+
+    def post(self, request, event_slug):
+        form = EventPublicPageForm(request.POST, instance=self.event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Contenu enregistré.")
+            return redirect("events:public_settings", event_slug=event_slug)
+        return render(request, "events/public_settings.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "form": form,
+        })

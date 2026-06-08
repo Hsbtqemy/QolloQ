@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ event.name }}</title>
+<title>Appel à communications — {{ event.name }}</title>
 <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
@@ -19,8 +19,8 @@
 
 <nav class="site-nav">
   <div class="container">
-    <a href="./index.html" class="nav-link active">Accueil</a>
-    <a href="./appel.html" class="nav-link">Appel à communications</a>
+    <a href="./index.html" class="nav-link">Accueil</a>
+    <a href="./appel.html" class="nav-link active">Appel à communications</a>
     <a href="./programme.html" class="nav-link">Programme</a>
     <a href="./intervenants.html" class="nav-link">Intervenant·es</a>
   </div>
@@ -28,23 +28,19 @@
 
 <main class="container">
 
-  {% if event.description %}
+  {% if event.call_for_papers %}
   <section class="site-section">
-    <h2>Présentation</h2>
-    <div class="prose">{{ event.description|linebreaks }}</div>
+    <h2>Appel à communications</h2>
+    <div class="prose">{{ event.call_for_papers|linebreaks }}</div>
   </section>
   {% endif %}
 
-  <section class="site-section site-cards">
-    <a href="./programme.html" class="site-card">
-      <h3>Programme</h3>
-      <p>Consultez le déroulé de l'événement, les sessions et les communications.</p>
-    </a>
-    <a href="./intervenants.html" class="site-card">
-      <h3>Intervenant·es</h3>
-      <p>Découvrez les participant·es et leurs résumés de communication.</p>
-    </a>
+  {% if event.bibliography %}
+  <section class="site-section">
+    <h2>Bibliographie</h2>
+    <div class="prose">{{ event.bibliography|linebreaks }}</div>
   </section>
+  {% endif %}
 
   {% if submission_url %}
   <section class="site-section">

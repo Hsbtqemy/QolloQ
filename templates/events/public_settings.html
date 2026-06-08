@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Contenu public — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Contenu public</h1>
+  </div>
+  <div class="actions">
+    {% if event.call_for_papers %}
+    <a href="{% url 'site_public:call_pdf' event_slug=event.slug %}" class="btn ghost sm">↓ PDF</a>
+    {% endif %}
+    <a href="{% url 'site_public:page' event_slug=event.slug %}" class="btn ghost sm" target="_blank" rel="noopener">Voir la page ↗</a>
+    <a href="{% url 'events:detail' event_slug=event.slug %}" class="btn ghost">← Retour</a>
+  </div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="card">
+    {% with field=form.call_for_papers %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endwith %}
+    {% with field=form.bibliography %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endwith %}
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn primary">Enregistrer</button>
+    <a href="{% url 'events:detail' event_slug=event.slug %}" class="btn ghost">Annuler</a>
+  </div>
+</form>
+{% endblock %}

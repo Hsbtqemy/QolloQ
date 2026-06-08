@@ -10,4 +10,14 @@ urlpatterns = [
         views.SitePublishView.as_view(),
         name="publish",
     ),
+    path(
+        "appel/<slug:event_slug>/",
+        views.EventPublicView.as_view(),
+        name="page",
+    ),
+    path(
+        "appel/<slug:event_slug>/pdf/",
+        views.EventCallPDFView.as_view(),
+        name="call_pdf",
+    ),
 ]

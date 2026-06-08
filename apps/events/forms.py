@@ -28,6 +28,20 @@ class EventForm(forms.ModelForm):
         return cleaned
 
 
+class EventPublicPageForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ["call_for_papers", "bibliography"]
+        widgets = {
+            "call_for_papers": forms.Textarea(attrs={"rows": 12}),
+            "bibliography": forms.Textarea(attrs={"rows": 6}),
+        }
+        help_texts = {
+            "call_for_papers": "Affiché sur la page publique et dans le PDF téléchargeable.",
+            "bibliography": "Références bibliographiques — optionnel.",
+        }
+
+
 class MemberAddForm(forms.Form):
     email = forms.EmailField(label="Adresse email")
     first_name = forms.CharField(max_length=150, required=False, label="Prénom")
