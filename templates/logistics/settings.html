@@ -9,9 +9,10 @@
   </div>
   <div class="actions">
     <a href="{% url 'logistics:response_list' event_slug=event.slug form_id=logistics_form.pk %}" class="btn ghost sm">Voir les réponses</a>
-    <a href="{% url 'logistics:index' event_slug=event.slug %}" class="btn ghost sm">← Logistique</a>
   </div>
 </div>
+
+{% include "logistics/_nav.html" with active="index" %}
 
 <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
 

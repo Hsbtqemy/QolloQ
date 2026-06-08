@@ -92,7 +92,11 @@ class LogisticsIndexView(OrganizerRequiredMixin, View):
         ctx = {
             "event": self.event,
             "membership": self.membership,
-            "logistics_forms": self.event.logistics_forms.order_by("created_at"),
+            "logistics_forms": (
+                self.event.logistics_forms
+                .annotate(response_count=Count("responses"))
+                .order_by("created_at")
+            ),
             "create_form": form,
         }
         ctx.update(self._stats())
