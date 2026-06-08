@@ -112,6 +112,11 @@ urlpatterns = [
         name="budget",
     ),
     path(
+        "evenements/<slug:event_slug>/logistique/budget/enveloppe/",
+        views.BudgetEnvelopeView.as_view(),
+        name="budget_envelope",
+    ),
+    path(
         "evenements/<slug:event_slug>/logistique/budget/<int:pk>/modifier/",
         views.BudgetLineEditView.as_view(),
         name="budget_line_edit",

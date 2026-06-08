@@ -165,20 +165,58 @@
     </div>
 
     <div class="card" style="margin-top:1rem">
-      <h3>Récapitulatif</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem">
+        <h3 style="margin:0">Récapitulatif</h3>
+        <button type="button" class="btn ghost sm" x-data @click="$dispatch('open-envelope')">
+          {% if envelope %}Modifier l'enveloppe{% else %}Définir une enveloppe{% endif %}
+        </button>
+      </div>
+
+      <div x-data="{ open: false }" @open-envelope.window="open = true">
+        <div x-show="open" x-cloak style="margin-bottom:.75rem; padding:.75rem; background:#f9fafb; border-radius:.375rem">
+          <form method="post" action="{% url 'logistics:budget_envelope' event_slug=event.slug %}">
+            {% csrf_token %}
+            <div style="display:flex; gap:.5rem; align-items:flex-end">
+              <div class="field" style="margin:0; flex:1">
+                <label>Enveloppe totale (€)</label>
+                <input type="number" name="envelope" value="{{ envelope }}" step="0.01" min="0"
+                       placeholder="Ex. 5000">
+              </div>
+              <button type="submit" class="btn primary sm">OK</button>
+              <button type="button" class="btn ghost sm" @click="open = false">Annuler</button>
+            </div>
+            {% if envelope_form.envelope.errors %}
+            <ul class="errorlist">{% for e in envelope_form.envelope.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+
       <div style="display:flex; flex-direction:column; gap:.3rem">
+        {% if envelope %}
         <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
-          <span>Budget prévu</span>
+          <span>Enveloppe totale</span>
+          <strong>{{ envelope }} €</strong>
+        </div>
+        {% endif %}
+        <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
+          <span>Total prévu</span>
           <strong>{{ total_planned }} €</strong>
         </div>
         <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
-          <span>Budget réel (postes)</span>
+          <span>Total réel</span>
           <strong>{{ total_actual }} €</strong>
         </div>
         {% if total_reimbursements %}
         <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
           <span class="text-muted">Remboursements reçus</span>
           <span class="text-muted">{{ total_reimbursements }} €</span>
+        </div>
+        {% endif %}
+        {% if envelope is not None %}
+        <div style="display:flex; justify-content:space-between; padding:.4rem 0; margin-top:.2rem">
+          <span style="font-weight:600">Restant (enveloppe − prévu)</span>
+          <strong style="{% if remaining < 0 %}color:#dc2626{% endif %}">{{ remaining }} €</strong>
         </div>
         {% endif %}
       </div>

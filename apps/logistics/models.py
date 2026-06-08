@@ -225,6 +225,32 @@ class Reimbursement(BaseModel):
         return f"{self.person_name} — {self.description} ({self.amount} €)"
 
 
+class BudgetSettings(models.Model):
+    """Paramètres budget d'un événement (enveloppe globale)."""
+
+    event = models.OneToOneField(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="budget_settings",
+        verbose_name="Événement",
+    )
+    envelope = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Enveloppe totale (€)",
+        help_text="Budget global alloué à l'événement.",
+    )
+
+    class Meta:
+        verbose_name = "Paramètres budget"
+        verbose_name_plural = "Paramètres budget"
+
+    def __str__(self):
+        return f"Budget — {self.event}"
+
+
 class BudgetLine(BaseModel):
     """Poste budgétaire d'un événement."""
 

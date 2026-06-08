@@ -14,6 +14,7 @@ from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin
 from .forms import (
     BudgetDocumentForm,
     BudgetLineForm,
+    BudgetSettingsForm,
     LogisticsFieldForm,
     LogisticsFormSettingsForm,
     LogisticsResponseAdminForm,
@@ -24,6 +25,7 @@ from .mail import send_logistics_link
 from .models import (
     BudgetDocument,
     BudgetLine,
+    BudgetSettings,
     LogisticsField,
     LogisticsFieldResponse,
     LogisticsForm,
@@ -437,7 +439,7 @@ class ReimbursementExportView(OrganizerRequiredMixin, View):
 
 
 class BudgetView(OrganizerRequiredMixin, View):
-    def _ctx(self, form=None):
+    def _ctx(self, form=None, envelope_form=None):
         from decimal import Decimal
 
         from django.db.models import Sum
@@ -475,6 +477,10 @@ class BudgetView(OrganizerRequiredMixin, View):
             .aggregate(s=Sum("amount"))["s"] or zero
         )
 
+        settings_obj, _ = BudgetSettings.objects.get_or_create(event=self.event)
+        envelope = settings_obj.envelope
+        remaining = (envelope - total_planned) if envelope is not None else None
+
         return {
             "event": self.event,
             "membership": self.membership,
@@ -483,7 +489,10 @@ class BudgetView(OrganizerRequiredMixin, View):
             "total_planned": total_planned,
             "total_actual": total_actual,
             "total_reimbursements": total_reimbursements,
+            "envelope": envelope,
+            "remaining": remaining,
             "form": form or BudgetLineForm(),
+            "envelope_form": envelope_form or BudgetSettingsForm(instance=settings_obj),
             "doc_form": BudgetDocumentForm(),
             "category_choices": BudgetLine.Category.choices,
         }
@@ -500,6 +509,17 @@ class BudgetView(OrganizerRequiredMixin, View):
             messages.success(request, "Poste ajouté.")
             return redirect("logistics:budget", event_slug=event_slug)
         return render(request, "logistics/budget.html", self._ctx(form=form))
+
+
+class BudgetEnvelopeView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug):
+        settings_obj, _ = BudgetSettings.objects.get_or_create(event=self.event)
+        form = BudgetSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Enveloppe mise à jour.")
+            return redirect("logistics:budget", event_slug=event_slug)
+        return render(request, "logistics/budget.html", self._ctx(envelope_form=form))
 
 
 class BudgetLineEditView(OrganizerRequiredMixin, View):
