@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}Budget — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Budget</h1>
+  <div class="actions">
+    <a href="{% url 'logistics:index' event_slug=event.slug %}" class="btn ghost sm">← Logistique</a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+
+  <div>
+
+    {% if lines %}
+    <div class="card" style="padding:0; overflow:hidden">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Intitulé</th>
+            <th style="white-space:nowrap">Prévu (€)</th>
+            <th style="white-space:nowrap">Réel (€)</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        {% for cat in categories %}
+        <tbody>
+          <tr style="background:#f9fafb">
+            <td colspan="4" style="padding:.4rem .75rem; font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:#6b7280">
+              {{ cat.label }}
+            </td>
+          </tr>
+        </tbody>
+        {% for line in cat.lines %}
+        <tbody x-data="{ editing: false, showDocs: false }" id="line-{{ line.pk }}">
+          <tr>
+            <td x-show="!editing">
+              {{ line.label }}
+              {% if line.notes %}<div class="text-muted text-sm">{{ line.notes }}</div>{% endif %}
+            </td>
+            <td x-show="!editing" style="white-space:nowrap">{{ line.amount_planned }}</td>
+            <td x-show="!editing" style="white-space:nowrap">
+              {% if line.amount_actual is not None %}{{ line.amount_actual }}{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td x-show="!editing" class="actions">
+              <div class="btn-group">
+                <button type="button" class="btn ghost sm" @click="showDocs = !showDocs">
+                  📎 {{ line.documents.count }}
+                </button>
+                <button type="button" class="btn ghost sm" @click="editing = true">Modifier</button>
+                <form method="post" action="{% url 'logistics:budget_line_delete' event_slug=event.slug pk=line.pk %}" class="inline-form">
+                  {% csrf_token %}
+                  <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ce poste et ses documents ?')">✕</button>
+                </form>
+              </div>
+            </td>
+
+            <td colspan="4" x-show="editing" x-cloak style="padding:.75rem">
+              <form method="post" action="{% url 'logistics:budget_line_edit' event_slug=event.slug pk=line.pk %}">
+                {% csrf_token %}
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:.5rem; margin-bottom:.5rem">
+                  <div class="field">
+                    <label>Intitulé <span class="req">*</span></label>
+                    <input type="text" name="label" value="{{ line.label }}" required>
+                  </div>
+                  <div class="field">
+                    <label>Catégorie <span class="req">*</span></label>
+                    <select name="category" required>
+                      {% for val, lbl in category_choices %}
+                      <option value="{{ val }}"{% if line.category == val %} selected{% endif %}>{{ lbl }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Prévu (€) <span class="req">*</span></label>
+                    <input type="number" name="amount_planned" value="{{ line.amount_planned }}" step="0.01" min="0" required>
+                  </div>
+                  <div class="field">
+                    <label>Réel (€)</label>
+                    <input type="number" name="amount_actual" value="{{ line.amount_actual }}" step="0.01" min="0">
+                  </div>
+                </div>
+                <div class="field" style="margin-bottom:.5rem">
+                  <label>Notes</label>
+                  <textarea name="notes" rows="1">{{ line.notes }}</textarea>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn primary sm">Enregistrer</button>
+                  <button type="button" class="btn ghost sm" @click="editing = false">Annuler</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+
+          <tr x-show="showDocs" x-cloak>
+            <td colspan="4" style="background:#f9fafb; padding:.75rem">
+              {% if line.documents.all %}
+              <div style="margin-bottom:.75rem">
+                {% for doc in line.documents.all %}
+                <div style="display:flex; align-items:center; gap:.75rem; padding:.3rem 0; border-bottom:1px solid #e5e7eb">
+                  <span class="badge">{{ doc.get_kind_display }}</span>
+                  <span style="flex:1">{{ doc.label }}{% if doc.amount %} — {{ doc.amount }} €{% endif %}</span>
+                  <a href="{{ doc.file.url }}" class="btn ghost sm" target="_blank">↓ Télécharger</a>
+                  <form method="post" action="{% url 'logistics:budget_doc_delete' event_slug=event.slug doc_pk=doc.pk %}" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ce document ?')">✕</button>
+                  </form>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+              <form method="post" action="{% url 'logistics:budget_doc_upload' event_slug=event.slug line_pk=line.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:.4rem; align-items:end">
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Intitulé <span class="req">*</span></label>
+                    <input type="text" name="label" placeholder="Ex. Devis traiteur" required>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Type <span class="req">*</span></label>
+                    <select name="kind" required>
+                      <option value="devis">Devis</option>
+                      <option value="facture">Facture</option>
+                      <option value="bon_de_commande">Bon de commande</option>
+                    </select>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Montant (€)</label>
+                    <input type="number" name="amount" step="0.01" min="0" placeholder="Facultatif">
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Fichier <span class="req">*</span></label>
+                    <input type="file" name="file" required>
+                  </div>
+                  <button type="submit" class="btn primary sm">Ajouter</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+        {% endfor %}
+
+        <tbody>
+          <tr style="background:#f3f4f6">
+            <td style="padding:.4rem .75rem; font-size:.85rem; color:#374151">
+              Sous-total <em>{{ cat.label }}</em>
+            </td>
+            <td style="font-weight:600; white-space:nowrap">{{ cat.total_planned }} €</td>
+            <td style="font-weight:600; white-space:nowrap">{{ cat.total_actual }} €</td>
+            <td></td>
+          </tr>
+        </tbody>
+        {% endfor %}
+
+        <tfoot>
+          <tr>
+            <td style="font-weight:700; padding:.6rem .75rem">Total budget</td>
+            <td style="font-weight:700; white-space:nowrap">{{ total_planned }} €</td>
+            <td style="font-weight:700; white-space:nowrap">{{ total_actual }} €</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    {% if total_reimbursements %}
+    <div class="card" style="margin-top:1rem">
+      <h3>Récapitulatif</h3>
+      <div style="display:flex; flex-direction:column; gap:.3rem">
+        <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
+          <span>Budget prévu</span>
+          <strong>{{ total_planned }} €</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
+          <span>Budget réel (postes)</span>
+          <strong>{{ total_actual }} €</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
+          <span class="text-muted">Remboursements reçus</span>
+          <span class="text-muted">{{ total_reimbursements }} €</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">Aucun poste budgétaire. Ajoutez-en un ci-contre.</div>
+    {% endif %}
+
+  </div>
+
+  <div class="card">
+    <h3>Nouveau poste</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="field{% if field.field.widget.input_type == 'checkbox' %}-checkbox{% endif %}">
+        {% if field.field.widget.input_type == 'checkbox' %}
+          {{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% else %}
+          <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+          {{ field }}
+        {% endif %}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit" class="btn primary sm">Ajouter</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

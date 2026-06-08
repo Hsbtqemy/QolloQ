@@ -2,7 +2,7 @@ import json
 
 from django import forms
 
-from .models import LogisticsField, LogisticsForm, LogisticsResponse, Reimbursement
+from .models import BudgetDocument, BudgetLine, LogisticsField, LogisticsForm, LogisticsResponse, Reimbursement
 
 
 class LogisticsFormSettingsForm(forms.ModelForm):
@@ -82,6 +82,21 @@ class ReimbursementForm(forms.ModelForm):
             self.fields["form_response"].required = False
         else:
             self.fields.pop("form_response")
+
+
+class BudgetLineForm(forms.ModelForm):
+    class Meta:
+        model = BudgetLine
+        fields = ["label", "category", "amount_planned", "amount_actual", "notes"]
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 2}),
+        }
+
+
+class BudgetDocumentForm(forms.ModelForm):
+    class Meta:
+        model = BudgetDocument
+        fields = ["label", "kind", "file", "amount"]
 
 
 def build_response_form(logistics_form, data=None, instance=None):

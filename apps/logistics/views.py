@@ -12,6 +12,8 @@ from django.views import View
 from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin
 
 from .forms import (
+    BudgetDocumentForm,
+    BudgetLineForm,
     LogisticsFieldForm,
     LogisticsFormSettingsForm,
     LogisticsResponseAdminForm,
@@ -20,6 +22,8 @@ from .forms import (
 )
 from .mail import send_logistics_link
 from .models import (
+    BudgetDocument,
+    BudgetLine,
     LogisticsField,
     LogisticsFieldResponse,
     LogisticsForm,
@@ -301,15 +305,18 @@ class ResponseExportView(OrganizerRequiredMixin, View):
 
 class ReimbursementListView(OrganizerRequiredMixin, View):
     def _ctx(self, form=None):
+        from decimal import Decimal
+
         from django.db.models import Sum
+        zero = Decimal("0.00")
         reimbursements = self.event.reimbursements.order_by("person_name")
-        grand_total = reimbursements.aggregate(s=Sum("amount"))["s"] or 0
+        grand_total = reimbursements.aggregate(s=Sum("amount"))["s"] or zero
         totals_by_status = [
-            (label, reimbursements.filter(status=val).aggregate(s=Sum("amount"))["s"] or 0)
+            (label, reimbursements.filter(status=val).aggregate(s=Sum("amount"))["s"] or zero)
             for val, label in Reimbursement.Status.choices
         ]
         totals_by_category = [
-            (label, reimbursements.filter(category=val).aggregate(s=Sum("amount"))["s"] or 0)
+            (label, reimbursements.filter(category=val).aggregate(s=Sum("amount"))["s"] or zero)
             for val, label in Reimbursement.Category.choices
         ]
         return {
@@ -390,6 +397,119 @@ class ReimbursementExportView(OrganizerRequiredMixin, View):
                 r.get_status_display(), r.notes,
             ])
         return http_response
+
+
+# ---------------------------------------------------------------------------
+# Budget
+# ---------------------------------------------------------------------------
+
+
+class BudgetView(OrganizerRequiredMixin, View):
+    def _ctx(self, form=None):
+        from decimal import Decimal
+
+        from django.db.models import Sum
+        zero = Decimal("0.00")
+
+        lines = list(
+            self.event.budget_lines
+            .prefetch_related("documents")
+            .order_by("category", "label")
+        )
+
+        categories = []
+        for val, label in BudgetLine.Category.choices:
+            cat_lines = [ln for ln in lines if ln.category == val]
+            if cat_lines:
+                total_planned = sum(ln.amount_planned for ln in cat_lines)
+                total_actual = sum(
+                    ln.amount_actual for ln in cat_lines if ln.amount_actual is not None
+                )
+                categories.append({
+                    "value": val,
+                    "label": label,
+                    "lines": cat_lines,
+                    "total_planned": total_planned,
+                    "total_actual": total_actual,
+                })
+
+        total_planned = sum(ln.amount_planned for ln in lines) or zero
+        total_actual = sum(
+            ln.amount_actual for ln in lines if ln.amount_actual is not None
+        ) or zero
+        total_reimbursements = (
+            self.event.reimbursements
+            .filter(status=Reimbursement.Status.RECEIVED)
+            .aggregate(s=Sum("amount"))["s"] or zero
+        )
+
+        return {
+            "event": self.event,
+            "membership": self.membership,
+            "lines": lines,
+            "categories": categories,
+            "total_planned": total_planned,
+            "total_actual": total_actual,
+            "total_reimbursements": total_reimbursements,
+            "form": form or BudgetLineForm(),
+            "doc_form": BudgetDocumentForm(),
+            "category_choices": BudgetLine.Category.choices,
+        }
+
+    def get(self, request, event_slug):
+        return render(request, "logistics/budget.html", self._ctx())
+
+    def post(self, request, event_slug):
+        form = BudgetLineForm(request.POST)
+        if form.is_valid():
+            line = form.save(commit=False)
+            line.event = self.event
+            line.save()
+            messages.success(request, "Poste ajouté.")
+            return redirect("logistics:budget", event_slug=event_slug)
+        return render(request, "logistics/budget.html", self._ctx(form=form))
+
+
+class BudgetLineEditView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        line = get_object_or_404(BudgetLine, pk=pk, event=self.event)
+        form = BudgetLineForm(request.POST, instance=line)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Poste mis à jour.")
+        else:
+            messages.error(request, "Erreur dans le formulaire.")
+        return redirect("logistics:budget", event_slug=event_slug)
+
+
+class BudgetLineDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        line = get_object_or_404(BudgetLine, pk=pk, event=self.event)
+        line.hard_delete()
+        messages.success(request, "Poste supprimé.")
+        return redirect("logistics:budget", event_slug=event_slug)
+
+
+class BudgetDocumentUploadView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, line_pk):
+        line = get_object_or_404(BudgetLine, pk=line_pk, event=self.event)
+        form = BudgetDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.line = line
+            doc.save()
+            messages.success(request, "Document ajouté.")
+        else:
+            messages.error(request, "Erreur dans le formulaire.")
+        return redirect("logistics:budget", event_slug=event_slug)
+
+
+class BudgetDocumentDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, doc_pk):
+        doc = get_object_or_404(BudgetDocument, pk=doc_pk, line__event=self.event)
+        doc.delete()
+        messages.success(request, "Document supprimé.")
+        return redirect("logistics:budget", event_slug=event_slug)
 
 
 # ---------------------------------------------------------------------------

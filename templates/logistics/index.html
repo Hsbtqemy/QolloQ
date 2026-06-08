@@ -5,6 +5,7 @@
 <div class="page-header">
   <h1>Logistique</h1>
   <div class="actions">
+    <a href="{% url 'logistics:budget' event_slug=event.slug %}" class="btn ghost sm">Budget</a>
     <a href="{% url 'logistics:reimbursements' event_slug=event.slug %}" class="btn ghost sm">Remboursements</a>
   </div>
 </div>

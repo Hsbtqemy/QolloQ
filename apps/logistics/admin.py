@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import LogisticsField, LogisticsFieldResponse, LogisticsForm, LogisticsResponse, Reimbursement
+from .models import BudgetDocument, BudgetLine, LogisticsField, LogisticsFieldResponse, LogisticsForm, LogisticsResponse, Reimbursement
 
 
 class LogisticsFieldInline(admin.TabularInline):
@@ -41,3 +41,18 @@ class ReimbursementAdmin(admin.ModelAdmin):
     list_filter = ["status", "category", "event"]
     search_fields = ["person_name", "person_email", "description"]
     raw_id_fields = ["event", "form_response"]
+
+
+class BudgetDocumentInline(admin.TabularInline):
+    model = BudgetDocument
+    extra = 0
+    fields = ["label", "kind", "file", "amount"]
+
+
+@admin.register(BudgetLine)
+class BudgetLineAdmin(admin.ModelAdmin):
+    list_display = ["label", "category", "amount_planned", "amount_actual", "event"]
+    list_filter = ["category", "event"]
+    search_fields = ["label"]
+    raw_id_fields = ["event"]
+    inlines = [BudgetDocumentInline]

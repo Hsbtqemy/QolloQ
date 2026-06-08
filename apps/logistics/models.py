@@ -223,3 +223,75 @@ class Reimbursement(BaseModel):
 
     def __str__(self):
         return f"{self.person_name} — {self.description} ({self.amount} €)"
+
+
+class BudgetLine(BaseModel):
+    """Poste budgétaire d'un événement."""
+
+    class Category(models.TextChoices):
+        VENUE = "salle", "Salle"
+        CATERING = "traiteur", "Traiteur"
+        TRANSPORT = "transport", "Transport"
+        COMMUNICATION = "communication", "Communication"
+        OTHER = "autre", "Autre"
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="budget_lines",
+        verbose_name="Événement",
+    )
+    label = models.CharField(max_length=255, verbose_name="Intitulé")
+    category = models.CharField(
+        max_length=20,
+        choices=Category.choices,
+        verbose_name="Catégorie",
+    )
+    amount_planned = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Montant prévu (€)"
+    )
+    amount_actual = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Montant réel (€)",
+    )
+    notes = models.TextField(blank=True, verbose_name="Notes")
+
+    class Meta:
+        verbose_name = "Poste budgétaire"
+        verbose_name_plural = "Postes budgétaires"
+        ordering = ["category", "label"]
+
+    def __str__(self):
+        return f"{self.label} ({self.get_category_display()}) — {self.event}"
+
+
+class BudgetDocument(models.Model):
+    """Devis ou facture attaché à un poste budgétaire."""
+
+    class Kind(models.TextChoices):
+        QUOTE = "devis", "Devis"
+        INVOICE = "facture", "Facture"
+        PURCHASE_ORDER = "bon_de_commande", "Bon de commande"
+
+    line = models.ForeignKey(
+        BudgetLine,
+        on_delete=models.CASCADE,
+        related_name="documents",
+        verbose_name="Poste",
+    )
+    label = models.CharField(max_length=255, verbose_name="Intitulé")
+    kind = models.CharField(max_length=20, choices=Kind.choices, verbose_name="Type")
+    file = models.FileField(upload_to="budget/", verbose_name="Fichier")
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Montant (€)"
+    )
+
+    class Meta:
+        verbose_name = "Document budgétaire"
+        verbose_name_plural = "Documents budgétaires"
+
+    def __str__(self):
+        return f"{self.label} ({self.get_kind_display()})"
