@@ -47,7 +47,7 @@
             <td x-show="!editing" class="actions">
               <div class="btn-group">
                 <button type="button" class="btn ghost sm" @click="showDocs = !showDocs">
-                  📎 {{ line.documents.count }}
+                  📎 {{ line.documents.all|length }}
                 </button>
                 <button type="button" class="btn ghost sm" @click="editing = true">Modifier</button>
                 <form method="post" action="{% url 'logistics:budget_line_delete' event_slug=event.slug pk=line.pk %}" class="inline-form">
@@ -165,7 +165,6 @@
       </table>
     </div>
 
-    {% if total_reimbursements %}
     <div class="card" style="margin-top:1rem">
       <h3>Récapitulatif</h3>
       <div style="display:flex; flex-direction:column; gap:.3rem">
@@ -177,13 +176,14 @@
           <span>Budget réel (postes)</span>
           <strong>{{ total_actual }} €</strong>
         </div>
+        {% if total_reimbursements %}
         <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
           <span class="text-muted">Remboursements reçus</span>
           <span class="text-muted">{{ total_reimbursements }} €</span>
         </div>
+        {% endif %}
       </div>
     </div>
-    {% endif %}
 
     {% else %}
     <div class="empty-state">Aucun poste budgétaire. Ajoutez-en un ci-contre.</div>

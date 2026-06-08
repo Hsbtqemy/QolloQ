@@ -424,7 +424,7 @@ class BudgetView(OrganizerRequiredMixin, View):
                 total_planned = sum(ln.amount_planned for ln in cat_lines)
                 total_actual = sum(
                     ln.amount_actual for ln in cat_lines if ln.amount_actual is not None
-                )
+                ) or zero
                 categories.append({
                     "value": val,
                     "label": label,
