@@ -19,8 +19,9 @@ class Proposal(BaseModel):
         related_name="proposals",
         verbose_name="Événement",
     )
-    title = models.CharField(max_length=500, verbose_name="Titre")
-    abstract = models.TextField(verbose_name="Résumé")
+    title = models.CharField(max_length=500, verbose_name="Titre de la communication")
+    abstract = models.TextField(verbose_name="Proposition de communication")
+    bio = models.TextField(blank=True, verbose_name="Bio-bibliographie")
     keywords = models.CharField(max_length=255, blank=True, verbose_name="Mots-clés")
     format = models.CharField(max_length=255, blank=True, verbose_name="Format souhaité")
     availability = models.TextField(blank=True, verbose_name="Disponibilités")
@@ -81,6 +82,58 @@ class Author(models.Model):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+
+class SubmissionField(models.Model):
+    class Kind(models.TextChoices):
+        TEXT = "text", "Texte court"
+        TEXTAREA = "textarea", "Texte long"
+        CHOICE = "choice", "Choix unique"
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="submission_fields",
+        verbose_name="Événement",
+    )
+    label = models.CharField(max_length=255, verbose_name="Intitulé")
+    help_text = models.CharField(max_length=500, blank=True, verbose_name="Texte d'aide")
+    kind = models.CharField(max_length=20, choices=Kind.choices, verbose_name="Type")
+    options = models.JSONField(default=list, blank=True, verbose_name="Options")
+    required = models.BooleanField(default=False, verbose_name="Obligatoire")
+    order = models.PositiveSmallIntegerField(default=0, verbose_name="Ordre")
+
+    class Meta:
+        verbose_name = "Champ de soumission"
+        verbose_name_plural = "Champs de soumission"
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.label} ({self.get_kind_display()})"
+
+
+class SubmissionFieldResponse(models.Model):
+    proposal = models.ForeignKey(
+        Proposal,
+        on_delete=models.CASCADE,
+        related_name="field_responses",
+        verbose_name="Proposition",
+    )
+    field = models.ForeignKey(
+        SubmissionField,
+        on_delete=models.CASCADE,
+        related_name="responses",
+        verbose_name="Champ",
+    )
+    value = models.TextField(blank=True, verbose_name="Valeur")
+
+    class Meta:
+        verbose_name = "Réponse champ"
+        verbose_name_plural = "Réponses champs"
+        unique_together = [("proposal", "field")]
+
+    def __str__(self):
+        return f"{self.field.label} : {self.value[:50]}"
 
 
 class Evaluation(BaseModel):

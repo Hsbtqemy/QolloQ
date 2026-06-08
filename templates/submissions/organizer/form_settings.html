@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Formulaire de dépôt — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Formulaire de dépôt</h1>
+  <div class="actions">
+    <a href="{% url 'submissions:list' event_slug=event.slug %}" class="btn ghost">← Soumissions</a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+
+  <div>
+    <div class="card">
+      <h3 class="card-section-title">Texte introductif</h3>
+      <form method="post">
+        {% csrf_token %}
+        {% with field=instructions_form.submission_instructions %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endwith %}
+        <div class="form-actions">
+          <button type="submit" class="btn primary sm">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="padding:0; overflow:hidden">
+
+      <div class="builder-section-title" style="border-top:none">Champs fixes</div>
+      <div class="builder-item builder-item--fixed">
+        <span class="builder-lock">⬤</span>
+        <span class="builder-item__label">Identité de la personne</span>
+        <span class="builder-item__sub">auteur·ices</span>
+      </div>
+      <div class="builder-item builder-item--fixed">
+        <span class="builder-lock">⬤</span>
+        <span class="builder-item__label">Titre de la communication</span>
+      </div>
+      <div class="builder-item builder-item--fixed">
+        <span class="builder-lock">⬤</span>
+        <span class="builder-item__label">Proposition de communication</span>
+      </div>
+      <div class="builder-item builder-item--fixed">
+        <span class="builder-lock">⬤</span>
+        <span class="builder-item__label">Bio-bibliographie</span>
+      </div>
+
+      <div class="builder-section-title">Champs optionnels</div>
+
+      <div class="builder-item builder-item--optional {% if not event.submission_show_keywords %}is-off{% endif %}"
+           x-data="{ v: {{ event.submission_show_keywords|yesno:'true,false' }} }"
+           :class="{ 'is-off': !v }">
+        <label class="field-checkbox" style="margin:0">
+          <input type="checkbox" x-model="v"
+                 @change="fetch('{% url 'submissions:field_toggle' event_slug=event.slug %}', {
+                   method:'POST',
+                   headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+                   body:JSON.stringify({field:'submission_show_keywords',value:v})
+                 })">
+        </label>
+        <span class="builder-item__label">Mots-clés</span>
+        <span class="builder-item__sub">optionnel</span>
+      </div>
+
+      <div class="builder-item builder-item--optional {% if not event.submission_show_format %}is-off{% endif %}"
+           x-data="{ v: {{ event.submission_show_format|yesno:'true,false' }} }"
+           :class="{ 'is-off': !v }">
+        <label class="field-checkbox" style="margin:0">
+          <input type="checkbox" x-model="v"
+                 @change="fetch('{% url 'submissions:field_toggle' event_slug=event.slug %}', {
+                   method:'POST',
+                   headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+                   body:JSON.stringify({field:'submission_show_format',value:v})
+                 })">
+        </label>
+        <span class="builder-item__label">Format souhaité</span>
+        <span class="builder-item__sub">optionnel</span>
+      </div>
+
+      <div class="builder-item builder-item--optional {% if not event.submission_show_availability %}is-off{% endif %}"
+           x-data="{ v: {{ event.submission_show_availability|yesno:'true,false' }} }"
+           :class="{ 'is-off': !v }">
+        <label class="field-checkbox" style="margin:0">
+          <input type="checkbox" x-model="v"
+                 @change="fetch('{% url 'submissions:field_toggle' event_slug=event.slug %}', {
+                   method:'POST',
+                   headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+                   body:JSON.stringify({field:'submission_show_availability',value:v})
+                 })">
+        </label>
+        <span class="builder-item__label">Disponibilités</span>
+        <span class="builder-item__sub">optionnel</span>
+      </div>
+
+      <div class="builder-section-title">Champs personnalisés</div>
+      {% if fields %}
+      <ul class="field-list" id="submission-fields" style="margin:0">
+        {% for f in fields %}
+        <li class="field-list-item" data-id="{{ f.pk }}">
+          <span class="field-list-handle">⠿</span>
+          <span class="field-list-label">{{ f.label }}</span>
+          <span class="badge {{ f.kind }}">{{ f.get_kind_display }}</span>
+          {% if f.required %}<span class="builder-item__sub">obligatoire</span>{% endif %}
+          <form method="post" action="{% url 'submissions:field_delete' event_slug=event.slug field_id=f.pk %}" class="inline-form" style="margin-left:auto">
+            {% csrf_token %}
+            <button type="submit" class="btn ghost sm text-danger"
+                    onclick="return confirm('Supprimer « {{ f.label }} » et toutes ses réponses ?')">✕</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="builder-item" style="color:#9ca3af; font-style:italic; font-size:.85rem">
+        Aucun champ personnalisé pour l'instant.
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Ajouter un champ</h3>
+    <form method="post" action="{% url 'submissions:field_create' event_slug=event.slug %}">
+      {% csrf_token %}
+      {% with field=field_form.label %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }} <span class="req">*</span></label>
+        {{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      {% endwith %}
+      {% with field=field_form.help_text %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endwith %}
+      {% with field=field_form.kind %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }} <span class="req">*</span></label>
+        {{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      {% endwith %}
+      {% with field=field_form.options_raw %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endwith %}
+      <div class="field-checkbox">
+        {{ field_form.required }}
+        <label for="{{ field_form.required.id_for_label }}">{{ field_form.required.label }}</label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary sm">Ajouter</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+const list = document.getElementById("submission-fields");
+if (list) {
+  Sortable.create(list, {
+    animation: 150,
+    handle: ".field-list-handle",
+    onEnd() {
+      const items = [...list.querySelectorAll(".field-list-item")].map((el, i) => ({
+        id: parseInt(el.dataset.id), order: i + 1
+      }));
+      fetch("{% url 'submissions:field_reorder' event_slug=event.slug %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify(items)
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

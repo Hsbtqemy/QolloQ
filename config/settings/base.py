@@ -97,7 +97,7 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_ADAPTER = "apps.accounts.adapters.NoSignupAccountAdapter"
-LOGIN_REDIRECT_URL = "home"
+LOGIN_REDIRECT_URL = "events:home"
 ACCOUNT_LOGOUT_REDIRECT_URL = "account_login"
 
 AUTH_PASSWORD_VALIDATORS = [

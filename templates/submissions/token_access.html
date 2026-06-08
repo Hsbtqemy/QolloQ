@@ -60,6 +60,9 @@
       </div>
 
       {% if editable %}
+      {% if proposal.event.submission_instructions %}
+      <div class="prose" style="margin-bottom:1.25rem;font-size:.9rem;color:#374151">{{ proposal.event.submission_instructions|linebreaks }}</div>
+      {% endif %}
       <form method="post">
         {% csrf_token %}
         {% for field in form %}
@@ -84,7 +87,6 @@
             <div class="field"><label>Email</label>{{ af.email }}</div>
           </div>
           <div class="field"><label>Institution</label>{{ af.institution }}</div>
-          {{ af.order }}
           {% if author_formset.can_delete %}
           <div class="formset-remove">
             <label class="field-checkbox">{{ af.DELETE }} <span class="text-muted text-sm">Supprimer</span></label>
@@ -107,8 +109,12 @@
         {% endif %}
       </p>
       <hr class="sep">
-      <h3>Résumé</h3>
+      <h3>Proposition de communication</h3>
       <p>{{ proposal.abstract }}</p>
+      {% if proposal.bio %}
+      <h3>Bio-bibliographie</h3>
+      <p>{{ proposal.bio|linebreaks }}</p>
+      {% endif %}
       {% if proposal.authors.all %}
       <h3>Auteur·ices</h3>
       {% for author in proposal.authors.all %}

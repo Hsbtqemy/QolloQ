@@ -58,4 +58,31 @@ urlpatterns = [
         views.EvaluationSubmitView.as_view(),
         name="evaluate",
     ),
+
+    # Paramétrage du formulaire
+    path(
+        "evenements/<slug:event_slug>/soumissions/formulaire/",
+        views.SubmissionFormSettingsView.as_view(),
+        name="form_settings",
+    ),
+    path(
+        "evenements/<slug:event_slug>/soumissions/formulaire/champs/ajouter/",
+        views.SubmissionFieldCreateView.as_view(),
+        name="field_create",
+    ),
+    path(
+        "evenements/<slug:event_slug>/soumissions/formulaire/champs/<int:field_id>/supprimer/",
+        views.SubmissionFieldDeleteView.as_view(),
+        name="field_delete",
+    ),
+    path(
+        "evenements/<slug:event_slug>/soumissions/formulaire/champs/toggle/",
+        views.SubmissionFieldToggleView.as_view(),
+        name="field_toggle",
+    ),
+    path(
+        "evenements/<slug:event_slug>/soumissions/formulaire/champs/reorder/",
+        views.SubmissionFieldReorderView.as_view(),
+        name="field_reorder",
+    ),
 ]

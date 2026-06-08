@@ -6,10 +6,36 @@
   <h1>Soumissions</h1>
   <div class="actions">
     {% if membership.is_organizer %}
+    <a href="{% url 'submissions:form_settings' event_slug=event.slug %}" class="btn ghost sm">Paramétrer le formulaire</a>
     <a href="{% url 'submissions:create' event_slug=event.slug %}" class="btn ghost sm">+ Saisie directe</a>
     {% endif %}
   </div>
 </div>
+
+{% if event.submissions_open %}
+<div class="callout callout-open" x-data>
+  <div>
+    <strong>Dépôt ouvert</strong>
+    {% if event.submission_deadline %}<span class="text-muted"> · Date limite : {{ event.submission_deadline|date:"j F Y à H:i" }}</span>{% endif %}
+    <div class="submit-url-row">
+      <input id="submit-url" type="text" value="{{ submit_url }}" readonly class="submit-url-input">
+      <button type="button" class="btn ghost sm"
+              @click="navigator.clipboard.writeText('{{ submit_url }}').then(() => $event.target.textContent = 'Copié ✓').catch(() => {})">
+        Copier
+      </button>
+      <a href="{{ submit_url }}" target="_blank" rel="noopener" class="btn ghost sm">Ouvrir</a>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="callout callout-closed">
+  <strong>Dépôt fermé</strong>
+  <span class="text-muted"> · Activez les soumissions dans les <a href="{% url 'events:settings' event_slug=event.slug %}">paramètres</a> pour diffuser ce lien.</span>
+  <div class="submit-url-row">
+    <input type="text" value="{{ submit_url }}" readonly class="submit-url-input">
+  </div>
+</div>
+{% endif %}
 
 {% if proposals %}
 <div class="card" style="padding:0; overflow:hidden">
@@ -33,7 +59,7 @@
         </td>
         <td class="text-muted">{{ proposal.format|default:"—" }}</td>
         <td><span class="badge {{ proposal.status }}">{{ proposal.get_status_display }}</span></td>
-        <td class="text-muted">{{ proposal.evaluations.count }}</td>
+        <td class="text-muted">{{ proposal.evaluations.all|length }}</td>
         <td class="actions">
           <a href="{% url 'submissions:detail' event_slug=event.slug proposal_id=proposal.pk %}" class="btn ghost sm">Voir</a>
         </td>

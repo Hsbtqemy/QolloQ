@@ -15,7 +15,7 @@ class CampaignListView(OrganizerRequiredMixin, View):
         return render(
             request,
             "emails/campaign_list.html",
-            {"event": self.event, "campaigns": campaigns},
+            {"event": self.event, "membership": self.membership, "campaigns": campaigns},
         )
 
 
@@ -25,7 +25,7 @@ class CampaignCreateView(OrganizerRequiredMixin, View):
         return render(
             request,
             "emails/campaign_form.html",
-            {"event": self.event, "form": form},
+            {"event": self.event, "membership": self.membership, "form": form},
         )
 
     def post(self, request, event_slug):
@@ -39,7 +39,7 @@ class CampaignCreateView(OrganizerRequiredMixin, View):
         return render(
             request,
             "emails/campaign_form.html",
-            {"event": self.event, "form": form},
+            {"event": self.event, "membership": self.membership, "form": form},
         )
 
 
@@ -49,7 +49,7 @@ class CampaignDetailView(OrganizerRequiredMixin, View):
         return render(
             request,
             "emails/campaign_detail.html",
-            {"event": self.event, "campaign": campaign},
+            {"event": self.event, "membership": self.membership, "campaign": campaign},
         )
 
 
@@ -63,7 +63,7 @@ class CampaignEditView(OrganizerRequiredMixin, View):
         return render(
             request,
             "emails/campaign_form.html",
-            {"event": self.event, "form": form, "campaign": campaign},
+            {"event": self.event, "membership": self.membership, "form": form, "campaign": campaign},
         )
 
     def post(self, request, event_slug, pk):
@@ -79,7 +79,7 @@ class CampaignEditView(OrganizerRequiredMixin, View):
         return render(
             request,
             "emails/campaign_form.html",
-            {"event": self.event, "form": form, "campaign": campaign},
+            {"event": self.event, "membership": self.membership, "form": form, "campaign": campaign},
         )
 
 

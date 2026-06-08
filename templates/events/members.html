@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Membres — {{ event.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Membres</h1>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+
+  <div class="card" style="padding:0; overflow:hidden">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Rôle</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in members %}
+        <tr>
+          <td>{{ m.user.get_full_name|default:"—" }}</td>
+          <td class="text-muted">{{ m.user.email }}</td>
+          <td>
+            <form method="post" action="{% url 'events:member_update' event_slug=event.slug membership_id=m.pk %}" class="inline-form">
+              {% csrf_token %}
+              <select name="role" onchange="this.form.submit()" class="select-inline">
+                {% for val, label in role_choices %}
+                <option value="{{ val }}" {% if m.role == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </form>
+          </td>
+          <td class="actions">
+            {% if m.user != request.user %}
+            <form method="post" action="{% url 'events:member_remove' event_slug=event.slug membership_id=m.pk %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="btn ghost sm text-danger"
+                      onclick="return confirm('Retirer {{ m.user.get_full_name|default:m.user.email }} de l\'événement ?')">Retirer</button>
+            </form>
+            {% else %}
+            <span class="text-muted text-sm">vous</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Inviter un membre</h3>
+    <p class="text-muted text-sm">Un compte sera créé automatiquement si l'adresse email n'existe pas encore. La personne recevra un lien pour définir son mot de passe.</p>
+    <form method="post" action="{% url 'events:member_add' event_slug=event.slug %}">
+      {% csrf_token %}
+      <div class="field">
+        <label for="{{ form.email.id_for_label }}">{{ form.email.label }} <span class="req">*</span></label>
+        {{ form.email }}
+        {% if form.email.errors %}<ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+          {{ form.first_name }}
+        </div>
+        <div class="field">
+          <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+      <p class="text-muted text-sm" style="margin-top:-.25rem">Optionnel — si la personne n'a pas encore de compte.</p>
+      <div class="field">
+        <label for="{{ form.role.id_for_label }}">{{ form.role.label }} <span class="req">*</span></label>
+        {{ form.role }}
+        {% if form.role.errors %}<ul class="errorlist">{% for e in form.role.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary sm">Inviter</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

@@ -34,7 +34,9 @@
       <a class="sidebar-link {% if request.resolver_match.app_name == 'emails' %}active{% endif %}"
          href="{% url 'emails:campaign_list' event_slug=event.slug %}">Emails</a>
       {% if membership.is_organizer %}
-      <a class="sidebar-link {% if request.resolver_match.app_name == 'events' and request.resolver_match.url_name == 'settings' %}active{% endif %}"
+      <a class="sidebar-link {% if request.resolver_match.url_name == 'members' or request.resolver_match.url_name == 'member_add' %}active{% endif %}"
+         href="{% url 'events:members' event_slug=event.slug %}">Membres</a>
+      <a class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"
          href="{% url 'events:settings' event_slug=event.slug %}">Paramètres</a>
       {% endif %}
     </div>

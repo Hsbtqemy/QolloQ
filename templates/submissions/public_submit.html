@@ -18,6 +18,9 @@
       {% if event.submission_deadline %}
       <p class="text-muted">Date limite : {{ event.submission_deadline|date:"j F Y à H:i" }}</p>
       {% endif %}
+      {% if event.submission_instructions %}
+      <div class="prose" style="margin-bottom:1.25rem">{{ event.submission_instructions|linebreaks }}</div>
+      {% endif %}
 
       <form method="post">
         {% csrf_token %}
@@ -59,7 +62,6 @@
             <label>Institution</label>
             {{ af.institution }}
           </div>
-          {{ af.order }}
           {% if author_formset.can_delete %}
           <div class="formset-remove">
             <label class="field-checkbox">

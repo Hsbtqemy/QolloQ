@@ -18,6 +18,18 @@ class Event(BaseModel):
     submission_deadline = models.DateTimeField(
         null=True, blank=True, verbose_name="Date limite de soumission"
     )
+    submission_show_keywords = models.BooleanField(
+        default=True, verbose_name="Champ « Mots-clés »"
+    )
+    submission_show_format = models.BooleanField(
+        default=True, verbose_name="Champ « Format souhaité »"
+    )
+    submission_show_availability = models.BooleanField(
+        default=False, verbose_name="Champ « Disponibilités »"
+    )
+    submission_instructions = models.TextField(
+        blank=True, verbose_name="Instructions pour les soumissionnaires"
+    )
 
     # Évaluation — options configurables
     class EvalVisibility(models.TextChoices):
@@ -68,7 +80,13 @@ class Event(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base = slugify(self.name) or "evenement"
+            slug = base
+            n = 1
+            while Event.objects.filter(slug=slug).exists():
+                slug = f"{base}-{n}"
+                n += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
 

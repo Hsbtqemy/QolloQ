@@ -1,3 +1,5 @@
+from email.utils import parseaddr
+
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.utils import timezone
@@ -52,7 +54,8 @@ def send_campaign(campaign):
     if not recipients:
         return 0
 
-    from_email = f"{campaign.event.name} <{settings.DEFAULT_FROM_EMAIL}>"
+    _, addr = parseaddr(settings.DEFAULT_FROM_EMAIL)
+    from_email = f"{campaign.event.name} <{addr or settings.DEFAULT_FROM_EMAIL}>"
 
     count = 0
     for email in recipients:

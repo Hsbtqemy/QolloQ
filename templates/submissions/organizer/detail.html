@@ -28,12 +28,27 @@
       {% if proposal.format %}<p class="text-muted text-sm">Format : {{ proposal.format }}</p>{% endif %}
       {% if proposal.keywords %}<p class="text-muted text-sm">Mots-clés : {{ proposal.keywords }}</p>{% endif %}
 
-      <h3>Résumé</h3>
+      <h3>Proposition de communication</h3>
       <p>{{ proposal.abstract }}</p>
+
+      {% if proposal.bio %}
+      <h3>Bio-bibliographie</h3>
+      <p>{{ proposal.bio|linebreaks }}</p>
+      {% endif %}
 
       {% if proposal.availability %}
       <h3>Disponibilités</h3>
       <p>{{ proposal.availability }}</p>
+      {% endif %}
+
+      {% if proposal.field_responses.all %}
+      <hr class="sep">
+      {% for resp in proposal.field_responses.all %}
+      <div style="margin-bottom:.75rem">
+        <div class="text-muted text-sm">{{ resp.field.label }}</div>
+        <div>{{ resp.value|default:"—" }}</div>
+      </div>
+      {% endfor %}
       {% endif %}
 
       <p class="text-muted text-sm">Soumis par {{ proposal.submitter_email }}</p>

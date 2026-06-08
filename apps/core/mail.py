@@ -1,4 +1,5 @@
 import logging
+from email.utils import parseaddr
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -13,7 +14,8 @@ def send_template_email(
     """Envoie un email HTML + texte brut à partir d'un nom de template de base."""
     context.setdefault("site_url", settings.SITE_URL)
     if event:
-        from_email = f"{event.name} <{settings.DEFAULT_FROM_EMAIL}>"
+        _, addr = parseaddr(settings.DEFAULT_FROM_EMAIL)
+        from_email = f"{event.name} <{addr or settings.DEFAULT_FROM_EMAIL}>"
     else:
         from_email = settings.DEFAULT_FROM_EMAIL
     txt = render_to_string(f"emails/{template_base}.txt", context)

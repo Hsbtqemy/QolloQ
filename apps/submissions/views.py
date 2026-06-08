@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 
@@ -16,9 +17,11 @@ from .forms import (
     OrganizerProposalForm,
     PublicProposalForm,
     ResendTokenForm,
+    SubmissionFieldForm,
+    SubmissionInstructionsForm,
 )
 from .mail import send_submission_confirmation, send_token_reminder
-from .models import Evaluation, Proposal
+from .models import Evaluation, Proposal, SubmissionField
 
 
 # ── Vues publiques (sans compte) ─────────────────────────────────────────────
@@ -38,13 +41,13 @@ class PublicSubmitView(View):
         event = self._get_open_event(event_slug)
         return render(request, "submissions/public_submit.html", {
             "event": event,
-            "form": PublicProposalForm(),
+            "form": PublicProposalForm(event=event),
             "author_formset": AuthorFormSet(),
         })
 
     def post(self, request, event_slug):
         event = self._get_open_event(event_slug)
-        form = PublicProposalForm(request.POST)
+        form = PublicProposalForm(request.POST, event=event)
         author_formset = AuthorFormSet(request.POST)
         if form.is_valid() and author_formset.is_valid():
             proposal = form.save(commit=False)
@@ -52,6 +55,7 @@ class PublicSubmitView(View):
             proposal.save()
             author_formset.instance = proposal
             author_formset.save()
+            form.save_custom_responses(proposal)
             send_submission_confirmation(proposal)
             return redirect("submissions:submitted", token=str(proposal.token))
         return render(request, "submissions/public_submit.html", {
@@ -81,17 +85,18 @@ class TokenAccessView(View):
         return True
 
     def get(self, request, token):
-        proposal = get_object_or_404(Proposal, token=token)
+        proposal = get_object_or_404(Proposal.objects.select_related("event"), token=token)
         editable = self._is_still_editable(proposal)
+        event = proposal.event
         return render(request, "submissions/token_access.html", {
             "proposal": proposal,
             "editable": editable,
-            "form": PublicProposalForm(instance=proposal) if editable else None,
+            "form": PublicProposalForm(instance=proposal, event=event) if editable else None,
             "author_formset": AuthorFormSet(instance=proposal) if editable else None,
         })
 
     def post(self, request, token):
-        proposal = get_object_or_404(Proposal, token=token)
+        proposal = get_object_or_404(Proposal.objects.select_related("event"), token=token)
         if not self._is_still_editable(proposal):
             raise PermissionDenied
 
@@ -101,11 +106,13 @@ class TokenAccessView(View):
             proposal.hard_delete()
             return render(request, "submissions/withdrawn.html", {"event": event})
 
-        form = PublicProposalForm(request.POST, instance=proposal)
+        event = proposal.event
+        form = PublicProposalForm(request.POST, instance=proposal, event=event)
         author_formset = AuthorFormSet(request.POST, instance=proposal)
         if form.is_valid() and author_formset.is_valid():
-            form.save()
+            proposal = form.save()
             author_formset.save()
+            form.save_custom_responses(proposal)
             messages.success(request, "Votre proposition a été mise à jour.")
             return redirect("submissions:token_access", token=token)
         return render(request, "submissions/token_access.html", {
@@ -147,17 +154,25 @@ class ProposalListView(CommitteeRequiredMixin, View):
             .prefetch_related("authors", "evaluations")
             .order_by("-created_at")
         )
+        submit_url = request.build_absolute_uri(
+            reverse("submissions:public_submit", kwargs={"event_slug": event_slug})
+        )
         return render(request, "submissions/organizer/list.html", {
             "event": self.event,
             "membership": self.membership,
             "proposals": proposals,
             "status_choices": Proposal.Status.choices,
+            "submit_url": submit_url,
         })
 
 
 class ProposalDetailView(CommitteeRequiredMixin, View):
     def get(self, request, event_slug, proposal_id):
-        proposal = get_object_or_404(Proposal, pk=proposal_id, event=self.event)
+        proposal = get_object_or_404(
+            Proposal.objects.prefetch_related("authors", "field_responses__field"),
+            pk=proposal_id,
+            event=self.event,
+        )
         evaluations = self._get_visible_evaluations(proposal)
         own_evaluation = Evaluation.objects.filter(
             proposal=proposal, evaluator=self.membership
@@ -170,6 +185,7 @@ class ProposalDetailView(CommitteeRequiredMixin, View):
             "own_evaluation": own_evaluation,
             "eval_form": EvaluationForm(instance=own_evaluation),
             "organizer_form": OrganizerProposalForm(instance=proposal) if self.membership.is_organizer else None,
+            "status_choices": Proposal.Status.choices,
         })
 
     def _get_visible_evaluations(self, proposal):
@@ -245,6 +261,7 @@ class ProposalCreateView(OrganizerRequiredMixin, View):
     def get(self, request, event_slug):
         return render(request, "submissions/organizer/create.html", {
             "event": self.event,
+            "membership": self.membership,
             "form": OrganizerProposalForm(),
             "author_formset": AuthorFormSet(),
         })
@@ -262,6 +279,107 @@ class ProposalCreateView(OrganizerRequiredMixin, View):
             return redirect("submissions:detail", event_slug=event_slug, proposal_id=proposal.pk)
         return render(request, "submissions/organizer/create.html", {
             "event": self.event,
+            "membership": self.membership,
             "form": form,
             "author_formset": author_formset,
         })
+
+
+# ── Paramétrage du formulaire de dépôt ───────────────────────────────────────
+
+class SubmissionFormSettingsView(OrganizerRequiredMixin, View):
+    def _ctx(self, instructions_form=None):
+        return {
+            "event": self.event,
+            "membership": self.membership,
+            "fields": self.event.submission_fields.order_by("order"),
+            "instructions_form": instructions_form or SubmissionInstructionsForm(instance=self.event),
+            "field_form": SubmissionFieldForm(),
+        }
+
+    def get(self, request, event_slug):
+        return render(request, "submissions/organizer/form_settings.html", self._ctx())
+
+    def post(self, request, event_slug):
+        form = SubmissionInstructionsForm(request.POST, instance=self.event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Instructions enregistrées.")
+            return redirect("submissions:form_settings", event_slug=event_slug)
+        return render(request, "submissions/organizer/form_settings.html",
+                      self._ctx(instructions_form=form))
+
+
+class SubmissionFieldToggleView(OrganizerRequiredMixin, View):
+    _ALLOWED = frozenset({
+        "submission_show_keywords",
+        "submission_show_format",
+        "submission_show_availability",
+    })
+
+    def post(self, request, event_slug):
+        try:
+            data = json.loads(request.body)
+            field = data["field"]
+            value = bool(data["value"])
+        except (ValueError, KeyError, TypeError):
+            return JsonResponse({"error": "Données invalides."}, status=400)
+        if field not in self._ALLOWED:
+            return JsonResponse({"error": "Champ non autorisé."}, status=400)
+        setattr(self.event, field, value)
+        self.event.save(update_fields=[field, "updated_at"])
+        return JsonResponse({"ok": True})
+
+
+class SubmissionFieldCreateView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug):
+        form = SubmissionFieldForm(request.POST)
+        if form.is_valid():
+            field = form.save(commit=False)
+            field.event = self.event
+            last = (
+                SubmissionField.objects.filter(event=self.event)
+                .order_by("-order")
+                .values_list("order", flat=True)
+                .first()
+            )
+            field.order = (last or 0) + 1
+            field.save()
+            messages.success(request, "Champ ajouté.")
+        else:
+            messages.error(request, "Erreur dans le formulaire.")
+        return redirect("submissions:form_settings", event_slug=event_slug)
+
+
+class SubmissionFieldDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, field_id):
+        field = get_object_or_404(SubmissionField, pk=field_id, event=self.event)
+        field.delete()
+        messages.success(request, "Champ supprimé.")
+        return redirect("submissions:form_settings", event_slug=event_slug)
+
+
+class SubmissionFieldReorderView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug):
+        try:
+            payload = json.loads(request.body)
+        except (ValueError, TypeError):
+            return JsonResponse({"error": "JSON invalide"}, status=400)
+        if not isinstance(payload, list):
+            return JsonResponse({"error": "Liste attendue"}, status=400)
+        updates = []
+        for item in payload:
+            pk = item.get("id")
+            order = item.get("order")
+            if not isinstance(order, int) or order <= 0:
+                return JsonResponse({"error": "Ordre invalide"}, status=400)
+            updates.append(SubmissionField(pk=pk, order=order))
+        ids = [f.pk for f in updates]
+        owned = set(
+            SubmissionField.objects.filter(event=self.event, pk__in=ids)
+            .values_list("pk", flat=True)
+        )
+        if owned != set(ids):
+            return JsonResponse({"error": "Champ non trouvé"}, status=404)
+        SubmissionField.objects.bulk_update(updates, ["order"])
+        return JsonResponse({"ok": True})

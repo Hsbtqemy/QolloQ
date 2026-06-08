@@ -1,0 +1,16 @@
+Bonjour,
+
+Vous avez été invité·e à rejoindre l'événement « {{ event.name }} » en tant que {{ role_label }}.
+
+{% if is_new_account %}Un compte QolloQ a été créé pour vous avec cette adresse email.
+Cliquez sur le lien ci-dessous pour définir votre mot de passe et accéder à l'application :
+
+{{ invitation_url }}
+
+Ce lien est à usage unique et expire après 3 jours.
+{% else %}Cliquez sur le lien ci-dessous pour vous connecter et accéder à l'événement :
+
+{{ invitation_url }}
+{% endif %}
+
+{{ event.name }}

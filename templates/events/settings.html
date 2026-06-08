@@ -8,28 +8,64 @@
   </div>
 </div>
 
-<div class="card">
-  <form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-    <div class="field{% if field.field.widget.input_type == 'checkbox' %}-checkbox{% endif %}">
-      {% if field.field.widget.input_type == 'checkbox' %}
-        {{ field }}
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {% else %}
-        <label for="{{ field.id_for_label }}">
-          {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
-        </label>
-        {{ field }}
-      {% endif %}
-      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+<form method="post">
+  {% csrf_token %}
+
+  <div class="card">
+    <h3 class="card-section-title">Informations générales</h3>
+    {% with field=form.name %}
+    <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }} <span class="req">*</span></label>{{ field }}{% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+    {% endwith %}
+    {% with field=form.description %}
+    <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+    {% endwith %}
+    {% with field=form.location %}
+    <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+    {% endwith %}
+    <div class="field-row">
+      {% with field=form.start_date %}
+      <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }} <span class="req">*</span></label>{{ field }}{% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endwith %}
+      {% with field=form.end_date %}
+      <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }} <span class="req">*</span></label>{{ field }}{% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+      {% endwith %}
     </div>
-    {% endfor %}
-    <div class="form-actions">
-      <button type="submit" class="btn primary">Enregistrer</button>
-      <a href="{% url 'events:detail' event_slug=event.slug %}" class="btn ghost">Annuler</a>
+  </div>
+
+  <div class="card">
+    <h3 class="card-section-title">Dépôt de propositions</h3>
+    <div class="field-checkbox">
+      {{ form.submissions_open }}
+      <label for="{{ form.submissions_open.id_for_label }}">{{ form.submissions_open.label }}</label>
     </div>
-  </form>
-</div>
+    {% with field=form.submission_deadline %}
+    <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+    {% endwith %}
+  </div>
+
+  <div class="card">
+    <h3 class="card-section-title">Évaluation</h3>
+    {% with field=form.eval_visibility %}
+    <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}</div>
+    {% endwith %}
+    {% with field=form.eval_assignment %}
+    <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>
+    {% endwith %}
+    <div class="field-checkbox">
+      {{ form.eval_anonymous }}
+      <label for="{{ form.eval_anonymous.id_for_label }}">{{ form.eval_anonymous.label }}</label>
+      {% if form.eval_anonymous.help_text %}<div class="helptext">{{ form.eval_anonymous.help_text }}</div>{% endif %}
+    </div>
+    <div class="field-checkbox">
+      {{ form.double_blind }}
+      <label for="{{ form.double_blind.id_for_label }}">{{ form.double_blind.label }}</label>
+      {% if form.double_blind.help_text %}<div class="helptext">{{ form.double_blind.help_text }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn primary">Enregistrer</button>
+    <a href="{% url 'events:detail' event_slug=event.slug %}" class="btn ghost">Annuler</a>
+  </div>
+</form>
 {% endblock %}

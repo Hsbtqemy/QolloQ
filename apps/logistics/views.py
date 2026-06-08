@@ -43,7 +43,7 @@ class LogisticsSettingsView(OrganizerRequiredMixin, View):
         return render(
             request,
             "logistics/settings.html",
-            {"event": self.event, "logistics_form": lf, "form": form, "fields": fields},
+            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form, "fields": fields},
         )
 
     def post(self, request, event_slug):
@@ -57,7 +57,7 @@ class LogisticsSettingsView(OrganizerRequiredMixin, View):
         return render(
             request,
             "logistics/settings.html",
-            {"event": self.event, "logistics_form": lf, "form": form, "fields": fields},
+            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form, "fields": fields},
         )
 
 
@@ -88,7 +88,7 @@ class FieldEditView(OrganizerRequiredMixin, View):
         return render(
             request,
             "logistics/field_edit.html",
-            {"event": self.event, "logistics_form": lf, "field": field, "form": form},
+            {"event": self.event, "membership": self.membership, "logistics_form": lf, "field": field, "form": form},
         )
 
     def post(self, request, event_slug, field_id):
@@ -101,7 +101,7 @@ class FieldEditView(OrganizerRequiredMixin, View):
         return render(
             request,
             "logistics/field_edit.html",
-            {"event": self.event, "logistics_form": lf, "field": field, "form": form},
+            {"event": self.event, "membership": self.membership, "logistics_form": lf, "field": field, "form": form},
         )
 
 
@@ -157,6 +157,7 @@ class ResponseListView(CommitteeRequiredMixin, View):
             "logistics/response_list.html",
             {
                 "event": self.event,
+                "membership": self.membership,
                 "logistics_form": lf,
                 "responses": responses,
                 "fields": fields,
@@ -175,7 +176,7 @@ class ResponseDetailView(CommitteeRequiredMixin, View):
         return render(
             request,
             "logistics/response_detail.html",
-            {"event": self.event, "logistics_form": lf, "response": response},
+            {"event": self.event, "membership": self.membership, "logistics_form": lf, "response": response},
         )
 
 
@@ -191,7 +192,7 @@ class ResponseCreateView(OrganizerRequiredMixin, View):
         return render(
             request,
             "logistics/response_create.html",
-            {"event": self.event, "logistics_form": lf, "form": form},
+            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form},
         )
 
     def post(self, request, event_slug):
@@ -209,7 +210,7 @@ class ResponseCreateView(OrganizerRequiredMixin, View):
         return render(
             request,
             "logistics/response_create.html",
-            {"event": self.event, "logistics_form": lf, "form": form},
+            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form},
         )
 
 
