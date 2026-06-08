@@ -4,10 +4,9 @@
 {% block content %}
 <div class="page-header">
   <h1>Budget</h1>
-  <div class="actions">
-    <a href="{% url 'logistics:index' event_slug=event.slug %}" class="btn ghost sm">← Logistique</a>
-  </div>
 </div>
+
+{% include "logistics/_nav.html" with active="budget" %}
 
 <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
 

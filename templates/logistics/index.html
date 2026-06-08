@@ -4,9 +4,24 @@
 {% block content %}
 <div class="page-header">
   <h1>Logistique</h1>
-  <div class="actions">
-    <a href="{% url 'logistics:budget' event_slug=event.slug %}" class="btn ghost sm">Budget</a>
-    <a href="{% url 'logistics:reimbursements' event_slug=event.slug %}" class="btn ghost sm">Remboursements</a>
+</div>
+
+{% include "logistics/_nav.html" with active="index" %}
+
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.25rem">
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.6rem; font-weight:700; color:#2563eb">{{ logistics_forms|length }}</div>
+    <div class="text-muted text-sm">formulaire{{ logistics_forms|length|pluralize }}</div>
+  </div>
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.6rem; font-weight:700; {% if stat_pending_responses %}color:#d97706{% endif %}">
+      {{ stat_pending_responses }}
+    </div>
+    <div class="text-muted text-sm">réponse{{ stat_pending_responses|pluralize }} en attente</div>
+  </div>
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.6rem; font-weight:700">{{ stat_total_reimbursements }} €</div>
+    <div class="text-muted text-sm">remboursements</div>
   </div>
 </div>
 
@@ -52,6 +67,19 @@
     </div>
     {% else %}
     <div class="empty-state">Aucun formulaire. Créez-en un ci-contre.</div>
+    {% endif %}
+
+    {% if stat_budget_planned %}
+    <div class="card" style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center">
+      <div>
+        <div style="font-weight:600">Budget</div>
+        <div class="text-muted text-sm">
+          Prévu : {{ stat_budget_planned }} €
+          {% if stat_budget_actual %} · Réel : {{ stat_budget_actual }} €{% endif %}
+        </div>
+      </div>
+      <a href="{% url 'logistics:budget' event_slug=event.slug %}" class="btn ghost sm">Voir →</a>
+    </div>
     {% endif %}
   </div>
 

@@ -3,7 +3,7 @@ import json
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -42,18 +42,44 @@ def _get_lf(event, form_id):
 
 
 class LogisticsIndexView(OrganizerRequiredMixin, View):
+    def _stats(self):
+        from decimal import Decimal
+        zero = Decimal("0.00")
+        pending = LogisticsResponse.objects.filter(
+            form__event=self.event, is_complete=False
+        ).count()
+        total_reimbursements = (
+            self.event.reimbursements.aggregate(s=Sum("amount"))["s"] or zero
+        )
+        budget_planned = (
+            self.event.budget_lines.aggregate(s=Sum("amount_planned"))["s"] or zero
+        )
+        budget_actual = (
+            self.event.budget_lines
+            .filter(amount_actual__isnull=False)
+            .aggregate(s=Sum("amount_actual"))["s"] or zero
+        )
+        return {
+            "stat_pending_responses": pending,
+            "stat_total_reimbursements": total_reimbursements,
+            "stat_budget_planned": budget_planned,
+            "stat_budget_actual": budget_actual,
+        }
+
     def get(self, request, event_slug):
         logistics_forms = (
             self.event.logistics_forms
             .annotate(response_count=Count("responses"))
             .order_by("created_at")
         )
-        return render(request, "logistics/index.html", {
+        ctx = {
             "event": self.event,
             "membership": self.membership,
             "logistics_forms": logistics_forms,
             "create_form": LogisticsFormSettingsForm(),
-        })
+        }
+        ctx.update(self._stats())
+        return render(request, "logistics/index.html", ctx)
 
     def post(self, request, event_slug):
         form = LogisticsFormSettingsForm(request.POST)
@@ -63,12 +89,14 @@ class LogisticsIndexView(OrganizerRequiredMixin, View):
             lf.save()
             messages.success(request, "Formulaire créé.")
             return redirect("logistics:settings", event_slug=event_slug, form_id=lf.pk)
-        return render(request, "logistics/index.html", {
+        ctx = {
             "event": self.event,
             "membership": self.membership,
             "logistics_forms": self.event.logistics_forms.order_by("created_at"),
             "create_form": form,
-        })
+        }
+        ctx.update(self._stats())
+        return render(request, "logistics/index.html", ctx)
 
 
 # ---------------------------------------------------------------------------

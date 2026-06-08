@@ -6,9 +6,10 @@
   <h1>Remboursements</h1>
   <div class="actions">
     <a href="{% url 'logistics:reimbursement_export' event_slug=event.slug %}" class="btn ghost sm">↓ Export CSV</a>
-    <a href="{% url 'logistics:index' event_slug=event.slug %}" class="btn ghost sm">← Logistique</a>
   </div>
 </div>
+
+{% include "logistics/_nav.html" with active="reimbursements" %}
 
 <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
 
