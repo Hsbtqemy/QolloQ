@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Réponses logistiques — {{ event.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Réponses logistiques</h1>
+  <div class="actions">
+    {% if membership.is_organizer %}
+    <form method="post" action="{% url 'logistics:send_all_links' event_slug=event.slug %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="btn ghost sm" onclick="return confirm('Envoyer le lien à tous les intervenants sans réponse ?')">
+        Envoyer tous les liens
+      </button>
+    </form>
+    <a href="{% url 'logistics:response_create' event_slug=event.slug %}" class="btn ghost sm">+ Ajouter</a>
+    <a href="{% url 'logistics:settings' event_slug=event.slug %}" class="btn ghost sm">Configurer le formulaire</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if responses %}
+<div class="card" style="padding:0;overflow:hidden">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Proposition liée</th>
+        <th>Statut</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for resp in responses %}
+      <tr>
+        <td><a href="{% url 'logistics:response_detail' event_slug=event.slug response_id=resp.pk %}">{{ resp.respondent_name }}</a></td>
+        <td class="text-muted">{{ resp.respondent_email }}</td>
+        <td class="text-muted">{{ resp.proposal.title|default:"—" }}</td>
+        <td>
+          <span class="badge {% if resp.is_complete %}complete{% else %}pending{% endif %}">
+            {% if resp.is_complete %}Complète{% else %}En attente{% endif %}
+          </span>
+        </td>
+        <td class="actions">
+          {% if membership.is_organizer %}
+          <form method="post" action="{% url 'logistics:send_link' event_slug=event.slug response_id=resp.pk %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn ghost sm">Envoyer le lien</button>
+          </form>
+          <form method="post" action="{% url 'logistics:response_delete' event_slug=event.slug response_id=resp.pk %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ?')">✕</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">Aucune entrée. Ajoutez des intervenants ou configurez le formulaire.</div>
+{% endif %}
+{% endblock %}

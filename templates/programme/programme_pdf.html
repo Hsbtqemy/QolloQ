@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Programme — {{ event.name }}</title>
+<style>
+  @page {
+    margin: 2cm 2.2cm;
+    @bottom-center {
+      content: counter(page) " / " counter(pages);
+      font-size: 9pt;
+      color: #888;
+    }
+  }
+
+  body {
+    font-family: "DejaVu Sans", sans-serif;
+    font-size: 10pt;
+    color: #111;
+    line-height: 1.4;
+  }
+
+  h1 { font-size: 18pt; margin: 0 0 .2rem; }
+  h2 { font-size: 12pt; margin: 1.4rem 0 .5rem; color: #1e3a5f; border-bottom: 1.5px solid #1e3a5f; padding-bottom: .2rem; }
+
+  .event-meta { font-size: 9.5pt; color: #555; margin-bottom: 1.5rem; }
+
+  .session {
+    margin-bottom: .9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    page-break-inside: avoid;
+  }
+  .session-head {
+    background: #f1f5f9;
+    padding: .35rem .6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-radius: 4px 4px 0 0;
+  }
+  .session-title { font-weight: 700; font-size: 10pt; }
+  .session-time { font-size: 9pt; color: #555; white-space: nowrap; margin-left: .5rem; }
+  .session-meta { font-size: 8.5pt; color: #666; padding: .15rem .6rem .1rem; border-bottom: 1px solid #e5e7eb; }
+
+  .comm {
+    display: flex;
+    padding: .25rem .6rem;
+    border-bottom: 1px solid #f3f4f6;
+    gap: .4rem;
+  }
+  .comm:last-child { border-bottom: none; }
+  .comm-duration { font-size: 8.5pt; color: #888; white-space: nowrap; min-width: 2.5rem; }
+  .comm-body { flex: 1; }
+  .comm-title { font-size: 9.5pt; }
+  .comm-speaker { font-size: 8.5pt; color: #555; }
+
+  .annex {
+    margin-bottom: .5rem;
+    padding: .3rem .6rem;
+    background: #fafafa;
+    border-left: 3px solid #cbd5e1;
+    page-break-inside: avoid;
+  }
+  .annex-label { font-weight: 600; font-size: 9.5pt; }
+  .annex-time { font-size: 8.5pt; color: #777; }
+  .annex-kind { font-size: 8pt; color: #999; margin-left: .4rem; }
+</style>
+</head>
+<body>
+
+<h1>{{ event.name }}</h1>
+<div class="event-meta">
+  {{ event.start_date|date:"j F Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"j F Y" }}{% endif %}{% if event.location %} · {{ event.location }}{% endif %}
+</div>
+
+{% for day_data in programme %}
+<h2>{{ day_data.date|date:"l j F Y"|capfirst }}</h2>
+
+{% for item in day_data.items %}
+
+  {% if item.kind == 'session' %}{% with s=item.obj %}
+  <div class="session">
+    <div class="session-head">
+      <span class="session-title">{{ s.title|default:"Session" }}</span>
+      <span class="session-time">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}{% if s.location %} · {{ s.location }}{% endif %}</span>
+    </div>
+    {% if s.moderator %}
+    <div class="session-meta">Modération : {{ s.moderator }}</div>
+    {% endif %}
+    {% for comm in s.communications.all %}
+    <div class="comm">
+      <div class="comm-duration">{{ comm.duration }} min</div>
+      <div class="comm-body">
+        {% if comm.speaker_name %}<div class="comm-speaker">{{ comm.speaker_name }}</div>{% endif %}
+        <div class="comm-title">{{ comm.title }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endwith %}{% endif %}
+
+  {% if item.kind == 'annex' %}{% with a=item.obj %}
+  <div class="annex">
+    <span class="annex-time">{{ a.start_time|time:"H:i" }} – {{ a.end_time|time:"H:i" }}</span>
+    <span class="annex-label"> {{ a.label }}</span>
+    <span class="annex-kind">{{ a.get_kind_display }}</span>
+    {% if a.description %}<div style="font-size:8.5pt;color:#666;margin-top:.15rem">{{ a.description }}</div>{% endif %}
+  </div>
+  {% endwith %}{% endif %}
+
+{% empty %}
+<p style="color:#888;font-size:9pt">Aucun item pour ce jour.</p>
+{% endfor %}
+
+{% endfor %}
+
+</body>
+</html>

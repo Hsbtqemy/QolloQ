@@ -1,0 +1,67 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}QolloQ{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="app-layout" x-data>
+  <nav class="app-sidebar">
+    <a class="sidebar-brand" href="{% url 'events:home' %}">QolloQ</a>
+
+    {% if user_events %}
+    <div class="sidebar-section">
+      <span class="sidebar-label">Mes événements</span>
+      {% for ev in user_events %}
+        <a class="sidebar-link {% if event.pk == ev.pk %}active{% endif %}"
+           href="{% url 'events:detail' event_slug=ev.slug %}">{{ ev.name }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if event %}
+    <div class="sidebar-section">
+      <span class="sidebar-label">{{ event.name|truncatechars:24 }}</span>
+      <a class="sidebar-link {% if request.resolver_match.app_name == 'submissions' %}active{% endif %}"
+         href="{% url 'submissions:list' event_slug=event.slug %}">Soumissions</a>
+      <a class="sidebar-link {% if request.resolver_match.app_name == 'programme' %}active{% endif %}"
+         href="{% url 'programme:programme' event_slug=event.slug %}">Programme</a>
+      <a class="sidebar-link {% if request.resolver_match.app_name == 'logistics' %}active{% endif %}"
+         href="{% url 'logistics:response_list' event_slug=event.slug %}">Logistique</a>
+      <a class="sidebar-link {% if request.resolver_match.app_name == 'emails' %}active{% endif %}"
+         href="{% url 'emails:campaign_list' event_slug=event.slug %}">Emails</a>
+      {% if membership.is_organizer %}
+      <a class="sidebar-link {% if request.resolver_match.app_name == 'events' and request.resolver_match.url_name == 'settings' %}active{% endif %}"
+         href="{% url 'events:settings' event_slug=event.slug %}">Paramètres</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="sidebar-footer">
+      <div>{{ user.get_full_name|default:user.email }}</div>
+      <a href="{% url 'account_logout' %}">Se déconnecter</a>
+    </div>
+  </nav>
+
+  <div class="app-main">
+    {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="page-content{% block content_wide %} {% endblock %}">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

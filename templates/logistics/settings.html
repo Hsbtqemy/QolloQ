@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Logistique — {{ event.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Formulaire logistique</h1>
+  <div class="actions">
+    <a href="{% url 'logistics:response_list' event_slug=event.slug %}" class="btn ghost sm">Voir les réponses</a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+
+  <div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Paramètres</h2>
+        <span class="badge {% if logistics_form.is_open %}open{% else %}closed{% endif %}">
+          {% if logistics_form.is_open %}Ouvert{% else %}Fermé{% endif %}
+        </span>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="field{% if field.field.widget.input_type == 'checkbox' %}-checkbox{% endif %}">
+          {% if field.field.widget.input_type == 'checkbox' %}
+            {{ field }}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {% else %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+          {% endif %}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn primary sm">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Champs du formulaire</h3>
+        <span class="text-muted text-sm">{{ fields|length }} champ{{ fields|length|pluralize }}</span>
+      </div>
+      <div class="panel-body" id="field-list">
+        {% for field in fields %}
+        <div class="logistics-field-row" data-id="{{ field.pk }}">
+          <span class="logistics-field-handle">⠿</span>
+          <span class="logistics-field-label">{{ field.label }}</span>
+          <span class="logistics-field-kind">{{ field.get_kind_display }}</span>
+          {% if field.required %}<span class="logistics-field-required">requis</span>{% endif %}
+          <div class="btn-group" style="margin-left:auto">
+            <a href="{% url 'logistics:field_edit' event_slug=event.slug field_id=field.pk %}" class="btn ghost sm">Modifier</a>
+            <form method="post" action="{% url 'logistics:field_delete' event_slug=event.slug field_id=field.pk %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ce champ ?')">✕</button>
+            </form>
+          </div>
+        </div>
+        {% empty %}
+        <p class="empty-state">Aucun champ configuré. Ajoutez-en un ci-contre.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card" x-data="{ open: false }">
+    <h3>Ajouter un champ</h3>
+    <form method="post" action="{% url 'logistics:field_create' event_slug=event.slug %}">
+      {% csrf_token %}
+      <div class="field">
+        <label>Intitulé <span class="req">*</span></label>
+        <input type="text" name="label" required>
+      </div>
+      <div class="field">
+        <label>Type <span class="req">*</span></label>
+        <select name="kind" @change="open = ['choice','multichoice'].includes($event.target.value)">
+          <option value="">— Choisir —</option>
+          <option value="text">Texte court</option>
+          <option value="textarea">Texte long</option>
+          <option value="boolean">Oui / Non</option>
+          <option value="choice">Choix unique</option>
+          <option value="multichoice">Choix multiple</option>
+          <option value="date">Date</option>
+          <option value="time">Heure</option>
+        </select>
+      </div>
+      <div class="field" x-show="open">
+        <label>Options <span class="req">*</span></label>
+        <textarea name="options_text" rows="4" placeholder="Une option par ligne"></textarea>
+      </div>
+      <div class="field">
+        <label>Texte d'aide</label>
+        <input type="text" name="help_text">
+      </div>
+      <div class="field-checkbox">
+        <input type="checkbox" name="required" id="field-required">
+        <label for="field-required">Obligatoire</label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary sm">Ajouter</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+const el = document.getElementById("field-list");
+if (el) {
+  Sortable.create(el, {
+    animation: 150,
+    handle: ".logistics-field-handle",
+    onEnd() {
+      const items = [...el.querySelectorAll(".logistics-field-row")].map((r, i) => ({
+        id: parseInt(r.dataset.id), order: i + 1
+      }));
+      fetch("{% url 'logistics:field_reorder' event_slug=event.slug %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify(items)
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+Bonjour,
+
+Pour activer votre compte QolloQ, confirmez votre adresse email en cliquant
+sur le lien ci-dessous :
+
+{{ activate_url }}
+
+Ce lien est valable 3 jours. Si vous n'avez pas créé de compte, ignorez ce message.
+
+L'équipe QolloQ

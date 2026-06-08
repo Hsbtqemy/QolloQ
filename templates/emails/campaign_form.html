@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{% if campaign %}Modifier{% else %}Nouvelle campagne{% endif %} — {{ event.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>{% if campaign %}Modifier la campagne{% else %}Nouvelle campagne{% endif %}</h1>
+  <div class="actions">
+    <a href="{% if campaign %}{% url 'emails:campaign_detail' event_slug=event.slug pk=campaign.pk %}{% else %}{% url 'emails:campaign_list' event_slug=event.slug %}{% endif %}" class="btn ghost sm">← Retour</a>
+  </div>
+</div>
+
+<div class="card" style="max-width:640px">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">
+        {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+      </label>
+      {{ field }}
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn primary">{% if campaign %}Enregistrer{% else %}Créer la campagne{% endif %}</button>
+      <a href="{% if campaign %}{% url 'emails:campaign_detail' event_slug=event.slug pk=campaign.pk %}{% else %}{% url 'emails:campaign_list' event_slug=event.slug %}{% endif %}" class="btn ghost">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

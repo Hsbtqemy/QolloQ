@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Emails — {{ event.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Campagnes email</h1>
+  <div class="actions">
+    <a href="{% url 'emails:campaign_create' event_slug=event.slug %}" class="btn primary">+ Nouvelle campagne</a>
+  </div>
+</div>
+
+{% if campaigns %}
+<div class="card" style="padding:0;overflow:hidden">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Objet</th>
+        <th>Destinataires</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in campaigns %}
+      <tr>
+        <td><a href="{% url 'emails:campaign_detail' event_slug=event.slug pk=c.pk %}">{{ c.subject }}</a></td>
+        <td class="text-muted">{{ c.get_audience_display }}</td>
+        <td>
+          {% if c.is_sent %}
+          <span class="badge sent">Envoyée ({{ c.sent_count }})</span>
+          {% else %}
+          <span class="badge draft">Brouillon</span>
+          {% endif %}
+        </td>
+        <td class="text-muted">{% if c.is_sent %}{{ c.sent_at|date:"j F Y" }}{% else %}—{% endif %}</td>
+        <td class="actions">
+          <a href="{% url 'emails:campaign_detail' event_slug=event.slug pk=c.pk %}" class="btn ghost sm">Voir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">Aucune campagne. Créez-en une pour commencer.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Accueil — QolloQ{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Mes événements</h1>
+  <div class="actions">
+    <a href="{% url 'events:create' %}" class="btn primary">+ Nouvel événement</a>
+  </div>
+</div>
+
+{% if events %}
+<div class="card" style="padding:0; overflow:hidden;">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Dates</th>
+        <th>Lieu</th>
+        <th>Rôle</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ev in events %}
+      <tr>
+        <td><a href="{% url 'events:detail' event_slug=ev.slug %}">{{ ev.name }}</a></td>
+        <td class="text-muted">{{ ev.start_date|date:"j M Y" }}{% if ev.end_date != ev.start_date %} – {{ ev.end_date|date:"j M Y" }}{% endif %}</td>
+        <td class="text-muted">{{ ev.location|default:"—" }}</td>
+        <td>
+          {% for m in ev.memberships.all %}{% if m.user == user %}{{ m.get_role_display }}{% endif %}{% endfor %}
+        </td>
+        <td class="actions">
+          <a href="{% url 'events:detail' event_slug=ev.slug %}" class="btn ghost sm">Ouvrir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>Vous n'avez encore aucun événement.</p>
+  <a href="{% url 'events:create' %}" class="btn primary">Créer un événement</a>
+</div>
+{% endif %}
+{% endblock %}

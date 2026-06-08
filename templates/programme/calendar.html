@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Calendrier — {{ event.name }}{% endblock %}
+{% block content_wide %} wide{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Calendrier</h1>
+  <div class="actions">
+    {% if membership.is_organizer %}
+    <a href="{% url 'programme:programme' event_slug=event.slug %}" class="btn ghost sm">Vue programme</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if programme %}
+{% for day_data in programme %}
+<h2>{{ day_data.date|date:"l j F Y" }}</h2>
+{% if day_data.items %}
+<div style="overflow-x:auto; margin-bottom:1.5rem">
+  <table class="data">
+    <thead>
+      <tr>
+        <th style="width:90px">Heure</th>
+        <th>Titre</th>
+        <th>Type</th>
+        <th>Lieu</th>
+        <th>Durée</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in day_data.items %}
+      <tr>
+        <td class="text-muted">{{ item.start|time:"H:i" }} – {{ item.end|time:"H:i" }}</td>
+        {% if item.kind == 'session' %}
+        <td>
+          <strong>{{ item.obj.title }}</strong>
+          {% if item.obj.moderator %}<div class="text-muted text-sm">Modération : {{ item.obj.moderator }}</div>{% endif %}
+          {% for comm in item.obj.communications.all %}
+          <div class="text-sm" style="padding:.1rem 0 .1rem .5rem; border-left:2px solid #e5e7eb; margin:.2rem 0">
+            {{ comm.speaker_name }} — {{ comm.title }} ({{ comm.duration }} min)
+          </div>
+          {% endfor %}
+        </td>
+        <td><span class="badge draft">Session</span></td>
+        <td class="text-muted">{{ item.obj.location|default:"—" }}</td>
+        <td class="text-muted">{{ item.obj.duration_minutes }} min</td>
+        {% else %}
+        <td>{{ item.obj.label }}{% if item.obj.description %}<div class="text-muted text-sm">{{ item.obj.description }}</div>{% endif %}</td>
+        <td><span class="badge submitted">{{ item.obj.get_kind_display }}</span></td>
+        <td class="text-muted">—</td>
+        <td class="text-muted">{{ item.obj.duration_minutes }} min</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-muted text-sm">Aucun item pour ce jour.</p>
+{% endif %}
+{% endfor %}
+{% else %}
+<div class="empty-state">Aucun programme défini.</div>
+{% endif %}
+{% endblock %}

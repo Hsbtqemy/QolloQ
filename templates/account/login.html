@@ -1,0 +1,41 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion — QolloQ</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<div class="public-layout">
+  <header class="public-header">
+    <span class="public-brand">QolloQ</span>
+  </header>
+  <main class="public-main">
+    <div class="public-card">
+      <h1>Connexion</h1>
+      <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+        <div class="message error">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Se connecter</button>
+        </div>
+      </form>
+      <p class="text-muted" style="margin-top:1rem">
+        <a href="{% url 'account_reset_password' %}">Mot de passe oublié ?</a>
+      </p>
+    </div>
+  </main>
+</div>
+</body>
+</html>

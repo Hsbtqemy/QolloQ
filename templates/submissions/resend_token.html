@@ -1,0 +1,37 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Retrouver mon lien — {{ event.name }}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<div class="public-layout">
+  <header class="public-header">
+    <span class="public-brand">QolloQ</span>
+    <span class="public-event-name">{{ event.name }}</span>
+  </header>
+  <main class="public-main">
+    <div class="public-card">
+      <h1>Retrouver mon lien</h1>
+      <p class="text-muted">Saisissez l'adresse email utilisée lors de votre soumission. Si une proposition existe, un lien vous sera envoyé.</p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Envoyer le lien</button>
+          <a href="{% url 'submissions:public_submit' event_slug=event.slug %}" class="btn ghost">Retour</a>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+</body>
+</html>

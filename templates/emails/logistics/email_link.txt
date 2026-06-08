@@ -1,0 +1,19 @@
+Bonjour {{ response.respondent_name }},
+
+Vous êtes invité·e à remplir le formulaire logistique de l'événement « {{ event.name }} ».
+
+Accédez à votre formulaire via le lien suivant :
+
+{{ token_url }}
+
+Ce lien vous est personnel. Vous pouvez revenir le compléter à tout moment.
+
+{% if logistics_form.deadline %}La date limite de réponse est le {{ logistics_form.deadline|date:"j F Y à H:i" }}.{% endif %}
+
+{% if logistics_form.instructions %}
+---
+{{ logistics_form.instructions }}
+{% endif %}
+
+Cordialement,
+L'équipe d'organisation — {{ event.name }}

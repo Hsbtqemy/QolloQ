@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programme — {{ event.name }}</title>
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <h1 class="site-title">{{ event.name }}</h1>
+    <p class="site-meta">
+      {{ event.start_date|date:"j F Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"j F Y" }}{% endif %}
+      {% if event.location %} &middot; {{ event.location }}{% endif %}
+    </p>
+  </div>
+</header>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="./index.html" class="nav-link">Accueil</a>
+    <a href="./programme.html" class="nav-link active">Programme</a>
+    <a href="./intervenants.html" class="nav-link">Intervenant·es</a>
+  </div>
+</nav>
+
+<main class="container">
+  <h2 class="page-title">Programme</h2>
+
+  {% for day_data in programme %}
+  <section class="prog-day">
+    <h3 class="day-title">{{ day_data.date|date:"l j F Y"|capfirst }}</h3>
+
+    {% for item in day_data.items %}
+
+      {% if item.kind == 'session' %}{% with s=item.obj %}
+      <div class="pub-session">
+        <div class="pub-session-head">
+          <span class="pub-time">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</span>
+          <span class="pub-session-title">{{ s.title|default:"Session" }}</span>
+          {% if s.location %}<span class="pub-location"> · {{ s.location }}</span>{% endif %}
+        </div>
+        {% if s.moderator %}<div class="pub-moderator">Modération : {{ s.moderator }}</div>{% endif %}
+        {% for comm in s.communications.all %}
+        <div class="pub-comm">
+          {% if comm.speaker_name %}<div class="pub-comm-speaker">{{ comm.speaker_name }}</div>{% endif %}
+          <div class="pub-comm-title">{{ comm.title }}</div>
+          <div class="pub-comm-duration">{{ comm.duration }} min</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endwith %}{% endif %}
+
+      {% if item.kind == 'annex' %}{% with a=item.obj %}
+      <div class="pub-annex">
+        <span class="pub-time">{{ a.start_time|time:"H:i" }} – {{ a.end_time|time:"H:i" }}</span>
+        <span class="pub-annex-label">{{ a.label }}</span>
+        <span class="pub-annex-kind">{{ a.get_kind_display }}</span>
+      </div>
+      {% endwith %}{% endif %}
+
+    {% empty %}
+    <p class="empty">Programme à venir.</p>
+    {% endfor %}
+  </section>
+  {% empty %}
+  <p class="empty">Programme à venir.</p>
+  {% endfor %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">Généré avec QolloQ</div>
+</footer>
+</body>
+</html>

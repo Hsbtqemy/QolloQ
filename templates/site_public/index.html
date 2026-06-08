@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ event.name }}</title>
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <h1 class="site-title">{{ event.name }}</h1>
+    <p class="site-meta">
+      {{ event.start_date|date:"j F Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"j F Y" }}{% endif %}
+      {% if event.location %} &middot; {{ event.location }}{% endif %}
+    </p>
+  </div>
+</header>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="./index.html" class="nav-link active">Accueil</a>
+    <a href="./programme.html" class="nav-link">Programme</a>
+    <a href="./intervenants.html" class="nav-link">Intervenant·es</a>
+  </div>
+</nav>
+
+<main class="container">
+
+  {% if event.description %}
+  <section class="site-section">
+    <h2>Présentation</h2>
+    <div class="prose">{{ event.description|linebreaks }}</div>
+  </section>
+  {% endif %}
+
+  <section class="site-section site-cards">
+    <a href="./programme.html" class="site-card">
+      <h3>Programme</h3>
+      <p>Consultez le déroulé de l'événement, les sessions et les communications.</p>
+    </a>
+    <a href="./intervenants.html" class="site-card">
+      <h3>Intervenant·es</h3>
+      <p>Découvrez les participant·es et leurs résumés de communication.</p>
+    </a>
+  </section>
+
+  {% if submission_url %}
+  <section class="site-section">
+    <div class="callout">
+      <h3>Soumettre une proposition</h3>
+      <p>Les soumissions sont ouvertes.{% if event.submission_deadline %} Date limite : {{ event.submission_deadline|date:"j F Y à H:i" }}.{% endif %}</p>
+      <a href="{{ submission_url }}" class="btn-primary">Déposer une proposition</a>
+    </div>
+  </section>
+  {% endif %}
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">Généré avec QolloQ</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ proposal.title }} — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ proposal.title }}</h1>
+    <div class="page-meta">
+      {% for author in proposal.authors.all %}
+        {{ author.first_name }} {{ author.last_name }}{% if author.institution %} ({{ author.institution }}){% endif %}{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  <div class="actions">
+    <a href="{% url 'submissions:list' event_slug=event.slug %}" class="btn ghost sm">← Liste</a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1rem; align-items:start">
+
+  <div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Proposition</h2>
+        <span class="badge {{ proposal.status }}" id="status-badge">{{ proposal.get_status_display }}</span>
+      </div>
+
+      {% if proposal.format %}<p class="text-muted text-sm">Format : {{ proposal.format }}</p>{% endif %}
+      {% if proposal.keywords %}<p class="text-muted text-sm">Mots-clés : {{ proposal.keywords }}</p>{% endif %}
+
+      <h3>Résumé</h3>
+      <p>{{ proposal.abstract }}</p>
+
+      {% if proposal.availability %}
+      <h3>Disponibilités</h3>
+      <p>{{ proposal.availability }}</p>
+      {% endif %}
+
+      <p class="text-muted text-sm">Soumis par {{ proposal.submitter_email }}</p>
+    </div>
+
+    {% if membership.is_organizer and organizer_form %}
+    <div class="panel" x-data="{ editOpen: false }">
+      <div class="panel-head">
+        <h3>Modifier la proposition</h3>
+        <button type="button" class="btn ghost sm" @click="editOpen = !editOpen">Modifier</button>
+      </div>
+      <div class="panel-body" x-show="editOpen" x-cloak>
+        <form method="post" action="{% url 'submissions:edit' event_slug=event.slug proposal_id=proposal.pk %}">
+          {% csrf_token %}
+          {% for field in organizer_form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          {% endfor %}
+          <div class="form-actions">
+            <button type="submit" class="btn primary sm">Enregistrer</button>
+            <button type="button" class="btn ghost sm" @click="editOpen = false">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-head"><h2>Évaluations</h2></div>
+
+      {% if evaluations %}
+      {% for eval in evaluations %}
+      <div style="border-bottom: 1px solid #f3f4f6; padding: .6rem 0;">
+        {% if not event.eval_anonymous or membership.is_organizer %}
+        <div class="text-sm" style="font-weight:500">{{ eval.evaluator.user.get_full_name|default:eval.evaluator.user.email }}</div>
+        {% else %}
+        <div class="text-sm text-muted">Évaluateur anonyme</div>
+        {% endif %}
+        <div class="eval-verdict {{ eval.verdict }}">
+          {{ eval.get_verdict_display }}
+        </div>
+        {% if eval.comment %}<p class="text-sm" style="margin-top:.3rem">{{ eval.comment }}</p>{% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-muted text-sm">Aucun avis déposé pour l'instant.</p>
+      {% endif %}
+
+      <hr class="sep">
+      <h3>Mon avis</h3>
+      <form method="post" action="{% url 'submissions:evaluate' event_slug=event.slug proposal_id=proposal.pk %}">
+        {% csrf_token %}
+        {% for field in eval_form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn primary sm">{% if own_evaluation %}Mettre à jour{% else %}Déposer mon avis{% endif %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div>
+    {% if membership.is_organizer %}
+    <div class="card"
+         x-data="{ status: '{{ proposal.status }}' }"
+         id="status-panel">
+      <h3>Statut</h3>
+      <div class="btn-group" style="flex-direction:column; align-items:stretch">
+        {% for val, label in status_choices %}
+        <button type="button"
+                class="btn {% if proposal.status == val %}primary{% else %}ghost{% endif %} sm"
+                @click="
+                  fetch('{% url 'submissions:status' event_slug=event.slug proposal_id=proposal.pk %}', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+                    body: JSON.stringify({status:'{{ val }}'})
+                  }).then(r=>r.json()).then(d=>{
+                    document.getElementById('status-badge').textContent = d.label;
+                    document.getElementById('status-badge').className = 'badge ' + d.status;
+                    $el.closest('[id=status-panel]').querySelectorAll('.btn').forEach(b=>b.classList.replace('primary','ghost'));
+                    $el.classList.replace('ghost','primary');
+                  })
+                ">{{ label }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

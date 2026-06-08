@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}Programme — {{ event.name }}{% endblock %}
+{% block content_wide %} wide{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Programme</h1>
+  <div class="actions">
+    <a href="{% url 'programme:calendar' event_slug=event.slug %}" class="btn ghost sm">Vue calendrier</a>
+    <a href="{% url 'programme:pdf' event_slug=event.slug %}" class="btn ghost sm">↓ PDF</a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 320px; gap:1.25rem; align-items:start">
+
+  <div>
+    {% for day_data in programme %}
+    <div class="prog-day">
+      <div class="prog-day-header">{{ day_data.date|date:"l j F Y" }}</div>
+
+      {% for item in day_data.items %}
+
+        {% if item.kind == 'session' %}{% with s=item.obj %}
+        <div class="prog-session">
+          <div class="prog-session-head">
+            <div>
+              <span class="prog-session-time">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</span>
+              <span class="prog-session-title" style="margin-left:.4rem">{{ s.title }}</span>
+              {% if s.location %}<span class="prog-session-loc"> · {{ s.location }}</span>{% endif %}
+            </div>
+            <div class="btn-group" x-data="{ editOpen: false }">
+              <button type="button" class="btn ghost sm" @click="editOpen = true">Modifier</button>
+              <form method="post" action="{% url 'programme:session_delete' event_slug=event.slug session_id=s.pk %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer cette session et ses communications ?')">✕</button>
+              </form>
+              <template x-teleport="body">
+                <div x-show="editOpen" class="modal-backdrop"
+                     @click.self="editOpen = false"
+                     @keydown.escape.window="editOpen = false"
+                     x-transition.opacity>
+                  <div class="modal wide">
+                    <div class="modal-head"><h3>Modifier la session</h3></div>
+                    <form method="post" action="{% url 'programme:session_update' event_slug=event.slug session_id=s.pk %}">
+                      {% csrf_token %}
+                      <div class="modal-body">
+                        <div class="field-row">
+                          <div class="field">
+                            <label>Date <span class="req">*</span></label>
+                            <input type="date" name="date" value="{{ s.date|date:'Y-m-d' }}" required>
+                          </div>
+                          <div class="field">
+                            <label>Lieu</label>
+                            <input type="text" name="location" value="{{ s.location }}">
+                          </div>
+                        </div>
+                        <div class="field">
+                          <label>Titre <span class="req">*</span></label>
+                          <input type="text" name="title" value="{{ s.title }}" required>
+                        </div>
+                        <div class="field-row">
+                          <div class="field">
+                            <label>Début <span class="req">*</span></label>
+                            <input type="time" name="start_time" value="{{ s.start_time|time:'H:i' }}" required>
+                          </div>
+                          <div class="field">
+                            <label>Fin <span class="req">*</span></label>
+                            <input type="time" name="end_time" value="{{ s.end_time|time:'H:i' }}" required>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <label>Modération</label>
+                          <input type="text" name="moderator" value="{{ s.moderator }}">
+                        </div>
+                      </div>
+                      <div class="modal-foot">
+                        <button type="button" class="btn ghost" @click="editOpen = false">Annuler</button>
+                        <button type="submit" class="btn primary">Enregistrer</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="prog-comms" id="comms-{{ s.pk }}" data-session="{{ s.pk }}">
+            {% for comm in s.communications.all %}
+            <div class="prog-comm" data-id="{{ comm.pk }}">
+              <span class="prog-comm-handle">⠿</span>
+              <span class="prog-comm-name">
+                <strong>{{ comm.speaker_name }}</strong> — {{ comm.title }}
+                {% if comm.proposal %}<span class="badge accepted" style="font-size:.7rem">lié</span>{% endif %}
+              </span>
+              <span class="prog-comm-duration">{{ comm.duration }} min</span>
+              <form method="post" action="{% url 'programme:comm_delete' event_slug=event.slug comm_id=comm.pk %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ?')">✕</button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div style="padding:.4rem .85rem .65rem" x-data="{ addOpen: false }">
+            <button type="button" class="btn ghost sm" @click="addOpen = true">+ Communication</button>
+            <template x-teleport="body">
+              <div x-show="addOpen" class="modal-backdrop"
+                   @click.self="addOpen = false"
+                   @keydown.escape.window="addOpen = false"
+                   x-transition.opacity>
+                <div class="modal wide">
+                  <div class="modal-head"><h3>Ajouter une communication</h3></div>
+                  <form method="post" action="{% url 'programme:comm_create' event_slug=event.slug session_id=s.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                      {% for field in comm_form %}
+                      <div class="field">
+                        <label>{{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+                        {{ field }}
+                        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                    <div class="modal-foot">
+                      <button type="button" class="btn ghost" @click="addOpen = false">Annuler</button>
+                      <button type="submit" class="btn primary">Ajouter</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+        {% endwith %}{% endif %}
+
+        {% if item.kind == 'annex' %}{% with a=item.obj %}
+        <div class="prog-annex" x-data="{ editOpen: false }">
+          <span class="prog-annex-time">{{ a.start_time|time:"H:i" }} – {{ a.end_time|time:"H:i" }}</span>
+          <span class="prog-annex-label">{{ a.label }}</span>
+          <span class="prog-annex-kind">{{ a.get_kind_display }}</span>
+          <div class="btn-group" style="margin-left:auto">
+            <button type="button" class="btn ghost sm" @click="editOpen = true">✎</button>
+            <form method="post" action="{% url 'programme:annex_delete' event_slug=event.slug annex_id=a.pk %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ?')">✕</button>
+            </form>
+          </div>
+          <template x-teleport="body">
+            <div x-show="editOpen" class="modal-backdrop"
+                 @click.self="editOpen = false"
+                 @keydown.escape.window="editOpen = false"
+                 x-transition.opacity>
+              <div class="modal wide">
+                <div class="modal-head"><h3>Modifier l'événement annexe</h3></div>
+                <form method="post" action="{% url 'programme:annex_update' event_slug=event.slug annex_id=a.pk %}">
+                  {% csrf_token %}
+                  <div class="modal-body">
+                    <div class="field"><label>Date</label><input type="date" name="date" value="{{ a.date|date:'Y-m-d' }}" required></div>
+                    <div class="field"><label>Intitulé</label><input type="text" name="label" value="{{ a.label }}" required></div>
+                    <div class="field-row">
+                      <div class="field"><label>Début</label><input type="time" name="start_time" value="{{ a.start_time|time:'H:i' }}" required></div>
+                      <div class="field"><label>Fin</label><input type="time" name="end_time" value="{{ a.end_time|time:'H:i' }}" required></div>
+                    </div>
+                    <div class="field"><label>Type</label>
+                      <select name="kind">
+                        {% for val, lbl in annex_form.fields.kind.choices %}
+                        <option value="{{ val }}" {% if a.kind == val %}selected{% endif %}>{{ lbl }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div class="field"><label>Description</label><textarea name="description" rows="3">{{ a.description }}</textarea></div>
+                  </div>
+                  <div class="modal-foot">
+                    <button type="button" class="btn ghost" @click="editOpen = false">Annuler</button>
+                    <button type="submit" class="btn primary">Enregistrer</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </template>
+        </div>
+        {% endwith %}{% endif %}
+
+      {% empty %}
+      <p class="text-muted text-sm" style="padding:.5rem 0">Aucun item pour ce jour.</p>
+      {% endfor %}
+    </div>
+    {% empty %}
+    <div class="empty-state">Les dates de l'événement ne couvrent aucun jour.</div>
+    {% endfor %}
+  </div>
+
+  <div>
+    <div class="card">
+      <h3>Nouvelle session</h3>
+      <form method="post" action="{% url 'programme:session_create' event_slug=event.slug %}">
+        {% csrf_token %}
+        {% for field in session_form %}
+        <div class="field">
+          <label>{{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn primary sm">Créer la session</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Événement annexe</h3>
+      <form method="post" action="{% url 'programme:annex_create' event_slug=event.slug %}">
+        {% csrf_token %}
+        {% for field in annex_form %}
+        <div class="field">
+          <label>{{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn primary sm">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+const slug = "{{ event.slug }}";
+document.querySelectorAll("[id^='comms-']").forEach(el => {
+  Sortable.create(el, {
+    animation: 150,
+    handle: ".prog-comm-handle",
+    onEnd() {
+      const sessionId = el.dataset.session;
+      const items = [...el.querySelectorAll(".prog-comm")].map((r, i) => ({
+        id: parseInt(r.dataset.id), order: i + 1, session_id: parseInt(sessionId)
+      }));
+      fetch(`/evenements/${slug}/programme/communications/reorder/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify(items)
+      });
+    }
+  });
+});
+</script>
+{% endblock %}

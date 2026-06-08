@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Soumissions — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Soumissions</h1>
+  <div class="actions">
+    {% if membership.is_organizer %}
+    <a href="{% url 'submissions:create' event_slug=event.slug %}" class="btn ghost sm">+ Saisie directe</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if proposals %}
+<div class="card" style="padding:0; overflow:hidden">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Auteur·ices</th>
+        <th>Format</th>
+        <th>Statut</th>
+        <th>Avis</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for proposal in proposals %}
+      <tr>
+        <td><a href="{% url 'submissions:detail' event_slug=event.slug proposal_id=proposal.pk %}">{{ proposal.title }}</a></td>
+        <td class="text-muted">
+          {% for author in proposal.authors.all %}{{ author.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </td>
+        <td class="text-muted">{{ proposal.format|default:"—" }}</td>
+        <td><span class="badge {{ proposal.status }}">{{ proposal.get_status_display }}</span></td>
+        <td class="text-muted">{{ proposal.evaluations.count }}</td>
+        <td class="actions">
+          <a href="{% url 'submissions:detail' event_slug=event.slug proposal_id=proposal.pk %}" class="btn ghost sm">Voir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">Aucune soumission pour le moment.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,86 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Soumettre une proposition — {{ event.name }}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body x-data>
+<div class="public-layout">
+  <header class="public-header">
+    <span class="public-brand">QolloQ</span>
+    <span class="public-event-name">{{ event.name }}</span>
+  </header>
+  <main class="public-main" style="max-width:700px">
+    <div class="public-card">
+      <h1>Soumettre une proposition</h1>
+      {% if event.submission_deadline %}
+      <p class="text-muted">Date limite : {{ event.submission_deadline|date:"j F Y à H:i" }}</p>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <h3>Votre proposition</h3>
+        {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+
+        <hr class="sep">
+        <h3>Auteur·ices</h3>
+        {{ author_formset.management_form }}
+        {% for af in author_formset %}
+        <div class="formset-item" id="author-{{ forloop.counter0 }}">
+          <div class="field-row three">
+            <div class="field">
+              <label>Prénom</label>
+              {{ af.first_name }}
+              {% if af.first_name.errors %}<ul class="errorlist">{% for e in af.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            <div class="field">
+              <label>Nom</label>
+              {{ af.last_name }}
+              {% if af.last_name.errors %}<ul class="errorlist">{% for e in af.last_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            <div class="field">
+              <label>Email</label>
+              {{ af.email }}
+            </div>
+          </div>
+          <div class="field">
+            <label>Institution</label>
+            {{ af.institution }}
+          </div>
+          {{ af.order }}
+          {% if author_formset.can_delete %}
+          <div class="formset-remove">
+            <label class="field-checkbox">
+              {{ af.DELETE }} <span class="text-muted text-sm">Supprimer cet auteur</span>
+            </label>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Envoyer ma proposition</button>
+        </div>
+      </form>
+    </div>
+
+    <p class="text-muted text-sm" style="text-align:center; margin-top:1rem">
+      Déjà soumis ? <a href="{% url 'submissions:resend_token' event_slug=event.slug %}">Retrouver mon lien de suivi</a>
+    </p>
+  </main>
+</div>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+</body>
+</html>

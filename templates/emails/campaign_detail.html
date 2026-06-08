@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.subject }} — {{ event.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>{{ campaign.subject }}</h1>
+    <div class="page-meta">{{ campaign.get_audience_display }}</div>
+  </div>
+  <div class="actions">
+    <a href="{% url 'emails:campaign_list' event_slug=event.slug %}" class="btn ghost sm">← Liste</a>
+    {% if not campaign.is_sent %}
+    <a href="{% url 'emails:campaign_edit' event_slug=event.slug pk=campaign.pk %}" class="btn ghost sm">Modifier</a>
+    <form method="post" action="{% url 'emails:campaign_delete' event_slug=event.slug pk=campaign.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer cette campagne ?')">Supprimer</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1rem; align-items:start">
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Corps du message</h2>
+      <span class="badge {% if campaign.is_sent %}sent{% else %}draft{% endif %}">
+        {% if campaign.is_sent %}Envoyée — {{ campaign.sent_count }} destinataire{{ campaign.sent_count|pluralize }}{% else %}Brouillon{% endif %}
+      </span>
+    </div>
+    <pre style="white-space:pre-wrap; font-family:inherit; font-size:.875rem; margin:0">{{ campaign.body }}</pre>
+  </div>
+
+  <div>
+    {% if not campaign.is_sent %}
+    <div class="card" x-data="{ confirmSend: false }">
+      <h3>Envoyer</h3>
+      <p class="text-muted text-sm">La campagne sera envoyée à <strong>{{ campaign.get_audience_display|lower }}</strong>. Cette action est irréversible.</p>
+      <button type="button" class="btn primary" @click="confirmSend = true">Envoyer maintenant</button>
+      <template x-teleport="body">
+        <div x-show="confirmSend" class="modal-backdrop"
+             @click.self="confirmSend = false"
+             @keydown.escape.window="confirmSend = false"
+             x-transition.opacity>
+          <div class="modal">
+            <div class="modal-head">
+              <h3>Confirmer l'envoi</h3>
+              <div class="sub">Cette action ne peut pas être annulée.</div>
+            </div>
+            <div class="modal-body">
+              <p>Envoyer <strong>« {{ campaign.subject }} »</strong> à <strong>{{ campaign.get_audience_display|lower }}</strong> ?</p>
+            </div>
+            <div class="modal-foot">
+              <button type="button" class="btn ghost" @click="confirmSend = false">Annuler</button>
+              <form method="post" action="{% url 'emails:campaign_send' event_slug=event.slug pk=campaign.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn primary">Envoyer</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+    {% else %}
+    <div class="card">
+      <h3>Envoyée</h3>
+      <p class="text-muted text-sm">Le {{ campaign.sent_at|date:"j F Y à H:i" }} à {{ campaign.sent_count }} destinataire{{ campaign.sent_count|pluralize }}.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

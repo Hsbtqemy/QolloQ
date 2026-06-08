@@ -1,0 +1,14 @@
+Bonjour,
+
+Vous avez demandé à retrouver le lien d'accès à votre soumission pour {{ event_name }}.
+
+Titre : {{ proposal_title }}
+
+Voici votre lien personnel :
+
+{{ token_url }}
+
+Si vous n'êtes pas à l'origine de cette demande, ignorez simplement ce message.
+
+Cordialement,
+L'équipe organisatrice

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intervenant·es — {{ event.name }}</title>
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <h1 class="site-title">{{ event.name }}</h1>
+    <p class="site-meta">
+      {{ event.start_date|date:"j F Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"j F Y" }}{% endif %}
+      {% if event.location %} &middot; {{ event.location }}{% endif %}
+    </p>
+  </div>
+</header>
+
+<nav class="site-nav">
+  <div class="container">
+    <a href="./index.html" class="nav-link">Accueil</a>
+    <a href="./programme.html" class="nav-link">Programme</a>
+    <a href="./intervenants.html" class="nav-link active">Intervenant·es</a>
+  </div>
+</nav>
+
+<main class="container">
+  <h2 class="page-title">Intervenant·es</h2>
+
+  {% if speakers %}
+  <div class="speaker-list">
+    {% for proposal in speakers %}
+    <article class="speaker-card">
+      <div class="speaker-authors">
+        {% for author in proposal.authors.all %}
+        <span class="speaker-name">{{ author.full_name }}</span>{% if author.institution %}<span class="speaker-institution"> ({{ author.institution }})</span>{% endif %}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      </div>
+      <h3 class="speaker-title">{{ proposal.title }}</h3>
+      {% if proposal.keywords %}
+      <p class="speaker-keywords">{{ proposal.keywords }}</p>
+      {% endif %}
+      <div class="speaker-abstract">{{ proposal.abstract|linebreaks }}</div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">Les communications seront annoncées prochainement.</p>
+  {% endif %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">Généré avec QolloQ</div>
+</footer>
+</body>
+</html>

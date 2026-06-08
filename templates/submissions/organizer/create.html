@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle proposition — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Nouvelle proposition</h1>
+  <div class="actions">
+    <a href="{% url 'submissions:list' event_slug=event.slug %}" class="btn ghost sm">← Liste</a>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">
+        {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+      </label>
+      {{ field }}
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+    </div>
+    {% endfor %}
+
+    <hr class="sep">
+    <h3>Auteur·ices</h3>
+    {{ author_formset.management_form }}
+    {% for af in author_formset %}
+    <div class="formset-item">
+      <div class="field-row three">
+        <div class="field"><label>Prénom</label>{{ af.first_name }}</div>
+        <div class="field"><label>Nom</label>{{ af.last_name }}</div>
+        <div class="field"><label>Email</label>{{ af.email }}</div>
+      </div>
+      <div class="field"><label>Institution</label>{{ af.institution }}</div>
+      {{ af.order }}
+    </div>
+    {% endfor %}
+
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Créer la proposition</button>
+      <a href="{% url 'submissions:list' event_slug=event.slug %}" class="btn ghost">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

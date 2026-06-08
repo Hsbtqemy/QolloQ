@@ -1,0 +1,16 @@
+Bonjour,
+
+Nous avons bien reçu votre proposition pour {{ event_name }}.
+
+Titre : {{ proposal_title }}
+
+Vous pouvez suivre l'avancement de votre dossier ou apporter des modifications
+via le lien ci-dessous. Conservez-le précieusement — il vous permettra d'accéder
+à votre soumission sans créer de compte.
+
+{{ token_url }}
+
+Vous recevrez un message dès qu'une décision sera prise concernant votre proposition.
+
+Cordialement,
+L'équipe organisatrice

@@ -1,0 +1,124 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ma proposition — {{ proposal.event.name }}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body x-data>
+<div class="public-layout">
+  <header class="public-header">
+    <span class="public-brand">QolloQ</span>
+    <span class="public-event-name">{{ proposal.event.name }}</span>
+  </header>
+  <main class="public-main" style="max-width:700px">
+
+    {% if messages %}
+    <div style="margin-bottom:1rem">
+      {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="public-card">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem">
+        <div>
+          <h1 style="margin-bottom:.2rem">{{ proposal.title }}</h1>
+          <span class="badge {{ proposal.status }}">{{ proposal.get_status_display }}</span>
+        </div>
+        {% if editable %}
+        <div x-data="{ confirmOpen: false }">
+          <button type="button" class="btn danger-ghost sm" @click="confirmOpen = true">Retirer</button>
+          <template x-teleport="body">
+            <div x-show="confirmOpen" class="modal-backdrop"
+                 @click.self="confirmOpen = false"
+                 @keydown.escape.window="confirmOpen = false"
+                 x-transition.opacity>
+              <div class="modal">
+                <div class="modal-head">
+                  <h3>Retirer la proposition</h3>
+                  <div class="sub">Cette action est irréversible.</div>
+                </div>
+                <div class="modal-body">
+                  <p>Confirmer le retrait de <strong>« {{ proposal.title }} »</strong> ?</p>
+                </div>
+                <div class="modal-foot">
+                  <button type="button" class="btn ghost" @click="confirmOpen = false">Annuler</button>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="withdraw">
+                    <button type="submit" class="btn danger">Retirer définitivement</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if editable %}
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">
+            {{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+
+        <hr class="sep">
+        <h3>Auteur·ices</h3>
+        {{ author_formset.management_form }}
+        {% for af in author_formset %}
+        <div class="formset-item">
+          <div class="field-row three">
+            <div class="field"><label>Prénom</label>{{ af.first_name }}</div>
+            <div class="field"><label>Nom</label>{{ af.last_name }}</div>
+            <div class="field"><label>Email</label>{{ af.email }}</div>
+          </div>
+          <div class="field"><label>Institution</label>{{ af.institution }}</div>
+          {{ af.order }}
+          {% if author_formset.can_delete %}
+          <div class="formset-remove">
+            <label class="field-checkbox">{{ af.DELETE }} <span class="text-muted text-sm">Supprimer</span></label>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Enregistrer les modifications</button>
+        </div>
+      </form>
+
+      {% else %}
+      <p class="text-muted">
+        {% if proposal.status == 'submitted' %}
+        La date limite de soumission est dépassée — votre proposition ne peut plus être modifiée.
+        {% else %}
+        Votre proposition est en cours d'examen et ne peut plus être modifiée.
+        {% endif %}
+      </p>
+      <hr class="sep">
+      <h3>Résumé</h3>
+      <p>{{ proposal.abstract }}</p>
+      {% if proposal.authors.all %}
+      <h3>Auteur·ices</h3>
+      {% for author in proposal.authors.all %}
+      <p>{{ author.first_name }} {{ author.last_name }}{% if author.institution %} ({{ author.institution }}){% endif %}</p>
+      {% endfor %}
+      {% endif %}
+      {% endif %}
+    </div>
+  </main>
+</div>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+</body>
+</html>

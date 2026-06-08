@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"></head>
+<body>
+<p>Bonjour {{ response.respondent_name }},</p>
+
+<p>Vous êtes invité·e à remplir le formulaire logistique de l'événement <strong>« {{ event.name }} »</strong>.</p>
+
+<p><a href="{{ token_url }}">Accéder à mon formulaire logistique</a></p>
+
+<p>Ce lien vous est personnel. Vous pouvez revenir le compléter à tout moment.</p>
+
+{% if logistics_form.deadline %}
+<p>Date limite de réponse : <strong>{{ logistics_form.deadline|date:"j F Y à H:i" }}</strong>.</p>
+{% endif %}
+
+{% if logistics_form.instructions %}
+<hr>
+<p>{{ logistics_form.instructions|linebreaksbr }}</p>
+{% endif %}
+
+<p>Cordialement,<br>L'équipe d'organisation — {{ event.name }}</p>
+</body>
+</html>
