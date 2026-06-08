@@ -257,6 +257,9 @@ class BudgetLine(BaseModel):
     class Category(models.TextChoices):
         VENUE = "salle", "Salle"
         CATERING = "traiteur", "Traiteur"
+        RESTAURANT = "restaurant", "Restaurant"
+        DRINKS = "boissons", "Boissons"
+        COFFEE = "cafe", "Pauses café"
         TRANSPORT = "transport", "Transport"
         COMMUNICATION = "communication", "Communication"
         OTHER = "autre", "Autre"
