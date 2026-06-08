@@ -6,21 +6,21 @@ from django.db import models
 
 from apps.core.models import BaseModel
 from apps.events.models import Event
-from apps.submissions.models import Proposal
 
 
 class LogisticsForm(BaseModel):
-    """Configuration du formulaire logistique pour un événement (un seul par événement)."""
+    """Un formulaire organisationnel configurable pour un événement."""
 
-    event = models.OneToOneField(
+    event = models.ForeignKey(
         Event,
         on_delete=models.CASCADE,
-        related_name="logistics_form",
+        related_name="logistics_forms",
         verbose_name="Événement",
     )
+    name = models.CharField(max_length=255, default="Formulaire logistique", verbose_name="Nom du formulaire")
     is_open = models.BooleanField(default=False, verbose_name="Ouvert aux réponses")
     deadline = models.DateTimeField(null=True, blank=True, verbose_name="Date limite de réponse")
-    instructions = models.TextField(blank=True, verbose_name="Instructions pour les intervenants")
+    instructions = models.TextField(blank=True, verbose_name="Instructions")
 
     class Meta:
         verbose_name = "Formulaire logistique"
@@ -113,14 +113,6 @@ class LogisticsResponse(BaseModel):
         on_delete=models.CASCADE,
         related_name="responses",
         verbose_name="Formulaire",
-    )
-    proposal = models.OneToOneField(
-        Proposal,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="logistics_response",
-        verbose_name="Proposition liée",
     )
     respondent_name = models.CharField(max_length=255, verbose_name="Nom de l'intervenant·e")
     respondent_email = models.EmailField(verbose_name="Email")

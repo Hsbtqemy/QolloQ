@@ -8,10 +8,13 @@ from .models import LogisticsField, LogisticsForm, LogisticsResponse
 class LogisticsFormSettingsForm(forms.ModelForm):
     class Meta:
         model = LogisticsForm
-        fields = ["is_open", "deadline", "instructions"]
+        fields = ["name", "is_open", "deadline", "instructions"]
         widgets = {
             "deadline": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "instructions": forms.Textarea(attrs={"rows": 4}),
+        }
+        help_texts = {
+            "name": "Ex. « Formulaire intervenants pris en charge », « Fiche logistique générale »…",
         }
 
 
@@ -54,18 +57,17 @@ class LogisticsFieldForm(forms.ModelForm):
 
 
 class LogisticsResponseAdminForm(forms.ModelForm):
-    """Création manuelle d'une entrée de réponse par l'organisateur."""
+    """Création / édition manuelle d'une entrée de réponse par l'organisateur."""
 
     class Meta:
         model = LogisticsResponse
-        fields = ["respondent_name", "respondent_email", "proposal"]
+        fields = ["respondent_name", "respondent_email"]
 
 
 def build_response_form(logistics_form, data=None, instance=None):
     """Construit dynamiquement le form de réponse depuis les définitions de champs."""
     fields_qs = logistics_form.fields.order_by("order")
 
-    # Valeurs existantes si on édite une réponse
     existing = {}
     if instance and instance.pk:
         for fr in instance.field_responses.select_related("field").all():
@@ -78,7 +80,6 @@ def build_response_form(logistics_form, data=None, instance=None):
     DynamicForm = type("DynamicResponseForm", (forms.BaseForm,), {"base_fields": form_fields})
     form = DynamicForm(data=data)
 
-    # Pré-remplissage si édition
     if existing and data is None:
         for field in fields_qs:
             raw = existing.get(field.pk, "")

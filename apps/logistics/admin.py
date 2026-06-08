@@ -12,7 +12,7 @@ class LogisticsFieldInline(admin.TabularInline):
 
 @admin.register(LogisticsForm)
 class LogisticsFormAdmin(admin.ModelAdmin):
-    list_display = ["event", "is_open", "deadline"]
+    list_display = ["name", "event", "is_open", "deadline"]
     list_filter = ["is_open"]
     raw_id_fields = ["event"]
     inlines = [LogisticsFieldInline]
@@ -30,6 +30,6 @@ class LogisticsResponseAdmin(admin.ModelAdmin):
     list_display = ["respondent_name", "respondent_email", "form", "is_complete", "created_at"]
     list_filter = ["is_complete", "form__event"]
     search_fields = ["respondent_name", "respondent_email"]
-    raw_id_fields = ["form", "proposal"]
+    raw_id_fields = ["form"]
     readonly_fields = ["token", "created_at", "updated_at"]
     inlines = [LogisticsFieldResponseInline]

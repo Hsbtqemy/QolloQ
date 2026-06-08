@@ -1,12 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Logistique — {{ event.name }}{% endblock %}
+{% block title %}{{ logistics_form.name }} — {{ event.name }}{% endblock %}
 
 {% block content %}
 
 <div class="page-header">
-  <h1>Formulaire logistique</h1>
+  <div>
+    <h1>{{ logistics_form.name }}</h1>
+  </div>
   <div class="actions">
-    <a href="{% url 'logistics:response_list' event_slug=event.slug %}" class="btn ghost sm">Voir les réponses</a>
+    <a href="{% url 'logistics:response_list' event_slug=event.slug form_id=logistics_form.pk %}" class="btn ghost sm">Voir les réponses</a>
+    <a href="{% url 'logistics:index' event_slug=event.slug %}" class="btn ghost sm">← Logistique</a>
   </div>
 </div>
 
@@ -48,16 +51,54 @@
       </div>
       <div class="panel-body" id="field-list">
         {% for field in fields %}
-        <div class="logistics-field-row" data-id="{{ field.pk }}">
-          <span class="logistics-field-handle">⠿</span>
-          <span class="logistics-field-label">{{ field.label }}</span>
-          <span class="logistics-field-kind">{{ field.get_kind_display }}</span>
-          {% if field.required %}<span class="logistics-field-required">requis</span>{% endif %}
-          <div class="btn-group" style="margin-left:auto">
-            <a href="{% url 'logistics:field_edit' event_slug=event.slug field_id=field.pk %}" class="btn ghost sm">Modifier</a>
-            <form method="post" action="{% url 'logistics:field_delete' event_slug=event.slug field_id=field.pk %}" class="inline-form">
+        <div class="logistics-field-row" data-id="{{ field.pk }}" x-data="{ editing: false }">
+          <span class="logistics-field-handle" x-show="!editing">⠿</span>
+          <span class="logistics-field-label" x-show="!editing">{{ field.label }}</span>
+          <span class="logistics-field-kind" x-show="!editing">{{ field.get_kind_display }}</span>
+          {% if field.required %}<span class="logistics-field-required" x-show="!editing">requis</span>{% endif %}
+          <div class="btn-group" style="margin-left:auto" x-show="!editing">
+            <button type="button" class="btn ghost sm" @click="editing = true">Modifier</button>
+            <form method="post" action="{% url 'logistics:field_delete' event_slug=event.slug form_id=logistics_form.pk field_id=field.pk %}" class="inline-form">
               {% csrf_token %}
               <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ce champ ?')">✕</button>
+            </form>
+          </div>
+          <div x-show="editing" x-cloak style="width:100%; padding:.75rem 0">
+            <form method="post" action="{% url 'logistics:field_edit' event_slug=event.slug form_id=logistics_form.pk field_id=field.pk %}">
+              {% csrf_token %}
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:.5rem">
+                <div class="field">
+                  <label>Intitulé <span class="req">*</span></label>
+                  <input type="text" name="label" value="{{ field.label }}" required>
+                </div>
+                <div class="field">
+                  <label>Type</label>
+                  <select name="kind" disabled>
+                    {% for val, lbl in field.Kind.choices %}
+                    <option value="{{ val }}"{% if field.kind == val %} selected{% endif %}>{{ lbl }}</option>
+                    {% endfor %}
+                  </select>
+                  <input type="hidden" name="kind" value="{{ field.kind }}">
+                </div>
+              </div>
+              <div class="field">
+                <label>Texte d'aide</label>
+                <input type="text" name="help_text" value="{{ field.help_text }}">
+              </div>
+              {% if field.options %}
+              <div class="field">
+                <label>Options</label>
+                <textarea name="options_text" rows="3">{{ field.options|join:"\n" }}</textarea>
+              </div>
+              {% endif %}
+              <div class="field-checkbox">
+                <input type="checkbox" name="required" id="req-{{ field.pk }}"{% if field.required %} checked{% endif %}>
+                <label for="req-{{ field.pk }}">Obligatoire</label>
+              </div>
+              <div class="form-actions" style="margin-top:.5rem">
+                <button type="submit" class="btn primary sm">Enregistrer</button>
+                <button type="button" class="btn ghost sm" @click="editing = false">Annuler</button>
+              </div>
             </form>
           </div>
         </div>
@@ -70,7 +111,7 @@
 
   <div class="card" x-data="{ open: false }">
     <h3>Ajouter un champ</h3>
-    <form method="post" action="{% url 'logistics:field_create' event_slug=event.slug %}">
+    <form method="post" action="{% url 'logistics:field_create' event_slug=event.slug form_id=logistics_form.pk %}">
       {% csrf_token %}
       <div class="field">
         <label>Intitulé <span class="req">*</span></label>
@@ -122,7 +163,7 @@ if (el) {
       const items = [...el.querySelectorAll(".logistics-field-row")].map((r, i) => ({
         id: parseInt(r.dataset.id), order: i + 1
       }));
-      fetch("{% url 'logistics:field_reorder' event_slug=event.slug %}", {
+      fetch("{% url 'logistics:field_reorder' event_slug=event.slug form_id=logistics_form.pk %}", {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
         body: JSON.stringify(items)

@@ -85,7 +85,7 @@ class TokenAccessView(View):
         return True
 
     def get(self, request, token):
-        proposal = get_object_or_404(Proposal.objects.select_related("event"), token=token)
+        proposal = get_object_or_404(Proposal.objects.select_related("event").prefetch_related("field_responses__field"), token=token)
         editable = self._is_still_editable(proposal)
         event = proposal.event
         return render(request, "submissions/token_access.html", {
@@ -96,7 +96,7 @@ class TokenAccessView(View):
         })
 
     def post(self, request, token):
-        proposal = get_object_or_404(Proposal.objects.select_related("event"), token=token)
+        proposal = get_object_or_404(Proposal.objects.select_related("event").prefetch_related("field_responses__field"), token=token)
         if not self._is_still_editable(proposal):
             raise PermissionDenied
 
@@ -184,7 +184,7 @@ class ProposalDetailView(CommitteeRequiredMixin, View):
             "evaluations": evaluations,
             "own_evaluation": own_evaluation,
             "eval_form": EvaluationForm(instance=own_evaluation),
-            "organizer_form": OrganizerProposalForm(instance=proposal) if self.membership.is_organizer else None,
+            "organizer_form": OrganizerProposalForm(instance=proposal, event=self.event) if self.membership.is_organizer else None,
             "status_choices": Proposal.Status.choices,
         })
 
@@ -227,12 +227,17 @@ class ProposalEditView(OrganizerRequiredMixin, View):
     """Modification d'une proposition par l'organisateur."""
 
     def post(self, request, event_slug, proposal_id):
-        proposal = get_object_or_404(Proposal, pk=proposal_id, event=self.event)
-        form = OrganizerProposalForm(request.POST, instance=proposal)
+        proposal = get_object_or_404(
+            Proposal.objects.prefetch_related("field_responses__field"),
+            pk=proposal_id,
+            event=self.event,
+        )
+        form = OrganizerProposalForm(request.POST, instance=proposal, event=self.event)
         author_formset = AuthorFormSet(request.POST, instance=proposal)
         if form.is_valid() and author_formset.is_valid():
             form.save()
             author_formset.save()
+            form.save_custom_responses(proposal)
             messages.success(request, "Proposition mise à jour.")
         return redirect("submissions:detail", event_slug=event_slug, proposal_id=proposal_id)
 
@@ -262,12 +267,12 @@ class ProposalCreateView(OrganizerRequiredMixin, View):
         return render(request, "submissions/organizer/create.html", {
             "event": self.event,
             "membership": self.membership,
-            "form": OrganizerProposalForm(),
+            "form": OrganizerProposalForm(event=self.event),
             "author_formset": AuthorFormSet(),
         })
 
     def post(self, request, event_slug):
-        form = OrganizerProposalForm(request.POST)
+        form = OrganizerProposalForm(request.POST, event=self.event)
         author_formset = AuthorFormSet(request.POST)
         if form.is_valid() and author_formset.is_valid():
             proposal = form.save(commit=False)
@@ -275,6 +280,7 @@ class ProposalCreateView(OrganizerRequiredMixin, View):
             proposal.save()
             author_formset.instance = proposal
             author_formset.save()
+            form.save_custom_responses(proposal)
             messages.success(request, "Proposition créée.")
             return redirect("submissions:detail", event_slug=event_slug, proposal_id=proposal.pk)
         return render(request, "submissions/organizer/create.html", {

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Ajouter une entrée — Logistique{% endblock %}
+{% block title %}Ajouter une entrée — {{ logistics_form.name }}{% endblock %}
 
 {% block content %}
 
 <div class="page-header">
   <h1>Ajouter une entrée</h1>
   <div class="actions">
-    <a href="{% url 'logistics:response_list' event_slug=event.slug %}" class="btn ghost sm">← Liste</a>
+    <a href="{% url 'logistics:response_list' event_slug=event.slug form_id=logistics_form.pk %}" class="btn ghost sm">← Liste</a>
   </div>
 </div>
 
@@ -24,7 +24,7 @@
     {% endfor %}
     <div class="form-actions">
       <button type="submit" class="btn primary">Créer l'entrée</button>
-      <a href="{% url 'logistics:response_list' event_slug=event.slug %}" class="btn ghost">Annuler</a>
+      <a href="{% url 'logistics:response_list' event_slug=event.slug form_id=logistics_form.pk %}" class="btn ghost">Annuler</a>
     </div>
   </form>
 </div>

@@ -1,20 +1,17 @@
 {% extends "base.html" %}
-{% block title %}{{ response.respondent_name }} — Logistique{% endblock %}
+{% block title %}{{ response.respondent_name }} — {{ logistics_form.name }}{% endblock %}
 
 {% block content %}
 
 <div class="page-header">
   <div>
     <h1>{{ response.respondent_name }}</h1>
-    <div class="page-meta">
-      {{ response.respondent_email }}
-      {% if response.proposal %} · Proposition : {{ response.proposal.title }}{% endif %}
-    </div>
+    <div class="page-meta">{{ response.respondent_email }}</div>
   </div>
   <div class="actions">
-    <a href="{% url 'logistics:response_list' event_slug=event.slug %}" class="btn ghost sm">← Liste</a>
+    <a href="{% url 'logistics:response_list' event_slug=event.slug form_id=logistics_form.pk %}" class="btn ghost sm">← Liste</a>
     {% if membership.is_organizer %}
-    <form method="post" action="{% url 'logistics:send_link' event_slug=event.slug response_id=response.pk %}" class="inline-form">
+    <form method="post" action="{% url 'logistics:send_link' event_slug=event.slug form_id=logistics_form.pk response_id=response.pk %}" class="inline-form">
       {% csrf_token %}
       <button type="submit" class="btn ghost sm">Renvoyer le lien</button>
     </form>
@@ -42,7 +39,7 @@
     </tbody>
   </table>
   {% else %}
-  <p class="text-muted">L'intervenant·e n'a pas encore rempli le formulaire.</p>
+  <p class="text-muted">Le destinataire n'a pas encore rempli le formulaire.</p>
   {% endif %}
 </div>
 {% endblock %}

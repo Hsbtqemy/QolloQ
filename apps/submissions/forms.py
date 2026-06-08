@@ -34,19 +34,19 @@ class PublicProposalForm(forms.ModelForm):
                 self.fields.pop("availability", None)
 
             self._custom_fields = list(event.submission_fields.order_by("order"))
+            existing = {}
+            if self.instance and self.instance.pk:
+                existing = {
+                    r.field_id: r.value
+                    for r in self.instance.field_responses.all()
+                }
             for cf in self._custom_fields:
                 key = f"custom_{cf.pk}"
-                initial_val = ""
-                if self.instance and self.instance.pk:
-                    try:
-                        initial_val = self.instance.field_responses.get(field=cf).value
-                    except SubmissionFieldResponse.DoesNotExist:
-                        pass
                 field_kwargs = {
                     "label": cf.label,
                     "help_text": cf.help_text,
                     "required": cf.required,
-                    "initial": initial_val,
+                    "initial": existing.get(cf.pk, ""),
                 }
                 if cf.kind == SubmissionField.Kind.TEXT:
                     self.fields[key] = forms.CharField(max_length=500, **field_kwargs)
@@ -67,7 +67,7 @@ class PublicProposalForm(forms.ModelForm):
 
 
 class OrganizerProposalForm(forms.ModelForm):
-    """Formulaire côté organisateur — peut modifier n'importe quelle proposition."""
+    """Formulaire côté organisateur — respecte la configuration du formulaire de l'événement."""
 
     class Meta:
         model = Proposal
@@ -77,6 +77,49 @@ class OrganizerProposalForm(forms.ModelForm):
             "bio": forms.Textarea(attrs={"rows": 4}),
             "availability": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, event=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._custom_fields = []
+        if event is not None:
+            if not event.submission_show_keywords:
+                self.fields.pop("keywords", None)
+            if not event.submission_show_format:
+                self.fields.pop("format", None)
+            if not event.submission_show_availability:
+                self.fields.pop("availability", None)
+
+            self._custom_fields = list(event.submission_fields.order_by("order"))
+            existing = {}
+            if self.instance and self.instance.pk:
+                existing = {
+                    r.field_id: r.value
+                    for r in self.instance.field_responses.all()
+                }
+            for cf in self._custom_fields:
+                key = f"custom_{cf.pk}"
+                field_kwargs = {
+                    "label": cf.label,
+                    "help_text": cf.help_text,
+                    "required": cf.required,
+                    "initial": existing.get(cf.pk, ""),
+                }
+                if cf.kind == SubmissionField.Kind.TEXT:
+                    self.fields[key] = forms.CharField(max_length=500, **field_kwargs)
+                elif cf.kind == SubmissionField.Kind.TEXTAREA:
+                    self.fields[key] = forms.CharField(
+                        widget=forms.Textarea(attrs={"rows": 4}), **field_kwargs
+                    )
+                elif cf.kind == SubmissionField.Kind.CHOICE:
+                    choices = [("", "— Choisir —")] + [(o, o) for o in cf.options]
+                    self.fields[key] = forms.ChoiceField(choices=choices, **field_kwargs)
+
+    def save_custom_responses(self, proposal):
+        for cf in self._custom_fields:
+            value = self.cleaned_data.get(f"custom_{cf.pk}", "")
+            SubmissionFieldResponse.objects.update_or_create(
+                proposal=proposal, field=cf, defaults={"value": value}
+            )
 
 
 class AuthorForm(forms.ModelForm):

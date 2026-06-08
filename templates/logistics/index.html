@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Logistique — {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Logistique</h1>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+
+  <div>
+    {% if logistics_forms %}
+    <div class="card" style="padding:0; overflow:hidden">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Statut</th>
+            <th>Réponses</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lf in logistics_forms %}
+          <tr>
+            <td><a href="{% url 'logistics:settings' event_slug=event.slug form_id=lf.pk %}">{{ lf.name }}</a></td>
+            <td>
+              <span class="badge {% if lf.is_open %}open{% else %}closed{% endif %}">
+                {% if lf.is_open %}Ouvert{% else %}Fermé{% endif %}
+              </span>
+            </td>
+            <td class="text-muted">
+              <a href="{% url 'logistics:response_list' event_slug=event.slug form_id=lf.pk %}">
+                {{ lf.responses.count }} réponse{{ lf.responses.count|pluralize }}
+              </a>
+            </td>
+            <td class="actions">
+              <form method="post" action="{% url 'logistics:form_delete' event_slug=event.slug form_id=lf.pk %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn ghost sm text-danger"
+                        onclick="return confirm('Supprimer ce formulaire et toutes ses réponses ?')">✕</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">Aucun formulaire. Créez-en un ci-contre.</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Nouveau formulaire</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in create_form %}
+      <div class="field{% if field.field.widget.input_type == 'checkbox' %}-checkbox{% endif %}">
+        {% if field.field.widget.input_type == 'checkbox' %}
+          {{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% else %}
+          <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+          {{ field }}
+        {% endif %}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit" class="btn primary sm">Créer</button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,9 +1,10 @@
+import csv
 import json
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db.models import Max
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
@@ -25,45 +26,89 @@ from .models import (
 )
 
 
-def _get_or_create_logistics_form(event):
-    form, _ = LogisticsForm.objects.get_or_create(event=event)
-    return form
+def _get_lf(event, form_id):
+    return get_object_or_404(LogisticsForm, pk=form_id, event=event)
 
 
 # ---------------------------------------------------------------------------
-# Organizer: configure the logistics form
+# Organizer: liste des formulaires de l'événement
+# ---------------------------------------------------------------------------
+
+
+class LogisticsIndexView(OrganizerRequiredMixin, View):
+    def get(self, request, event_slug):
+        forms = self.event.logistics_forms.annotate_response_count().order_by("created_at") \
+            if hasattr(LogisticsForm, 'annotate_response_count') \
+            else self.event.logistics_forms.order_by("created_at")
+        return render(request, "logistics/index.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_forms": self.event.logistics_forms.order_by("created_at"),
+            "create_form": LogisticsFormSettingsForm(),
+        })
+
+    def post(self, request, event_slug):
+        form = LogisticsFormSettingsForm(request.POST)
+        if form.is_valid():
+            lf = form.save(commit=False)
+            lf.event = self.event
+            lf.save()
+            messages.success(request, "Formulaire créé.")
+            return redirect("logistics:settings", event_slug=event_slug, form_id=lf.pk)
+        return render(request, "logistics/index.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_forms": self.event.logistics_forms.order_by("created_at"),
+            "create_form": form,
+        })
+
+
+# ---------------------------------------------------------------------------
+# Organizer: configure a specific form
 # ---------------------------------------------------------------------------
 
 
 class LogisticsSettingsView(OrganizerRequiredMixin, View):
-    def get(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
+    def get(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
         form = LogisticsFormSettingsForm(instance=lf)
         fields = lf.fields.order_by("order")
-        return render(
-            request,
-            "logistics/settings.html",
-            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form, "fields": fields},
-        )
+        return render(request, "logistics/settings.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_form": lf,
+            "form": form,
+            "fields": fields,
+        })
 
-    def post(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
         form = LogisticsFormSettingsForm(request.POST, instance=lf)
         if form.is_valid():
             form.save()
             messages.success(request, "Paramètres enregistrés.")
-            return redirect("logistics:settings", event_slug=event_slug)
+            return redirect("logistics:settings", event_slug=event_slug, form_id=form_id)
         fields = lf.fields.order_by("order")
-        return render(
-            request,
-            "logistics/settings.html",
-            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form, "fields": fields},
-        )
+        return render(request, "logistics/settings.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_form": lf,
+            "form": form,
+            "fields": fields,
+        })
+
+
+class LogisticsFormDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
+        lf.delete()
+        messages.success(request, "Formulaire supprimé.")
+        return redirect("logistics:index", event_slug=event_slug)
 
 
 class FieldCreateView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
         form = LogisticsFieldForm(request.POST)
         if form.is_valid():
             field = form.save(commit=False)
@@ -73,50 +118,34 @@ class FieldCreateView(OrganizerRequiredMixin, View):
             messages.success(request, "Champ ajouté.")
         else:
             messages.error(request, "Erreur dans le formulaire.")
-        return redirect("logistics:settings", event_slug=event_slug)
+        return redirect("logistics:settings", event_slug=event_slug, form_id=form_id)
 
 
 class FieldEditView(OrganizerRequiredMixin, View):
-    def _get_lf_and_field(self, field_id):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id, field_id):
+        lf = _get_lf(self.event, form_id)
         field = get_object_or_404(LogisticsField, pk=field_id, form=lf)
-        return lf, field
-
-    def get(self, request, event_slug, field_id):
-        lf, field = self._get_lf_and_field(field_id)
-        form = LogisticsFieldForm(instance=field)
-        return render(
-            request,
-            "logistics/field_edit.html",
-            {"event": self.event, "membership": self.membership, "logistics_form": lf, "field": field, "form": form},
-        )
-
-    def post(self, request, event_slug, field_id):
-        lf, field = self._get_lf_and_field(field_id)
         form = LogisticsFieldForm(request.POST, instance=field)
         if form.is_valid():
             form.save()
             messages.success(request, "Champ modifié.")
-            return redirect("logistics:settings", event_slug=event_slug)
-        return render(
-            request,
-            "logistics/field_edit.html",
-            {"event": self.event, "membership": self.membership, "logistics_form": lf, "field": field, "form": form},
-        )
+        else:
+            messages.error(request, "Erreur dans le formulaire.")
+        return redirect("logistics:settings", event_slug=event_slug, form_id=form_id)
 
 
 class FieldDeleteView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug, field_id):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id, field_id):
+        lf = _get_lf(self.event, form_id)
         field = get_object_or_404(LogisticsField, pk=field_id, form=lf)
         field.delete()
         messages.success(request, "Champ supprimé.")
-        return redirect("logistics:settings", event_slug=event_slug)
+        return redirect("logistics:settings", event_slug=event_slug, form_id=form_id)
 
 
 class FieldReorderView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
         try:
             payload = json.loads(request.body)
         except (ValueError, TypeError):
@@ -139,113 +168,126 @@ class FieldReorderView(OrganizerRequiredMixin, View):
 
 
 # ---------------------------------------------------------------------------
-# Organizer: manage responses
+# Organizer / committee: manage responses
 # ---------------------------------------------------------------------------
 
 
 class ResponseListView(CommitteeRequiredMixin, View):
-    def get(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
+    def get(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
         responses = (
-            lf.responses.select_related("proposal")
+            lf.responses
             .prefetch_related("field_responses__field")
             .order_by("respondent_name")
         )
         fields = lf.fields.order_by("order")
-        return render(
-            request,
-            "logistics/response_list.html",
-            {
-                "event": self.event,
-                "membership": self.membership,
-                "logistics_form": lf,
-                "responses": responses,
-                "fields": fields,
-            },
-        )
+        return render(request, "logistics/response_list.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_form": lf,
+            "responses": responses,
+            "fields": fields,
+        })
 
 
 class ResponseDetailView(CommitteeRequiredMixin, View):
-    def get(self, request, event_slug, response_id):
-        lf = _get_or_create_logistics_form(self.event)
+    def get(self, request, event_slug, form_id, response_id):
+        lf = _get_lf(self.event, form_id)
         response = get_object_or_404(
             LogisticsResponse.objects.prefetch_related("field_responses__field"),
             pk=response_id,
             form=lf,
         )
-        return render(
-            request,
-            "logistics/response_detail.html",
-            {"event": self.event, "membership": self.membership, "logistics_form": lf, "response": response},
-        )
+        return render(request, "logistics/response_detail.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_form": lf,
+            "response": response,
+        })
 
 
 class ResponseCreateView(OrganizerRequiredMixin, View):
-    """Création manuelle d'une entrée de réponse par l'organisateur."""
+    def get(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
+        return render(request, "logistics/response_create.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_form": lf,
+            "form": LogisticsResponseAdminForm(),
+        })
 
-    def get(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
-        form = LogisticsResponseAdminForm()
-        form.fields["proposal"].queryset = self.event.proposals.filter(
-            status="accepted"
-        ).order_by("title")
-        return render(
-            request,
-            "logistics/response_create.html",
-            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form},
-        )
-
-    def post(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
         form = LogisticsResponseAdminForm(request.POST)
-        form.fields["proposal"].queryset = self.event.proposals.filter(
-            status="accepted"
-        ).order_by("title")
         if form.is_valid():
             resp = form.save(commit=False)
             resp.form = lf
             resp.save()
             messages.success(request, "Entrée créée.")
-            return redirect("logistics:response_list", event_slug=event_slug)
-        return render(
-            request,
-            "logistics/response_create.html",
-            {"event": self.event, "membership": self.membership, "logistics_form": lf, "form": form},
-        )
+            return redirect("logistics:response_list", event_slug=event_slug, form_id=form_id)
+        return render(request, "logistics/response_create.html", {
+            "event": self.event,
+            "membership": self.membership,
+            "logistics_form": lf,
+            "form": form,
+        })
 
 
 class ResponseDeleteView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug, response_id):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id, response_id):
+        lf = _get_lf(self.event, form_id)
         response = get_object_or_404(LogisticsResponse, pk=response_id, form=lf)
         response.hard_delete()
         messages.success(request, "Réponse supprimée.")
-        return redirect("logistics:response_list", event_slug=event_slug)
+        return redirect("logistics:response_list", event_slug=event_slug, form_id=form_id)
 
 
 class SendLinkView(OrganizerRequiredMixin, View):
-    """(Re)envoie le lien d'accès à un intervenant."""
-
-    def post(self, request, event_slug, response_id):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id, response_id):
+        lf = _get_lf(self.event, form_id)
         response = get_object_or_404(LogisticsResponse, pk=response_id, form=lf)
         send_logistics_link(response, request=request)
         messages.success(request, f"Lien envoyé à {response.respondent_email}.")
-        return redirect("logistics:response_list", event_slug=event_slug)
+        return redirect("logistics:response_list", event_slug=event_slug, form_id=form_id)
 
 
 class SendAllLinksView(OrganizerRequiredMixin, View):
-    """Envoie le lien à toutes les entrées qui n'ont pas encore répondu."""
-
-    def post(self, request, event_slug):
-        lf = _get_or_create_logistics_form(self.event)
+    def post(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
         pending = lf.responses.filter(is_complete=False)
         count = 0
         for response in pending:
             send_logistics_link(response, request=request)
             count += 1
         messages.success(request, f"{count} lien(s) envoyé(s).")
-        return redirect("logistics:response_list", event_slug=event_slug)
+        return redirect("logistics:response_list", event_slug=event_slug, form_id=form_id)
+
+
+class ResponseExportView(OrganizerRequiredMixin, View):
+    def get(self, request, event_slug, form_id):
+        lf = _get_lf(self.event, form_id)
+        fields = list(lf.fields.order_by("order"))
+        responses = (
+            lf.responses
+            .prefetch_related("field_responses__field")
+            .order_by("respondent_name")
+        )
+        http_response = HttpResponse(content_type="text/csv; charset=utf-8")
+        http_response["Content-Disposition"] = (
+            f'attachment; filename="logistique-{self.event.slug}.csv"'
+        )
+        http_response.write("﻿")  # BOM pour Excel
+        writer = csv.writer(http_response)
+        writer.writerow(
+            ["Nom", "Email", "Complète"] + [f.label for f in fields]
+        )
+        for resp in responses:
+            field_values = {fr.field_id: fr.display_value for fr in resp.field_responses.all()}
+            writer.writerow(
+                [resp.respondent_name, resp.respondent_email, "Oui" if resp.is_complete else "Non"]
+                + [field_values.get(f.pk, "") for f in fields]
+            )
+        return http_response
 
 
 # ---------------------------------------------------------------------------
@@ -271,18 +313,14 @@ class PublicRespondView(View):
         lf = response.form
         editable = self._is_open(lf)
         form, fields = build_response_form(lf, instance=response)
-        return render(
-            request,
-            "logistics/public_respond.html",
-            {
-                "logistics_form": lf,
-                "event": lf.event,
-                "response": response,
-                "form": form,
-                "fields": fields,
-                "editable": editable,
-            },
-        )
+        return render(request, "logistics/public_respond.html", {
+            "logistics_form": lf,
+            "event": lf.event,
+            "response": response,
+            "form": form,
+            "fields": fields,
+            "editable": editable,
+        })
 
     def post(self, request, token):
         response = self._get_response(token)
@@ -293,18 +331,14 @@ class PublicRespondView(View):
         if form.is_valid():
             _save_response(form, response, fields)
             return redirect("logistics:respond_done", token=token)
-        return render(
-            request,
-            "logistics/public_respond.html",
-            {
-                "logistics_form": lf,
-                "event": lf.event,
-                "response": response,
-                "form": form,
-                "fields": fields,
-                "editable": True,
-            },
-        )
+        return render(request, "logistics/public_respond.html", {
+            "logistics_form": lf,
+            "event": lf.event,
+            "response": response,
+            "form": form,
+            "fields": fields,
+            "editable": True,
+        })
 
 
 def _save_response(form, response, fields):
@@ -329,8 +363,7 @@ def _save_response(form, response, fields):
 class PublicRespondDoneView(View):
     def get(self, request, token):
         response = get_object_or_404(LogisticsResponse, token=token)
-        return render(
-            request,
-            "logistics/public_respond_done.html",
-            {"event": response.form.event, "response": response},
-        )
+        return render(request, "logistics/public_respond_done.html", {
+            "event": response.form.event,
+            "response": response,
+        })
