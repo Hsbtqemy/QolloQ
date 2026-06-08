@@ -412,6 +412,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
   display: flex; align-items: center; justify-content: space-between;
   padding: .6rem .85rem; background: #f8f9fa; gap: .75rem; flex-wrap: wrap;
 }
+.prog-session-handle { color: #d1d5db; cursor: grab; margin-right: .35rem; }
 .prog-session-time { font-size: .8rem; color: #6b7280; white-space: nowrap; }
 .prog-session-title { font-weight: 600; font-size: .925rem; }
 .prog-session-loc { font-size: .8rem; color: #9ca3af; }

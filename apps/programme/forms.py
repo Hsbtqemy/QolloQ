@@ -18,6 +18,8 @@ class SessionForm(forms.ModelForm):
     def __init__(self, *args, event=None, **kwargs):
         super().__init__(*args, **kwargs)
         self._event = event
+        self.fields["start_time"].required = False
+        self.fields["end_time"].required = False
         if event:
             self.fields["date"].widget.attrs.update({
                 "min": str(event.start_date),
@@ -30,6 +32,10 @@ class SessionForm(forms.ModelForm):
         end = cleaned.get("end_time")
         if start and end and end <= start:
             raise forms.ValidationError("L'heure de fin doit être après l'heure de début.")
+        if start and not end:
+            self.add_error("end_time", "Indiquez l'heure de fin.")
+        if end and not start:
+            self.add_error("start_time", "Indiquez l'heure de début.")
         if self._event:
             day = cleaned.get("date")
             if day and not (self._event.start_date <= day <= self._event.end_date):
@@ -43,7 +49,7 @@ class SessionForm(forms.ModelForm):
 class CommunicationForm(forms.ModelForm):
     class Meta:
         model = Communication
-        fields = ["title", "speaker_name", "duration", "proposal"]
+        fields = ["kind", "title", "speaker_name", "duration", "proposal"]
         widgets = {
             "proposal": forms.HiddenInput(),
         }

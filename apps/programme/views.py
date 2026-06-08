@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from datetime import timedelta
+from datetime import time as dtime, timedelta
 
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
@@ -25,14 +25,18 @@ def _event_days(event):
     return days
 
 
-def _build_programme_context(event):
-    """Construit le contexte commun aux vues programme (organisateur et lecture)."""
+def _build_programme_context(event, sort_by_order=False):
+    """Construit le contexte commun aux vues programme (organisateur et lecture).
+
+    sort_by_order=True : sessions triées par order (vue construction D&D).
+    sort_by_order=False : tout trié par start_time (vue calendrier / PDF).
+    """
     days = _event_days(event)
     sessions_by_day = defaultdict(list)
     for session in (
         Session.objects.filter(event=event)
         .prefetch_related("communications__proposal")
-        .order_by("date", "start_time", "order")
+        .order_by("date", "order", "start_time")
     ):
         sessions_by_day[session.date].append(session)
 
@@ -40,17 +44,24 @@ def _build_programme_context(event):
     for item in AnnexEvent.objects.filter(event=event).order_by("date", "start_time"):
         annex_by_day[item.date].append(item)
 
-    # Vue par jour : sessions + annexes mélangés, triés par heure de début
     programme = []
     for day in days:
-        items = [
+        session_items = [
             {"kind": "session", "obj": s, "start": s.start_time, "end": s.end_time}
             for s in sessions_by_day[day]
-        ] + [
+        ]
+        annex_items = [
             {"kind": "annex", "obj": a, "start": a.start_time, "end": a.end_time}
             for a in annex_by_day[day]
         ]
-        items.sort(key=lambda x: x["start"])
+        if sort_by_order:
+            # Sessions dans l'ordre D&D, annexes ajoutées à la suite triées par heure
+            annex_items.sort(key=lambda x: x["start"])
+            items = session_items + annex_items
+        else:
+            # Tri chronologique — sessions sans heure placées en tête (heure nulle)
+            items = session_items + annex_items
+            items.sort(key=lambda x: x["start"] or dtime(0, 0))
         programme.append({"date": day, "items": items})
 
     return {
@@ -64,7 +75,7 @@ def _build_programme_context(event):
 
 class ProgrammeView(OrganizerRequiredMixin, View):
     def get(self, request, event_slug):
-        ctx = _build_programme_context(self.event)
+        ctx = _build_programme_context(self.event, sort_by_order=True)
         return render(request, "programme/organizer/programme.html", {
             "event": self.event,
             "membership": self.membership,

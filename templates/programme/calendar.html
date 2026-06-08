@@ -44,7 +44,7 @@
         </td>
         <td><span class="badge draft">Session</span></td>
         <td class="text-muted">{{ item.obj.location|default:"—" }}</td>
-        <td class="text-muted">{{ item.obj.duration_minutes }} min</td>
+        <td class="text-muted">{% if item.obj.duration_minutes %}{{ item.obj.duration_minutes }} min{% else %}—{% endif %}</td>
         {% else %}
         <td>{{ item.obj.label }}{% if item.obj.description %}<div class="text-muted text-sm">{{ item.obj.description }}</div>{% endif %}</td>
         <td><span class="badge submitted">{{ item.obj.get_kind_display }}</span></td>

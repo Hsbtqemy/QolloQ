@@ -83,7 +83,7 @@
   <div class="session">
     <div class="session-head">
       <span class="session-title">{{ s.title|default:"Session" }}</span>
-      <span class="session-time">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}{% if s.location %} · {{ s.location }}{% endif %}</span>
+      {% if s.start_time %}<span class="session-time">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}{% if s.location %} · {{ s.location }}{% endif %}</span>{% elif s.location %}<span class="session-time">{{ s.location }}</span>{% endif %}
     </div>
     {% if s.moderator %}
     <div class="session-meta">Modération : {{ s.moderator }}</div>
@@ -93,7 +93,7 @@
       <div class="comm-duration">{{ comm.duration }} min</div>
       <div class="comm-body">
         {% if comm.speaker_name %}<div class="comm-speaker">{{ comm.speaker_name }}</div>{% endif %}
-        <div class="comm-title">{{ comm.title }}</div>
+        <div class="comm-title">{% if comm.kind != 'talk' %}<em>{{ comm.get_kind_display }}</em> — {% endif %}{{ comm.title }}</div>
       </div>
     </div>
     {% endfor %}

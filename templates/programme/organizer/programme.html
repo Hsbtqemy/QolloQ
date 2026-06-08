@@ -22,10 +22,11 @@
       {% for item in day_data.items %}
 
         {% if item.kind == 'session' %}{% with s=item.obj %}
-        <div class="prog-session">
+        <div class="prog-session" data-id="{{ s.pk }}">
           <div class="prog-session-head">
             <div>
-              <span class="prog-session-time">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</span>
+              <span class="prog-session-handle">⠿</span>
+              {% if s.start_time %}<span class="prog-session-time">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</span>{% endif %}
               <span class="prog-session-title" style="margin-left:.4rem">{{ s.title }}</span>
               {% if s.location %}<span class="prog-session-loc"> · {{ s.location }}</span>{% endif %}
             </div>
@@ -61,12 +62,12 @@
                         </div>
                         <div class="field-row">
                           <div class="field">
-                            <label>Début <span class="req">*</span></label>
-                            <input type="time" name="start_time" value="{{ s.start_time|time:'H:i' }}" required>
+                            <label>Début</label>
+                            <input type="time" name="start_time" value="{{ s.start_time|time:'H:i' }}">
                           </div>
                           <div class="field">
-                            <label>Fin <span class="req">*</span></label>
-                            <input type="time" name="end_time" value="{{ s.end_time|time:'H:i' }}" required>
+                            <label>Fin</label>
+                            <input type="time" name="end_time" value="{{ s.end_time|time:'H:i' }}">
                           </div>
                         </div>
                         <div class="field">
@@ -90,7 +91,8 @@
             <div class="prog-comm" data-id="{{ comm.pk }}">
               <span class="prog-comm-handle">⠿</span>
               <span class="prog-comm-name">
-                <strong>{{ comm.speaker_name }}</strong> — {{ comm.title }}
+                {% if comm.kind != 'talk' %}<span class="badge" style="font-size:.7rem">{{ comm.get_kind_display }}</span> {% endif %}
+                {% if comm.speaker_name %}<strong>{{ comm.speaker_name }}</strong> — {% endif %}{{ comm.title }}
                 {% if comm.proposal %}<span class="badge accepted" style="font-size:.7rem">lié</span>{% endif %}
               </span>
               <span class="prog-comm-duration">{{ comm.duration }} min</span>
@@ -234,6 +236,24 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const slug = "{{ event.slug }}";
+document.querySelectorAll(".prog-day").forEach(day => {
+  Sortable.create(day, {
+    animation: 150,
+    handle: ".prog-session-handle",
+    draggable: ".prog-session",
+    onEnd() {
+      const items = [...day.querySelectorAll(".prog-session")].map((el, i) => ({
+        id: parseInt(el.dataset.id), order: i + 1
+      }));
+      fetch(`/evenements/${slug}/programme/sessions/reorder/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify(items)
+      });
+    }
+  });
+});
+
 document.querySelectorAll("[id^='comms-']").forEach(el => {
   Sortable.create(el, {
     animation: 150,
