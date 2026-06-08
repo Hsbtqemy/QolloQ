@@ -27,7 +27,7 @@ class LogisticsForm(BaseModel):
         verbose_name_plural = "Formulaires logistiques"
 
     def __str__(self):
-        return f"Formulaire logistique — {self.event}"
+        return f"{self.name} — {self.event}"
 
 
 class LogisticsField(models.Model):
@@ -165,3 +165,61 @@ class LogisticsFieldResponse(models.Model):
         if self.field.kind == LogisticsField.Kind.BOOLEAN:
             return "Oui" if self.value == "true" else "Non"
         return self.value or "—"
+
+
+class Reimbursement(BaseModel):
+    """Suivi d'un remboursement lié à un événement."""
+
+    class Category(models.TextChoices):
+        TRANSPORT = "transport", "Transport"
+        ACCOMMODATION = "accommodation", "Hébergement"
+        MEALS = "meals", "Repas"
+        OTHER = "other", "Autre"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "En attente"
+        SENT = "sent", "Envoyé"
+        RECEIVED = "received", "Reçu"
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="reimbursements",
+        verbose_name="Événement",
+    )
+    person_name = models.CharField(max_length=255, verbose_name="Nom")
+    person_email = models.EmailField(blank=True, verbose_name="Email")
+    description = models.CharField(max_length=500, verbose_name="Description")
+    category = models.CharField(
+        max_length=20,
+        choices=Category.choices,
+        verbose_name="Catégorie",
+    )
+    amount = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        verbose_name="Montant (€)",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        verbose_name="Statut",
+    )
+    form_response = models.ForeignKey(
+        LogisticsResponse,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reimbursements",
+        verbose_name="Réponse liée",
+    )
+    notes = models.TextField(blank=True, verbose_name="Notes")
+
+    class Meta:
+        verbose_name = "Remboursement"
+        verbose_name_plural = "Remboursements"
+        ordering = ["person_name"]
+
+    def __str__(self):
+        return f"{self.person_name} — {self.description} ({self.amount} €)"

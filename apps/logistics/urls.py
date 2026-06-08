@@ -79,6 +79,32 @@ urlpatterns = [
         views.ResponseExportView.as_view(),
         name="export_csv",
     ),
+    # Remboursements
+    path(
+        "evenements/<slug:event_slug>/logistique/remboursements/",
+        views.ReimbursementListView.as_view(),
+        name="reimbursements",
+    ),
+    path(
+        "evenements/<slug:event_slug>/logistique/remboursements/<int:pk>/modifier/",
+        views.ReimbursementEditView.as_view(),
+        name="reimbursement_edit",
+    ),
+    path(
+        "evenements/<slug:event_slug>/logistique/remboursements/<int:pk>/supprimer/",
+        views.ReimbursementDeleteView.as_view(),
+        name="reimbursement_delete",
+    ),
+    path(
+        "evenements/<slug:event_slug>/logistique/remboursements/<int:pk>/statut/",
+        views.ReimbursementStatusView.as_view(),
+        name="reimbursement_status",
+    ),
+    path(
+        "evenements/<slug:event_slug>/logistique/remboursements/export.csv",
+        views.ReimbursementExportView.as_view(),
+        name="reimbursement_export",
+    ),
     # Accès public via token
     path(
         "logistique/<uuid:token>/",

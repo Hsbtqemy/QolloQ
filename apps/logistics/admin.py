@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import LogisticsField, LogisticsFieldResponse, LogisticsForm, LogisticsResponse
+from .models import LogisticsField, LogisticsFieldResponse, LogisticsForm, LogisticsResponse, Reimbursement
 
 
 class LogisticsFieldInline(admin.TabularInline):
@@ -33,3 +33,11 @@ class LogisticsResponseAdmin(admin.ModelAdmin):
     raw_id_fields = ["form"]
     readonly_fields = ["token", "created_at", "updated_at"]
     inlines = [LogisticsFieldResponseInline]
+
+
+@admin.register(Reimbursement)
+class ReimbursementAdmin(admin.ModelAdmin):
+    list_display = ["person_name", "description", "category", "amount", "status", "event"]
+    list_filter = ["status", "category", "event"]
+    search_fields = ["person_name", "person_email", "description"]
+    raw_id_fields = ["event", "form_response"]

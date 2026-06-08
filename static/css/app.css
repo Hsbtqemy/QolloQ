@@ -340,6 +340,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .badge.closed      { background: #f3f4f6; color: #6b7280; }
 .badge.complete    { background: #f0fdf4; color: #15803d; }
 .badge.pending     { background: #fef9c3; color: #a16207; }
+.badge.received    { background: #f0fdf4; color: #15803d; }
 
 /* ─── Page header ─────────────────────────────────────────────────────────── */
 .page-header {

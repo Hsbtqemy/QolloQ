@@ -2,7 +2,7 @@ import json
 
 from django import forms
 
-from .models import LogisticsField, LogisticsForm, LogisticsResponse
+from .models import LogisticsField, LogisticsForm, LogisticsResponse, Reimbursement
 
 
 class LogisticsFormSettingsForm(forms.ModelForm):
@@ -62,6 +62,26 @@ class LogisticsResponseAdminForm(forms.ModelForm):
     class Meta:
         model = LogisticsResponse
         fields = ["respondent_name", "respondent_email"]
+
+
+class ReimbursementForm(forms.ModelForm):
+    class Meta:
+        model = Reimbursement
+        fields = ["person_name", "person_email", "description", "category", "amount", "form_response", "notes"]
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, *args, event=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if event is not None:
+            self.fields["form_response"].queryset = (
+                LogisticsResponse.objects.filter(form__event=event).order_by("respondent_name")
+            )
+            self.fields["form_response"].label = "Réponse de formulaire liée"
+            self.fields["form_response"].required = False
+        else:
+            self.fields.pop("form_response")
 
 
 def build_response_form(logistics_form, data=None, instance=None):

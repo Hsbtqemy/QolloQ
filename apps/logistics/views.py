@@ -15,6 +15,7 @@ from .forms import (
     LogisticsFieldForm,
     LogisticsFormSettingsForm,
     LogisticsResponseAdminForm,
+    ReimbursementForm,
     build_response_form,
 )
 from .mail import send_logistics_link
@@ -23,6 +24,7 @@ from .models import (
     LogisticsFieldResponse,
     LogisticsForm,
     LogisticsResponse,
+    Reimbursement,
 )
 
 
@@ -289,6 +291,104 @@ class ResponseExportView(OrganizerRequiredMixin, View):
                 [resp.respondent_name, resp.respondent_email, "Oui" if resp.is_complete else "Non"]
                 + [field_values.get(f.pk, "") for f in fields]
             )
+        return http_response
+
+
+# ---------------------------------------------------------------------------
+# Remboursements
+# ---------------------------------------------------------------------------
+
+
+class ReimbursementListView(OrganizerRequiredMixin, View):
+    def _ctx(self, form=None):
+        from django.db.models import Sum
+        reimbursements = self.event.reimbursements.order_by("person_name")
+        grand_total = reimbursements.aggregate(s=Sum("amount"))["s"] or 0
+        totals_by_status = [
+            (label, reimbursements.filter(status=val).aggregate(s=Sum("amount"))["s"] or 0)
+            for val, label in Reimbursement.Status.choices
+        ]
+        totals_by_category = [
+            (label, reimbursements.filter(category=val).aggregate(s=Sum("amount"))["s"] or 0)
+            for val, label in Reimbursement.Category.choices
+        ]
+        return {
+            "event": self.event,
+            "membership": self.membership,
+            "reimbursements": reimbursements,
+            "grand_total": grand_total,
+            "totals_by_status": totals_by_status,
+            "totals_by_category": totals_by_category,
+            "status_choices": Reimbursement.Status.choices,
+            "category_choices": Reimbursement.Category.choices,
+            "form": form or ReimbursementForm(event=self.event),
+        }
+
+    def get(self, request, event_slug):
+        return render(request, "logistics/reimbursements.html", self._ctx())
+
+    def post(self, request, event_slug):
+        form = ReimbursementForm(request.POST, event=self.event)
+        if form.is_valid():
+            r = form.save(commit=False)
+            r.event = self.event
+            r.save()
+            messages.success(request, "Remboursement ajouté.")
+            return redirect("logistics:reimbursements", event_slug=event_slug)
+        return render(request, "logistics/reimbursements.html", self._ctx(form=form))
+
+
+class ReimbursementEditView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        r = get_object_or_404(Reimbursement, pk=pk, event=self.event)
+        form = ReimbursementForm(request.POST, instance=r, event=self.event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Remboursement mis à jour.")
+        else:
+            messages.error(request, "Erreur dans le formulaire.")
+        return redirect("logistics:reimbursements", event_slug=event_slug)
+
+
+class ReimbursementDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        r = get_object_or_404(Reimbursement, pk=pk, event=self.event)
+        r.hard_delete()
+        messages.success(request, "Remboursement supprimé.")
+        return redirect("logistics:reimbursements", event_slug=event_slug)
+
+
+class ReimbursementStatusView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        r = get_object_or_404(Reimbursement, pk=pk, event=self.event)
+        try:
+            data = json.loads(request.body)
+            status = data["status"]
+        except (ValueError, KeyError):
+            return JsonResponse({"error": "Données invalides."}, status=400)
+        if status not in Reimbursement.Status.values:
+            return JsonResponse({"error": "Statut invalide."}, status=400)
+        r.status = status
+        r.save(update_fields=["status", "updated_at"])
+        return JsonResponse({"status": r.status, "label": r.get_status_display()})
+
+
+class ReimbursementExportView(OrganizerRequiredMixin, View):
+    def get(self, request, event_slug):
+        reimbursements = self.event.reimbursements.order_by("person_name")
+        http_response = HttpResponse(content_type="text/csv; charset=utf-8")
+        http_response["Content-Disposition"] = (
+            f'attachment; filename="remboursements-{self.event.slug}.csv"'
+        )
+        http_response.write("﻿")
+        writer = csv.writer(http_response)
+        writer.writerow(["Nom", "Email", "Description", "Catégorie", "Montant (€)", "Statut", "Notes"])
+        for r in reimbursements:
+            writer.writerow([
+                r.person_name, r.person_email, r.description,
+                r.get_category_display(), r.amount,
+                r.get_status_display(), r.notes,
+            ])
         return http_response
 
 
