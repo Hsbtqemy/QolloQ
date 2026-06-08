@@ -439,7 +439,7 @@ class ReimbursementExportView(OrganizerRequiredMixin, View):
 
 
 class BudgetView(OrganizerRequiredMixin, View):
-    def _ctx(self, form=None, envelope_form=None):
+    def _ctx(self, form=None):
         from decimal import Decimal
 
         from django.db.models import Sum
@@ -492,7 +492,6 @@ class BudgetView(OrganizerRequiredMixin, View):
             "envelope": envelope,
             "remaining": remaining,
             "form": form or BudgetLineForm(),
-            "envelope_form": envelope_form or BudgetSettingsForm(instance=settings_obj),
             "doc_form": BudgetDocumentForm(),
             "category_choices": BudgetLine.Category.choices,
         }
@@ -518,8 +517,9 @@ class BudgetEnvelopeView(OrganizerRequiredMixin, View):
         if form.is_valid():
             form.save()
             messages.success(request, "Enveloppe mise à jour.")
-            return redirect("logistics:budget", event_slug=event_slug)
-        return render(request, "logistics/budget.html", self._ctx(envelope_form=form))
+        else:
+            messages.error(request, "Montant invalide.")
+        return redirect("logistics:budget", event_slug=event_slug)
 
 
 class BudgetLineEditView(OrganizerRequiredMixin, View):

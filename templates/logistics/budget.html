@@ -168,7 +168,7 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem">
         <h3 style="margin:0">Récapitulatif</h3>
         <button type="button" class="btn ghost sm" x-data @click="$dispatch('open-envelope')">
-          {% if envelope %}Modifier l'enveloppe{% else %}Définir une enveloppe{% endif %}
+          {% if envelope is not None %}Modifier l'enveloppe{% else %}Définir une enveloppe{% endif %}
         </button>
       </div>
 
@@ -185,15 +185,12 @@
               <button type="submit" class="btn primary sm">OK</button>
               <button type="button" class="btn ghost sm" @click="open = false">Annuler</button>
             </div>
-            {% if envelope_form.envelope.errors %}
-            <ul class="errorlist">{% for e in envelope_form.envelope.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-            {% endif %}
           </form>
         </div>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:.3rem">
-        {% if envelope %}
+        {% if envelope is not None %}
         <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
           <span>Enveloppe totale</span>
           <strong>{{ envelope }} €</strong>
