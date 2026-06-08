@@ -30,7 +30,7 @@
       <a class="sidebar-link {% if request.resolver_match.app_name == 'programme' %}active{% endif %}"
          href="{% url 'programme:programme' event_slug=event.slug %}">Programme</a>
       <a class="sidebar-link {% if request.resolver_match.app_name == 'logistics' %}active{% endif %}"
-         href="{% url 'logistics:response_list' event_slug=event.slug %}">Logistique</a>
+         href="{% url 'logistics:index' event_slug=event.slug %}">Logistique</a>
       <a class="sidebar-link {% if request.resolver_match.app_name == 'emails' %}active{% endif %}"
          href="{% url 'emails:campaign_list' event_slug=event.slug %}">Emails</a>
       {% if membership.is_organizer %}
