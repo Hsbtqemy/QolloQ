@@ -31,10 +31,12 @@
     <h3>Programme</h3>
     <p class="text-muted">Sessions, communications, événements annexes.</p>
   </a>
+  {% if membership.is_organizer %}
   <a class="card" href="{% url 'logistics:index' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
     <h3>Logistique</h3>
     <p class="text-muted">Formulaires organisationnels, remboursements, budget.</p>
   </a>
+  {% endif %}
   <a class="card" href="{% url 'emails:campaign_list' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
     <h3>Emails</h3>
     <p class="text-muted">Campagnes email vers les membres et intervenants.</p>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Formulaire logistique — {{ event.name }}</title>
+  <title>{{ logistics_form.name }} — {{ event.name }}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body>
@@ -14,7 +14,7 @@
   </header>
   <main class="public-main" style="max-width:620px">
     <div class="public-card">
-      <h1>Formulaire logistique</h1>
+      <h1>{{ logistics_form.name }}</h1>
       <p class="text-muted">Bonjour {{ response.respondent_name }},</p>
 
       {% if logistics_form.instructions %}

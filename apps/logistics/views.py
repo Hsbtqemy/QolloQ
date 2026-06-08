@@ -3,7 +3,7 @@ import json
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.db.models import Max
+from django.db.models import Count, Max
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -37,13 +37,15 @@ def _get_lf(event, form_id):
 
 class LogisticsIndexView(OrganizerRequiredMixin, View):
     def get(self, request, event_slug):
-        forms = self.event.logistics_forms.annotate_response_count().order_by("created_at") \
-            if hasattr(LogisticsForm, 'annotate_response_count') \
-            else self.event.logistics_forms.order_by("created_at")
+        logistics_forms = (
+            self.event.logistics_forms
+            .annotate(response_count=Count("responses"))
+            .order_by("created_at")
+        )
         return render(request, "logistics/index.html", {
             "event": self.event,
             "membership": self.membership,
-            "logistics_forms": self.event.logistics_forms.order_by("created_at"),
+            "logistics_forms": logistics_forms,
             "create_form": LogisticsFormSettingsForm(),
         })
 

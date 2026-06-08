@@ -31,7 +31,7 @@
             </td>
             <td class="text-muted">
               <a href="{% url 'logistics:response_list' event_slug=event.slug form_id=lf.pk %}">
-                {{ lf.responses.count }} réponse{{ lf.responses.count|pluralize }}
+                {{ lf.response_count }} réponse{{ lf.response_count|pluralize }}
               </a>
             </td>
             <td class="actions">
