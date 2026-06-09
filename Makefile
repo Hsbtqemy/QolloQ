@@ -1,19 +1,19 @@
-PYTHON = .venv/bin/python
+PYTHON = venv/bin/python
 SETTINGS = config.settings.production
 
-.PHONY: deploy pull migrate static restart logs shell
+.PHONY: deploy pull migrate static restart logs shell createsuperuser
 
 deploy: pull migrate static restart
 	@echo "Déploiement terminé."
 
 pull:
-	git pull origin main
+	sudo -u qolloq git pull
 
 migrate:
-	$(PYTHON) manage.py migrate --settings=$(SETTINGS)
+	sudo -u qolloq $(PYTHON) manage.py migrate --settings=$(SETTINGS)
 
 static:
-	$(PYTHON) manage.py collectstatic --noinput --settings=$(SETTINGS)
+	sudo -u qolloq $(PYTHON) manage.py collectstatic --noinput --settings=$(SETTINGS)
 
 restart:
 	sudo systemctl restart qolloq
@@ -22,7 +22,7 @@ logs:
 	sudo journalctl -u qolloq -f
 
 shell:
-	$(PYTHON) manage.py shell --settings=$(SETTINGS)
+	sudo -u qolloq $(PYTHON) manage.py shell --settings=$(SETTINGS)
 
 createsuperuser:
-	$(PYTHON) manage.py createsuperuser --settings=$(SETTINGS)
+	sudo -u qolloq $(PYTHON) manage.py createsuperuser --settings=$(SETTINGS)
