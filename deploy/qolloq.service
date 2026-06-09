@@ -1,17 +1,19 @@
 [Unit]
-Description=QolloQ gunicorn daemon
+Description=Gunicorn daemon for QolloQ
 After=network.target postgresql.service
 
 [Service]
-User=ubuntu
+User=qolloq
 Group=www-data
-WorkingDirectory=/var/www/qolloq
-RuntimeDirectory=qolloq
-ExecStart=/var/www/qolloq/.venv/bin/gunicorn config.wsgi:application \
+WorkingDirectory=/home/qolloq/qolloq
+Environment=DJANGO_SETTINGS_MODULE=config.settings.production
+ExecStart=/home/qolloq/qolloq/venv/bin/gunicorn \
     --workers 2 \
-    --bind unix:/run/qolloq/qolloq.sock \
-    --access-logfile - \
-    --error-logfile -
+    --forwarded-allow-ips="*" \
+    --bind unix:/home/qolloq/qolloq/qolloq.sock \
+    --access-logfile /var/log/qolloq/access.log \
+    --error-logfile /var/log/qolloq/error.log \
+    config.wsgi:application
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
