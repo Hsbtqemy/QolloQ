@@ -1,8 +1,6 @@
 <div class="tabs" style="margin-bottom:1.25rem">
   <a href="{% url 'logistics:index' event_slug=event.slug %}"
      class="tab-link {% if active == 'index' %}active{% endif %}">Formulaires</a>
-  <a href="{% url 'logistics:reimbursements' event_slug=event.slug %}"
-     class="tab-link {% if active == 'reimbursements' %}active{% endif %}">Remboursements</a>
   <a href="{% url 'logistics:budget' event_slug=event.slug %}"
      class="tab-link {% if active == 'budget' %}active{% endif %}">Budget</a>
 </div>

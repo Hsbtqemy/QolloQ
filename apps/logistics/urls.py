@@ -79,31 +79,31 @@ urlpatterns = [
         views.ResponseExportView.as_view(),
         name="export_csv",
     ),
-    # Remboursements
+    # Prises en charge (intégrées dans le budget)
     path(
-        "evenements/<slug:event_slug>/logistique/remboursements/",
-        views.ReimbursementListView.as_view(),
-        name="reimbursements",
+        "evenements/<slug:event_slug>/logistique/budget/charges/export.csv",
+        views.BudgetChargeExportView.as_view(),
+        name="budget_charge_export",
     ),
     path(
-        "evenements/<slug:event_slug>/logistique/remboursements/export.csv",
-        views.ReimbursementExportView.as_view(),
-        name="reimbursement_export",
+        "evenements/<slug:event_slug>/logistique/budget/postes/<int:line_pk>/charges/ajouter/",
+        views.BudgetChargeCreateView.as_view(),
+        name="budget_charge_create",
     ),
     path(
-        "evenements/<slug:event_slug>/logistique/remboursements/<int:pk>/modifier/",
-        views.ReimbursementEditView.as_view(),
-        name="reimbursement_edit",
+        "evenements/<slug:event_slug>/logistique/budget/charges/<int:charge_pk>/modifier/",
+        views.BudgetChargeEditView.as_view(),
+        name="budget_charge_edit",
     ),
     path(
-        "evenements/<slug:event_slug>/logistique/remboursements/<int:pk>/supprimer/",
-        views.ReimbursementDeleteView.as_view(),
-        name="reimbursement_delete",
+        "evenements/<slug:event_slug>/logistique/budget/charges/<int:charge_pk>/supprimer/",
+        views.BudgetChargeDeleteView.as_view(),
+        name="budget_charge_delete",
     ),
     path(
-        "evenements/<slug:event_slug>/logistique/remboursements/<int:pk>/statut/",
-        views.ReimbursementStatusView.as_view(),
-        name="reimbursement_status",
+        "evenements/<slug:event_slug>/logistique/budget/charges/<int:charge_pk>/statut/",
+        views.BudgetChargeStatusView.as_view(),
+        name="budget_charge_status",
     ),
     # Budget
     path(

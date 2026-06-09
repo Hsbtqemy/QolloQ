@@ -4,6 +4,9 @@
 {% block content %}
 <div class="page-header">
   <h1>Budget</h1>
+  <div class="actions">
+    <a href="{% url 'logistics:budget_charge_export' event_slug=event.slug %}" class="btn ghost sm">↓ Export prises en charge</a>
+  </div>
 </div>
 
 {% include "logistics/_nav.html" with active="budget" %}
@@ -33,7 +36,7 @@
           </tr>
         </tbody>
         {% for line in cat.lines %}
-        <tbody x-data="{ editing: false, showDocs: false }" id="line-{{ line.pk }}">
+        <tbody x-data="{ editing: false, showDocs: false, showCharges: false }" id="line-{{ line.pk }}">
           <tr>
             <td x-show="!editing">
               {{ line.label }}
@@ -47,6 +50,9 @@
               <div class="btn-group">
                 <button type="button" class="btn ghost sm" @click="showDocs = !showDocs">
                   📎 {{ line.documents.all|length }}
+                </button>
+                <button type="button" class="btn ghost sm" @click="showCharges = !showCharges">
+                  👤 {{ line.charges.all|length }}
                 </button>
                 <button type="button" class="btn ghost sm" @click="editing = true">Modifier</button>
                 <form method="post" action="{% url 'logistics:budget_line_delete' event_slug=event.slug pk=line.pk %}" class="inline-form">
@@ -88,6 +94,70 @@
                 <div class="form-actions">
                   <button type="submit" class="btn primary sm">Enregistrer</button>
                   <button type="button" class="btn ghost sm" @click="editing = false">Annuler</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+
+          <tr x-show="showCharges" x-cloak>
+            <td colspan="4" style="background:#f0f9ff; padding:.75rem">
+              {% if line.charges.all %}
+              <div style="margin-bottom:.75rem">
+                {% for charge in line.charges.all %}
+                <div style="display:flex; align-items:center; gap:.75rem; padding:.3rem 0; border-bottom:1px solid #e0f2fe" id="charge-{{ charge.pk }}">
+                  <span class="badge {{ charge.status }}">{{ charge.get_status_display }}</span>
+                  <span style="flex:1">
+                    <strong>{{ charge.person_name }}</strong>
+                    {% if charge.person_email %}<span class="text-muted text-sm"> · {{ charge.person_email }}</span>{% endif %}
+                    — {{ charge.description }}
+                    {% if charge.notes %}<span class="text-muted text-sm"> ({{ charge.notes }})</span>{% endif %}
+                  </span>
+                  <span style="white-space:nowrap; font-weight:600">{{ charge.amount }} €</span>
+                  <div class="btn-group">
+                    {% for val, label in charge_status_choices %}{% if charge.status != val %}
+                    <button type="button" class="btn ghost sm"
+                      @click="fetch('{% url 'logistics:budget_charge_status' event_slug=event.slug charge_pk=charge.pk %}', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+                        body:JSON.stringify({status:'{{ val }}'})
+                      }).then(r=>r.json()).then(d=>{
+                        const b=document.querySelector('#charge-{{ charge.pk }} .badge');
+                        b.textContent=d.label; b.className='badge '+d.status;
+                      })">{{ label }}</button>
+                    {% endif %}{% endfor %}
+                    <form method="post" action="{% url 'logistics:budget_charge_delete' event_slug=event.slug charge_pk=charge.pk %}" class="inline-form">
+                      {% csrf_token %}
+                      <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ?')">✕</button>
+                    </form>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+              <form method="post" action="{% url 'logistics:budget_charge_create' event_slug=event.slug line_pk=line.pk %}">
+                {% csrf_token %}
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:.4rem; align-items:end">
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Nom <span class="req">*</span></label>
+                    <input type="text" name="person_name" required>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Description <span class="req">*</span></label>
+                    <input type="text" name="description" required>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Montant (€) <span class="req">*</span></label>
+                    <input type="number" name="amount" step="0.01" min="0" required>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="text-sm">Statut</label>
+                    <select name="status">
+                      {% for val, label in charge_status_choices %}
+                      <option value="{{ val }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <button type="submit" class="btn primary sm">Ajouter</button>
                 </div>
               </form>
             </td>
@@ -209,10 +279,10 @@
           <span>Total réel</span>
           <strong>{{ total_actual }} €</strong>
         </div>
-        {% if total_reimbursements %}
+        {% if total_charges_received %}
         <div style="display:flex; justify-content:space-between; padding:.25rem 0; border-bottom:1px solid #f3f4f6">
-          <span class="text-muted">Remboursements reçus</span>
-          <span class="text-muted">{{ total_reimbursements }} €</span>
+          <span class="text-muted">Prises en charge reçues</span>
+          <span class="text-muted">{{ total_charges_received }} €</span>
         </div>
         {% endif %}
         {% endif %}

@@ -2,7 +2,7 @@ import json
 
 from django import forms
 
-from .models import BudgetDocument, BudgetLine, BudgetSettings, LogisticsField, LogisticsForm, LogisticsResponse, Reimbursement
+from .models import BudgetCharge, BudgetDocument, BudgetLine, BudgetSettings, LogisticsField, LogisticsForm, LogisticsResponse
 
 
 class LogisticsFormSettingsForm(forms.ModelForm):
@@ -64,10 +64,10 @@ class LogisticsResponseAdminForm(forms.ModelForm):
         fields = ["respondent_name", "respondent_email"]
 
 
-class ReimbursementForm(forms.ModelForm):
+class BudgetChargeForm(forms.ModelForm):
     class Meta:
-        model = Reimbursement
-        fields = ["person_name", "person_email", "description", "category", "amount", "form_response", "notes"]
+        model = BudgetCharge
+        fields = ["person_name", "person_email", "description", "amount", "status", "form_response", "notes"]
         widgets = {
             "notes": forms.Textarea(attrs={"rows": 2}),
         }

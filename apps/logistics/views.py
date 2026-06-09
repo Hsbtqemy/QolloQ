@@ -12,17 +12,18 @@ from django.views import View
 from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin
 
 from .forms import (
+    BudgetChargeForm,
     BudgetDocumentForm,
     BudgetLineForm,
     BudgetSettingsForm,
     LogisticsFieldForm,
     LogisticsFormSettingsForm,
     LogisticsResponseAdminForm,
-    ReimbursementForm,
     build_response_form,
 )
 from .mail import send_logistics_link
 from .models import (
+    BudgetCharge,
     BudgetDocument,
     BudgetLine,
     BudgetSettings,
@@ -30,7 +31,6 @@ from .models import (
     LogisticsFieldResponse,
     LogisticsForm,
     LogisticsResponse,
-    Reimbursement,
 )
 
 
@@ -47,12 +47,12 @@ class LogisticsIndexView(OrganizerRequiredMixin, View):
     def _stats(self):
         from decimal import Decimal
         zero = Decimal("0.00")
-        pending = LogisticsResponse.objects.filter(
+        pending_responses = LogisticsResponse.objects.filter(
             form__event=self.event, is_complete=False
         ).count()
-        total_reimbursements = (
-            self.event.reimbursements.aggregate(s=Sum("amount"))["s"] or zero
-        )
+        pending_charges = BudgetCharge.objects.filter(
+            budget_line__event=self.event, status=BudgetCharge.Status.PENDING
+        ).count()
         budget_planned = (
             self.event.budget_lines.aggregate(s=Sum("amount_planned"))["s"] or zero
         )
@@ -62,8 +62,8 @@ class LogisticsIndexView(OrganizerRequiredMixin, View):
             .aggregate(s=Sum("amount_actual"))["s"] or zero
         )
         return {
-            "stat_pending_responses": pending,
-            "stat_total_reimbursements": total_reimbursements,
+            "stat_pending_responses": pending_responses,
+            "stat_pending_charges": pending_charges,
             "stat_budget_planned": budget_planned,
             "stat_budget_actual": budget_actual,
         }
@@ -333,102 +333,79 @@ class ResponseExportView(OrganizerRequiredMixin, View):
 
 
 # ---------------------------------------------------------------------------
-# Remboursements
+# Prises en charge (intégrées dans le budget)
 # ---------------------------------------------------------------------------
 
 
-class ReimbursementListView(OrganizerRequiredMixin, View):
-    def _ctx(self, form=None):
-        from decimal import Decimal
-
-        from django.db.models import Sum
-        zero = Decimal("0.00")
-        reimbursements = self.event.reimbursements.order_by("person_name")
-        grand_total = reimbursements.aggregate(s=Sum("amount"))["s"] or zero
-        totals_by_status = [
-            (label, reimbursements.filter(status=val).aggregate(s=Sum("amount"))["s"] or zero)
-            for val, label in Reimbursement.Status.choices
-        ]
-        totals_by_category = [
-            (label, reimbursements.filter(category=val).aggregate(s=Sum("amount"))["s"] or zero)
-            for val, label in Reimbursement.Category.choices
-        ]
-        return {
-            "event": self.event,
-            "membership": self.membership,
-            "reimbursements": reimbursements,
-            "grand_total": grand_total,
-            "totals_by_status": totals_by_status,
-            "totals_by_category": totals_by_category,
-            "status_choices": Reimbursement.Status.choices,
-            "category_choices": Reimbursement.Category.choices,
-            "form": form or ReimbursementForm(event=self.event),
-        }
-
-    def get(self, request, event_slug):
-        return render(request, "logistics/reimbursements.html", self._ctx())
-
-    def post(self, request, event_slug):
-        form = ReimbursementForm(request.POST, event=self.event)
+class BudgetChargeCreateView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, line_pk):
+        line = get_object_or_404(BudgetLine, pk=line_pk, event=self.event)
+        form = BudgetChargeForm(request.POST, event=self.event)
         if form.is_valid():
-            r = form.save(commit=False)
-            r.event = self.event
-            r.save()
-            messages.success(request, "Remboursement ajouté.")
-            return redirect("logistics:reimbursements", event_slug=event_slug)
-        return render(request, "logistics/reimbursements.html", self._ctx(form=form))
-
-
-class ReimbursementEditView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug, pk):
-        r = get_object_or_404(Reimbursement, pk=pk, event=self.event)
-        form = ReimbursementForm(request.POST, instance=r, event=self.event)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Remboursement mis à jour.")
+            charge = form.save(commit=False)
+            charge.budget_line = line
+            charge.save()
+            messages.success(request, "Prise en charge ajoutée.")
         else:
             messages.error(request, "Erreur dans le formulaire.")
-        return redirect("logistics:reimbursements", event_slug=event_slug)
+        return redirect("logistics:budget", event_slug=event_slug)
 
 
-class ReimbursementDeleteView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug, pk):
-        r = get_object_or_404(Reimbursement, pk=pk, event=self.event)
-        r.hard_delete()
-        messages.success(request, "Remboursement supprimé.")
-        return redirect("logistics:reimbursements", event_slug=event_slug)
+class BudgetChargeEditView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, charge_pk):
+        charge = get_object_or_404(BudgetCharge, pk=charge_pk, budget_line__event=self.event)
+        form = BudgetChargeForm(request.POST, instance=charge, event=self.event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Prise en charge mise à jour.")
+        else:
+            messages.error(request, "Erreur dans le formulaire.")
+        return redirect("logistics:budget", event_slug=event_slug)
 
 
-class ReimbursementStatusView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug, pk):
-        r = get_object_or_404(Reimbursement, pk=pk, event=self.event)
+class BudgetChargeDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, charge_pk):
+        charge = get_object_or_404(BudgetCharge, pk=charge_pk, budget_line__event=self.event)
+        charge.hard_delete()
+        messages.success(request, "Prise en charge supprimée.")
+        return redirect("logistics:budget", event_slug=event_slug)
+
+
+class BudgetChargeStatusView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, charge_pk):
+        charge = get_object_or_404(BudgetCharge, pk=charge_pk, budget_line__event=self.event)
         try:
             data = json.loads(request.body)
             status = data["status"]
         except (ValueError, KeyError):
             return JsonResponse({"error": "Données invalides."}, status=400)
-        if status not in Reimbursement.Status.values:
+        if status not in BudgetCharge.Status.values:
             return JsonResponse({"error": "Statut invalide."}, status=400)
-        r.status = status
-        r.save(update_fields=["status", "updated_at"])
-        return JsonResponse({"status": r.status, "label": r.get_status_display()})
+        charge.status = status
+        charge.save(update_fields=["status", "updated_at"])
+        return JsonResponse({"status": charge.status, "label": charge.get_status_display()})
 
 
-class ReimbursementExportView(OrganizerRequiredMixin, View):
+class BudgetChargeExportView(OrganizerRequiredMixin, View):
     def get(self, request, event_slug):
-        reimbursements = self.event.reimbursements.order_by("person_name")
+        charges = (
+            BudgetCharge.objects.filter(budget_line__event=self.event)
+            .select_related("budget_line")
+            .order_by("budget_line__category", "person_name")
+        )
         http_response = HttpResponse(content_type="text/csv; charset=utf-8")
         http_response["Content-Disposition"] = (
-            f'attachment; filename="remboursements-{self.event.slug}.csv"'
+            f'attachment; filename="prises-en-charge-{self.event.slug}.csv"'
         )
         http_response.write("﻿")
         writer = csv.writer(http_response)
-        writer.writerow(["Nom", "Email", "Description", "Catégorie", "Montant (€)", "Statut", "Notes"])
-        for r in reimbursements:
+        writer.writerow(["Poste", "Catégorie", "Nom", "Email", "Description", "Montant (€)", "Statut", "Notes"])
+        for c in charges:
             writer.writerow([
-                r.person_name, r.person_email, r.description,
-                r.get_category_display(), r.amount,
-                r.get_status_display(), r.notes,
+                c.budget_line.label,
+                c.budget_line.get_category_display(),
+                c.person_name, c.person_email, c.description,
+                c.amount, c.get_status_display(), c.notes,
             ])
         return http_response
 
@@ -447,7 +424,7 @@ class BudgetView(OrganizerRequiredMixin, View):
 
         lines = list(
             self.event.budget_lines
-            .prefetch_related("documents")
+            .prefetch_related("documents", "charges")
             .order_by("category", "label")
         )
 
@@ -471,10 +448,11 @@ class BudgetView(OrganizerRequiredMixin, View):
         total_actual = sum(
             ln.amount_actual for ln in lines if ln.amount_actual is not None
         ) or zero
-        total_reimbursements = (
-            self.event.reimbursements
-            .filter(status=Reimbursement.Status.RECEIVED)
-            .aggregate(s=Sum("amount"))["s"] or zero
+        total_charges_received = (
+            BudgetCharge.objects.filter(
+                budget_line__event=self.event,
+                status=BudgetCharge.Status.RECEIVED,
+            ).aggregate(s=Sum("amount"))["s"] or zero
         )
 
         settings_obj, _ = BudgetSettings.objects.get_or_create(event=self.event)
@@ -488,12 +466,14 @@ class BudgetView(OrganizerRequiredMixin, View):
             "categories": categories,
             "total_planned": total_planned,
             "total_actual": total_actual,
-            "total_reimbursements": total_reimbursements,
+            "total_charges_received": total_charges_received,
             "envelope": envelope,
             "remaining": remaining,
             "form": form or BudgetLineForm(),
             "doc_form": BudgetDocumentForm(),
+            "charge_form": BudgetChargeForm(event=self.event),
             "category_choices": BudgetLine.Category.choices,
+            "charge_status_choices": BudgetCharge.Status.choices,
         }
 
     def get(self, request, event_slug):

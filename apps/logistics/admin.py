@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BudgetDocument, BudgetLine, BudgetSettings, LogisticsField, LogisticsFieldResponse, LogisticsForm, LogisticsResponse, Reimbursement
+from .models import BudgetCharge, BudgetDocument, BudgetLine, BudgetSettings, LogisticsField, LogisticsFieldResponse, LogisticsForm, LogisticsResponse
 
 
 class LogisticsFieldInline(admin.TabularInline):
@@ -35,13 +35,6 @@ class LogisticsResponseAdmin(admin.ModelAdmin):
     inlines = [LogisticsFieldResponseInline]
 
 
-@admin.register(Reimbursement)
-class ReimbursementAdmin(admin.ModelAdmin):
-    list_display = ["person_name", "description", "category", "amount", "status", "event"]
-    list_filter = ["status", "category", "event"]
-    search_fields = ["person_name", "person_email", "description"]
-    raw_id_fields = ["event", "form_response"]
-
 
 @admin.register(BudgetSettings)
 class BudgetSettingsAdmin(admin.ModelAdmin):
@@ -55,10 +48,24 @@ class BudgetDocumentInline(admin.TabularInline):
     fields = ["label", "kind", "file", "amount"]
 
 
+class BudgetChargeInline(admin.TabularInline):
+    model = BudgetCharge
+    extra = 0
+    fields = ["person_name", "person_email", "description", "amount", "status"]
+
+
 @admin.register(BudgetLine)
 class BudgetLineAdmin(admin.ModelAdmin):
     list_display = ["label", "category", "amount_planned", "amount_actual", "event"]
     list_filter = ["category", "event"]
     search_fields = ["label"]
     raw_id_fields = ["event"]
-    inlines = [BudgetDocumentInline]
+    inlines = [BudgetDocumentInline, BudgetChargeInline]
+
+
+@admin.register(BudgetCharge)
+class BudgetChargeAdmin(admin.ModelAdmin):
+    list_display = ["person_name", "description", "amount", "status", "budget_line"]
+    list_filter = ["status", "budget_line__event"]
+    search_fields = ["person_name", "person_email", "description"]
+    raw_id_fields = ["budget_line", "form_response"]

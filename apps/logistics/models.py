@@ -167,34 +167,23 @@ class LogisticsFieldResponse(models.Model):
         return self.value or "—"
 
 
-class Reimbursement(BaseModel):
-    """Suivi d'un remboursement lié à un événement."""
-
-    class Category(models.TextChoices):
-        TRANSPORT = "transport", "Transport"
-        ACCOMMODATION = "accommodation", "Hébergement"
-        MEALS = "meals", "Repas"
-        OTHER = "other", "Autre"
+class BudgetCharge(BaseModel):
+    """Prise en charge individuelle rattachée à un poste budgétaire."""
 
     class Status(models.TextChoices):
         PENDING = "pending", "En attente"
         SENT = "sent", "Envoyé"
         RECEIVED = "received", "Reçu"
 
-    event = models.ForeignKey(
-        Event,
+    budget_line = models.ForeignKey(
+        "BudgetLine",
         on_delete=models.CASCADE,
-        related_name="reimbursements",
-        verbose_name="Événement",
+        related_name="charges",
+        verbose_name="Poste budgétaire",
     )
     person_name = models.CharField(max_length=255, verbose_name="Nom")
     person_email = models.EmailField(blank=True, verbose_name="Email")
     description = models.CharField(max_length=500, verbose_name="Description")
-    category = models.CharField(
-        max_length=20,
-        choices=Category.choices,
-        verbose_name="Catégorie",
-    )
     amount = models.DecimalField(
         max_digits=8,
         decimal_places=2,
@@ -211,14 +200,14 @@ class Reimbursement(BaseModel):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="reimbursements",
+        related_name="charges",
         verbose_name="Réponse liée",
     )
     notes = models.TextField(blank=True, verbose_name="Notes")
 
     class Meta:
-        verbose_name = "Remboursement"
-        verbose_name_plural = "Remboursements"
+        verbose_name = "Prise en charge"
+        verbose_name_plural = "Prises en charge"
         ordering = ["person_name"]
 
     def __str__(self):

@@ -20,8 +20,10 @@
     <div class="text-muted text-sm">réponse{{ stat_pending_responses|pluralize }} en attente</div>
   </div>
   <div class="card" style="text-align:center; padding:1rem">
-    <div style="font-size:1.6rem; font-weight:700">{{ stat_total_reimbursements }} €</div>
-    <div class="text-muted text-sm">remboursements</div>
+    <div style="font-size:1.6rem; font-weight:700; {% if stat_pending_charges %}color:#d97706{% endif %}">
+      {{ stat_pending_charges }}
+    </div>
+    <div class="text-muted text-sm">prise{{ stat_pending_charges|pluralize }} en charge en attente</div>
   </div>
 </div>
 
