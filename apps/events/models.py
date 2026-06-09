@@ -9,8 +9,6 @@ class Event(BaseModel):
     name = models.CharField(max_length=255, verbose_name="Intitulé")
     slug = models.SlugField(max_length=255, unique=True, verbose_name="Identifiant URL")
     description = models.TextField(blank=True, verbose_name="Description")
-    call_for_papers = models.TextField(blank=True, verbose_name="Appel à communications")
-    bibliography = models.TextField(blank=True, verbose_name="Bibliographie")
     location = models.CharField(max_length=255, blank=True, verbose_name="Lieu")
     start_date = models.DateField(verbose_name="Date de début")
     end_date = models.DateField(verbose_name="Date de fin")
@@ -148,6 +146,39 @@ class Task(BaseModel):
 
     def __str__(self):
         return self.title
+
+
+class CallVersion(BaseModel):
+    class Language(models.TextChoices):
+        FR = "fr", "Français"
+        EN = "en", "English"
+        DE = "de", "Deutsch"
+        ES = "es", "Español"
+        IT = "it", "Italiano"
+        PT = "pt", "Português"
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="call_versions",
+        verbose_name="Événement",
+    )
+    language = models.CharField(
+        max_length=5,
+        choices=Language.choices,
+        verbose_name="Langue",
+    )
+    content = models.TextField(blank=True, verbose_name="Appel à communications")
+    bibliography = models.TextField(blank=True, verbose_name="Bibliographie")
+
+    class Meta:
+        unique_together = [("event", "language")]
+        ordering = ["language"]
+        verbose_name = "Version de l'appel"
+        verbose_name_plural = "Versions de l'appel"
+
+    def __str__(self):
+        return f"{self.get_language_display()} — {self.event.name}"
 
 
 class Membership(BaseModel):

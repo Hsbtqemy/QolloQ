@@ -17,9 +17,9 @@ from apps.core.mixins import EventMemberRequiredMixin, OrganizerRequiredMixin
 from apps.documents.views import annotate_documents
 from apps.submissions.models import Proposal
 
-from .forms import EventForm, EventPublicPageForm, MemberAddForm
+from .forms import CallVersionForm, EventForm, EventPublicPageForm, MemberAddForm
 from .mail import send_member_invitation
-from .models import Event, KeyDate, Membership, Task
+from .models import CallVersion, Event, KeyDate, Membership, Task
 
 logger = logging.getLogger(__name__)
 
@@ -306,21 +306,63 @@ class EventImportCallView(OrganizerRequiredMixin, View):
 
 
 class EventPublicSettingsView(OrganizerRequiredMixin, View):
-    def get(self, request, event_slug):
+    def _render(self, request, event_slug, form=None):
+        versions = list(self.event.call_versions.all())
+        used_langs = {v.language for v in versions}
+        available_languages = [
+            (code, label)
+            for code, label in CallVersion.Language.choices
+            if code not in used_langs
+        ]
         return render(request, "events/public_settings.html", {
             "event": self.event,
             "membership": self.membership,
-            "form": EventPublicPageForm(instance=self.event),
+            "form": form or EventPublicPageForm(instance=self.event),
+            "versions": versions,
+            "available_languages": available_languages,
+            "new_version_form": CallVersionForm(),
         })
+
+    def get(self, request, event_slug):
+        return self._render(request, event_slug)
 
     def post(self, request, event_slug):
         form = EventPublicPageForm(request.POST, request.FILES, instance=self.event)
         if form.is_valid():
             form.save()
-            messages.success(request, "Contenu enregistré.")
+            messages.success(request, "Paramètres enregistrés.")
             return redirect("events:public_settings", event_slug=event_slug)
-        return render(request, "events/public_settings.html", {
-            "event": self.event,
-            "membership": self.membership,
-            "form": form,
-        })
+        return self._render(request, event_slug, form=form)
+
+
+class CallVersionCreateView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug):
+        form = CallVersionForm(request.POST)
+        if form.is_valid():
+            version = form.save(commit=False)
+            version.event = self.event
+            try:
+                version.save()
+                messages.success(request, f"Version « {version.get_language_display()} » créée.")
+            except Exception:
+                messages.error(request, "Une version dans cette langue existe déjà.")
+        return redirect("events:public_settings", event_slug=event_slug)
+
+
+class CallVersionUpdateView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        version = get_object_or_404(CallVersion, event=self.event, pk=pk)
+        version.content = request.POST.get("content", "")
+        version.bibliography = request.POST.get("bibliography", "")
+        version.save(update_fields=["content", "bibliography", "updated_at"])
+        messages.success(request, f"Version « {version.get_language_display()} » enregistrée.")
+        return redirect("events:public_settings", event_slug=event_slug)
+
+
+class CallVersionDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        version = get_object_or_404(CallVersion, event=self.event, pk=pk)
+        label = version.get_language_display()
+        version.delete()
+        messages.success(request, f"Version « {label} » supprimée.")
+        return redirect("events:public_settings", event_slug=event_slug)

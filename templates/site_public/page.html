@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% if event.call_for_papers %}Appel à communications — {% endif %}{{ event.name }}</title>
+<title>{% if active_version %}Appel à communications — {% endif %}{{ event.name }}</title>
 <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
 {% if event.primary_color %}<style>:root{--blue:{{ event.primary_color }}}</style>{% endif %}
 </head>
@@ -22,23 +22,35 @@
 
 <main class="container">
 
-  {% if event.call_for_papers %}
+  {% if active_version %}
   <section class="site-section">
     <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1rem">
-      <h2 style="margin:0">Appel à communications</h2>
-      <a href="{% url 'site_public:call_pdf' event_slug=event.slug %}" class="btn-outline">
-        ↓ Télécharger le PDF
+      <div style="display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap">
+        <h2 style="margin:0">Appel à communications</h2>
+        {% if versions|length > 1 %}
+        <div style="display:flex; gap:.35rem">
+          {% for v in versions %}
+          <a href="?lang={{ v.language }}"
+             class="lang-tab{% if v.language == active_version.language %} active{% endif %}">
+            {{ v.get_language_display }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <a href="{% url 'site_public:call_pdf' event_slug=event.slug lang=active_version.language %}" class="btn-outline">
+        ↓ PDF
       </a>
     </div>
-    <div class="prose">{{ event.call_for_papers|md }}</div>
+    <div class="prose">{{ active_version.content|md }}</div>
   </section>
-  {% endif %}
 
-  {% if event.bibliography %}
+  {% if active_version.bibliography %}
   <section class="site-section">
     <h2>Bibliographie</h2>
-    <div class="prose">{{ event.bibliography|md }}</div>
+    <div class="prose">{{ active_version.bibliography|md }}</div>
   </section>
+  {% endif %}
   {% endif %}
 
   {% if submit_url %}
@@ -51,7 +63,7 @@
   </section>
   {% endif %}
 
-  {% if not event.call_for_papers and not event.bibliography and not submit_url %}
+  {% if not active_version and not submit_url %}
   <section class="site-section">
     <p style="color:#6b7280; font-style:italic">La page de cet événement n'a pas encore été publiée.</p>
   </section>

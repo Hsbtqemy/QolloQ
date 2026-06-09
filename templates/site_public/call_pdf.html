@@ -30,11 +30,11 @@
 </p>
 
 <h2>Appel à communications</h2>
-<div class="prose">{{ event.call_for_papers|md }}</div>
+<div class="prose">{{ version.content|md }}</div>
 
-{% if event.bibliography %}
+{% if version.bibliography %}
 <h2>Bibliographie</h2>
-<div class="prose">{{ event.bibliography|md }}</div>
+<div class="prose">{{ version.bibliography|md }}</div>
 {% endif %}
 
 <footer>{{ event.site_footer|default:"Généré avec QolloQ" }}</footer>

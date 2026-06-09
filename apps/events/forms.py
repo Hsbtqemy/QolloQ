@@ -3,7 +3,7 @@ import re
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .models import Event, Membership
+from .models import CallVersion, Event, Membership
 
 
 class EventForm(forms.ModelForm):
@@ -33,21 +33,11 @@ class EventForm(forms.ModelForm):
 class EventPublicPageForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ["banner", "primary_color", "tagline", "site_footer", "call_for_papers", "bibliography"]
+        fields = ["banner", "primary_color", "tagline", "site_footer"]
         widgets = {
-            "call_for_papers": forms.Textarea(attrs={"rows": 12}),
-            "bibliography": forms.Textarea(attrs={"rows": 6}),
             "banner": forms.ClearableFileInput(attrs={"accept": "image/*"}),
             "tagline": forms.TextInput(),
             "site_footer": forms.TextInput(),
-        }
-        help_texts = {
-            "call_for_papers": (
-                "Affiché sur la page publique et dans le PDF. "
-                "Mise en forme Markdown acceptée. "
-                "Notes de bas de page : écrire [^1] dans le texte, puis [^1]: texte de la note à la fin."
-            ),
-            "bibliography": "Références bibliographiques — optionnel. Markdown accepté.",
         }
 
     def clean_primary_color(self):
@@ -55,6 +45,24 @@ class EventPublicPageForm(forms.ModelForm):
         if color and not re.match(r'^#[0-9a-fA-F]{6}$', color):
             raise forms.ValidationError("Format invalide. Utilisez un code hexadécimal à 6 chiffres, ex. #1e3a5f.")
         return color
+
+
+class CallVersionForm(forms.ModelForm):
+    class Meta:
+        model = CallVersion
+        fields = ["language", "content", "bibliography"]
+        widgets = {
+            "content": forms.Textarea(attrs={"rows": 12}),
+            "bibliography": forms.Textarea(attrs={"rows": 6}),
+        }
+        help_texts = {
+            "content": (
+                "Affiché sur la page publique et dans le PDF. "
+                "Mise en forme Markdown acceptée. "
+                "Notes de bas de page : écrire [^1] dans le texte, puis [^1]: texte de la note à la fin."
+            ),
+            "bibliography": "Références bibliographiques — optionnel. Markdown accepté.",
+        }
 
 
 class MemberAddForm(forms.Form):

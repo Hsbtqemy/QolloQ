@@ -16,7 +16,7 @@ urlpatterns = [
         name="page",
     ),
     path(
-        "appel/<slug:event_slug>/pdf/",
+        "appel/<slug:event_slug>/pdf/<str:lang>/",
         views.EventCallPDFView.as_view(),
         name="call_pdf",
     ),

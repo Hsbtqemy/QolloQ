@@ -31,19 +31,22 @@
 
 <main class="container">
 
-  {% if event.call_for_papers %}
+  {% for version in versions %}
   <section class="site-section">
-    <h2>Appel à communications</h2>
-    <div class="prose">{{ event.call_for_papers|md }}</div>
+    {% if versions|length > 1 %}<h2>Appel à communications — {{ version.get_language_display }}</h2>{% else %}<h2>Appel à communications</h2>{% endif %}
+    <div class="prose">{{ version.content|md }}</div>
+  </section>
+  {% if version.bibliography %}
+  <section class="site-section">
+    <h2>Bibliographie{% if versions|length > 1 %} ({{ version.get_language_display }}){% endif %}</h2>
+    <div class="prose">{{ version.bibliography|md }}</div>
   </section>
   {% endif %}
-
-  {% if event.bibliography %}
+  {% empty %}
   <section class="site-section">
-    <h2>Bibliographie</h2>
-    <div class="prose">{{ event.bibliography|md }}</div>
+    <p style="color:#6b7280; font-style:italic">L'appel à communications n'a pas encore été publié.</p>
   </section>
-  {% endif %}
+  {% endfor %}
 
   {% if submission_url %}
   <section class="site-section">

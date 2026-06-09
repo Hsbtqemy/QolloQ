@@ -120,6 +120,20 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
 }
 .btn-outline:hover { background: #eff6ff; }
 
+.lang-tab {
+  display: inline-block;
+  padding: .2em .65em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.lang-tab:hover { background: #f3f4f6; color: var(--gray-900); }
+.lang-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
 /* Programme */
 .prog-day { margin-bottom: 2rem; }
 .day-title {

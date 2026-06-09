@@ -7,14 +7,12 @@
     <h1>Contenu public</h1>
   </div>
   <div class="actions">
-    {% if event.call_for_papers %}
-    <a href="{% url 'site_public:call_pdf' event_slug=event.slug %}" class="btn ghost sm">↓ PDF</a>
-    {% endif %}
     <a href="{% url 'site_public:page' event_slug=event.slug %}" class="btn ghost sm" target="_blank" rel="noopener">Voir la page ↗</a>
     <a href="{% url 'events:detail' event_slug=event.slug %}" class="btn ghost">← Retour</a>
   </div>
 </div>
 
+{# Formulaire principal : visuel + personnalisation #}
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
 
@@ -85,75 +83,133 @@
     {% endwith %}
   </div>
 
-  <div class="card">
-    {% with field=form.call_for_papers %}
-    <div class="field">
-      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:.35rem">
-        <label for="{{ field.id_for_label }}" style="margin:0">{{ field.label }}</label>
-        <label class="btn ghost sm" style="cursor:pointer; margin:0" title="Importer depuis Word ou LibreOffice (.docx, .odt)">
-          ↑ Importer .docx / .odt
-          <input type="file" id="import-doc-input" accept=".docx,.odt" style="display:none">
-        </label>
-      </div>
-      <div id="import-status" style="display:none; font-size:.82rem; margin-bottom:.4rem"></div>
-      {{ field }}
-      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
-      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-    </div>
-    {% endwith %}
-    {% with field=form.bibliography %}
-    <div class="field">
-      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field }}
-      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
-      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-    </div>
-    {% endwith %}
-  </div>
   <div class="form-actions">
     <button type="submit" class="btn primary">Enregistrer</button>
     <a href="{% url 'events:detail' event_slug=event.slug %}" class="btn ghost">Annuler</a>
   </div>
 </form>
+
+{# Appel à communications — une carte par version existante #}
+{% for version in versions %}
+<div class="card" style="margin-top:1.5rem">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem">
+    <h3 class="card-section-title" style="margin:0">
+      Appel à communications — <span class="badge">{{ version.get_language_display }}</span>
+    </h3>
+    <div style="display:flex; gap:.5rem; align-items:center">
+      <a href="{% url 'site_public:call_pdf' event_slug=event.slug lang=version.language %}" class="btn ghost sm">↓ PDF</a>
+      <form method="post" action="{% url 'events:call_version_delete' event_slug=event.slug pk=version.pk %}"
+            onsubmit="return confirm('Supprimer la version {{ version.get_language_display }} ?')">
+        {% csrf_token %}
+        <button type="submit" class="btn danger-ghost sm">Supprimer</button>
+      </form>
+    </div>
+  </div>
+  <form method="post" action="{% url 'events:call_version_update' event_slug=event.slug pk=version.pk %}">
+    {% csrf_token %}
+    <div class="field">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:.35rem">
+        <label for="vcontent-{{ version.pk }}" style="margin:0">Texte de l'appel</label>
+        <label class="btn ghost sm" style="cursor:pointer; margin:0"
+               data-import-target="vcontent-{{ version.pk }}"
+               title="Importer depuis Word ou LibreOffice (.docx, .odt)">
+          ↑ Importer .docx / .odt
+          <input type="file" class="import-doc-input" accept=".docx,.odt" style="display:none">
+        </label>
+      </div>
+      <div class="import-status" style="display:none; font-size:.82rem; margin-bottom:.4rem"></div>
+      <textarea name="content" id="vcontent-{{ version.pk }}" rows="12"
+                style="width:100%; box-sizing:border-box">{{ version.content }}</textarea>
+      <div class="helptext">Mise en forme Markdown. Notes de bas de page : [^1] dans le texte, puis [^1]: note à la fin.</div>
+    </div>
+    <div class="field">
+      <label for="vbiblio-{{ version.pk }}">Bibliographie</label>
+      <textarea name="bibliography" id="vbiblio-{{ version.pk }}" rows="6"
+                style="width:100%; box-sizing:border-box">{{ version.bibliography }}</textarea>
+      <div class="helptext">Références bibliographiques — optionnel. Markdown accepté.</div>
+    </div>
+    <div class="form-actions" style="margin-top:.5rem">
+      <button type="submit" class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+{% endfor %}
+
+{# Ajouter une nouvelle version #}
+{% if available_languages %}
+<div class="card" style="margin-top:1.5rem">
+  <h3 class="card-section-title">Ajouter une version linguistique</h3>
+  <form method="post" action="{% url 'events:call_version_create' event_slug=event.slug %}">
+    {% csrf_token %}
+    <div class="field-row">
+      <div class="field">
+        <label for="id_language">Langue</label>
+        <select name="language" id="id_language">
+          {% for code, label in available_languages %}
+          <option value="{{ code }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="new-vcontent">Texte de l'appel</label>
+      <textarea name="content" id="new-vcontent" rows="10"
+                style="width:100%; box-sizing:border-box"></textarea>
+      <div class="helptext">Mise en forme Markdown acceptée.</div>
+    </div>
+    <div class="field">
+      <label for="new-vbiblio">Bibliographie</label>
+      <textarea name="bibliography" id="new-vbiblio" rows="5"
+                style="width:100%; box-sizing:border-box"></textarea>
+    </div>
+    <div class="form-actions" style="margin-top:.5rem">
+      <button type="submit" class="btn primary">Créer cette version</button>
+    </div>
+  </form>
+</div>
+{% endif %}
 {% endblock %}
 {% block extra_js %}
 <script>
 (function () {
-  const input    = document.getElementById('import-doc-input');
-  const textarea = document.getElementById('id_call_for_papers');
-  const status   = document.getElementById('import-status');
-  if (!input || !textarea) return;
+  const importUrl = '{% url "events:import_call" event_slug=event.slug %}';
+  const csrfToken = '{{ csrf_token }}';
 
-  function setStatus(msg, isError) {
-    status.textContent = msg;
-    status.style.display = msg ? 'block' : 'none';
-    status.style.color = isError ? '#dc2626' : '#16a34a';
-  }
+  document.querySelectorAll('.import-doc-input').forEach(function (input) {
+    input.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+      const label  = this.closest('[data-import-target]');
+      const target = label ? label.dataset.importTarget : null;
+      const textarea = target ? document.getElementById(target) : null;
+      const status   = label ? label.closest('.field').querySelector('.import-status') : null;
+      if (!textarea) return;
 
-  input.addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-    setStatus('Conversion en cours…', false);
+      function setStatus(msg, isError) {
+        if (!status) return;
+        status.textContent = msg;
+        status.style.display = msg ? 'block' : 'none';
+        status.style.color = isError ? '#dc2626' : '#16a34a';
+      }
 
-    const fd = new FormData();
-    fd.append('document', file);
-    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+      setStatus('Conversion en cours…', false);
+      const fd = new FormData();
+      fd.append('document', file);
+      fd.append('csrfmiddlewaretoken', csrfToken);
 
-    fetch('{% url "events:import_call" event_slug=event.slug %}', {
-      method: 'POST',
-      body: fd,
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) {
-          setStatus(data.error, true);
-        } else {
-          textarea.value = data.markdown;
-          setStatus('Document importé. Relisez le texte ci-dessous avant d\'enregistrer.', false);
-        }
-      })
-      .catch(() => setStatus('Erreur réseau.', true))
-      .finally(() => { input.value = ''; });
+      fetch(importUrl, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) {
+            setStatus(data.error, true);
+          } else {
+            textarea.value = data.markdown;
+            setStatus('Document importé. Relisez le texte avant d\'enregistrer.', false);
+          }
+        })
+        .catch(() => setStatus('Erreur réseau.', true))
+        .finally(() => { input.value = ''; });
+    });
   });
 })();
 </script>

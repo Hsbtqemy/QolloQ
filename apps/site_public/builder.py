@@ -32,8 +32,11 @@ def build_site_zip(event, request):
         ext = os.path.splitext(event.banner.name)[1].lower() or ".jpg"
         banner_zip = f"images/banner{ext}"
 
+    versions = list(event.call_versions.all())
+
     ctx = {
         "event": event,
+        "versions": versions,
         "speakers": speakers,
         "submission_url": submission_url,
         "banner_zip": banner_zip,
