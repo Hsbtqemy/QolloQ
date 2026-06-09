@@ -22,7 +22,7 @@
   {% endif %}
 </div>
 
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+<div class="grid-2col">
   <a class="card" href="{% url 'submissions:list' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
     <h3>Soumissions</h3>
     <p class="text-muted">Propositions reçues, évaluations, acceptations.</p>
@@ -42,7 +42,7 @@
     <p class="text-muted">Campagnes email vers les membres et intervenants.</p>
   </a>
   {% if membership.is_organizer %}
-  <a class="card" href="{% url 'events:public_settings' event_slug=event.slug %}" style="text-decoration:none; color:inherit; grid-column:span 2">
+  <a class="card col-span-2" href="{% url 'events:public_settings' event_slug=event.slug %}" style="text-decoration:none; color:inherit">
     <h3>Page publique</h3>
     <p class="text-muted">Appel à communications, bibliographie, téléchargement PDF.</p>
   </a>

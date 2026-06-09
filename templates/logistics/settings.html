@@ -14,7 +14,7 @@
 
 {% include "logistics/_nav.html" with active="index" %}
 
-<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+<div class="grid-main-side">
 
   <div>
     <div class="card">
@@ -67,7 +67,7 @@
           <div x-show="editing" x-cloak style="width:100%; padding:.75rem 0">
             <form method="post" action="{% url 'logistics:field_edit' event_slug=event.slug form_id=logistics_form.pk field_id=field.pk %}">
               {% csrf_token %}
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:.5rem">
+              <div class="field-row">
                 <div class="field">
                   <label>Intitulé <span class="req">*</span></label>
                   <input type="text" name="label" value="{{ field.label }}" required>

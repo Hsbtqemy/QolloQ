@@ -16,17 +16,40 @@
       <h1>Connexion</h1>
       <form method="post" action="{% url 'account_login' %}">
         {% csrf_token %}
-        {% for field in form %}
-        <div class="field">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-          {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
-        </div>
-        {% endfor %}
+
         {% if form.non_field_errors %}
-        <div class="message error">{{ form.non_field_errors }}</div>
+        <div class="message error" style="margin-bottom:1rem">{{ form.non_field_errors }}</div>
         {% endif %}
+
+        <div class="field">
+          <label for="{{ form.login.id_for_label }}">Adresse e-mail</label>
+          <input
+            type="text"
+            inputmode="email"
+            name="{{ form.login.html_name }}"
+            id="{{ form.login.id_for_label }}"
+            value="{{ form.login.value|default:'' }}"
+            autocomplete="email"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+            required
+          >
+          {% if form.login.errors %}<ul class="errorlist">{% for e in form.login.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+
+        <div class="field">
+          <label for="{{ form.password.id_for_label }}">Mot de passe</label>
+          <input
+            type="password"
+            name="{{ form.password.html_name }}"
+            id="{{ form.password.id_for_label }}"
+            autocomplete="current-password"
+            required
+          >
+          {% if form.password.errors %}<ul class="errorlist">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+
         <div class="form-actions">
           <button type="submit" class="btn primary">Se connecter</button>
         </div>

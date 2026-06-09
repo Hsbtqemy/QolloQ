@@ -12,7 +12,7 @@
 
 {% include "logistics/_nav.html" with active="budget" %}
 
-<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+<div class="grid-main-side">
 
   <div>
 
@@ -66,7 +66,8 @@
             <td colspan="4" x-show="editing" x-cloak style="padding:.75rem">
               <form method="post" action="{% url 'logistics:budget_line_edit' event_slug=event.slug pk=line.pk %}">
                 {% csrf_token %}
-                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:.5rem; margin-bottom:.5rem">
+                <div class="compact-form-wrap">
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:.5rem; margin-bottom:.5rem; min-width:480px">
                   <div class="field">
                     <label>Intitulé <span class="req">*</span></label>
                     <input type="text" name="label" value="{{ line.label }}" required>
@@ -87,6 +88,7 @@
                     <label>Réel (€)</label>
                     <input type="number" name="amount_actual" value="{{ line.amount_actual|unlocalize }}" step="0.01" min="0">
                   </div>
+                </div>
                 </div>
                 <div class="field" style="margin-bottom:.5rem">
                   <label>Notes</label>
@@ -137,7 +139,8 @@
               {% endif %}
               <form method="post" action="{% url 'logistics:budget_charge_create' event_slug=event.slug line_pk=line.pk %}">
                 {% csrf_token %}
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:.4rem; align-items:end">
+                <div class="compact-form-wrap">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:.4rem; align-items:end; min-width:520px">
                   <div class="field" style="margin:0">
                     <label class="text-sm">Nom <span class="req">*</span></label>
                     <input type="text" name="person_name" required>
@@ -159,6 +162,7 @@
                     </select>
                   </div>
                   <button type="submit" class="btn primary sm">Ajouter</button>
+                </div>
                 </div>
               </form>
             </td>
@@ -183,7 +187,8 @@
               {% endif %}
               <form method="post" action="{% url 'logistics:budget_doc_upload' event_slug=event.slug line_pk=line.pk %}" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:.4rem; align-items:end">
+                <div class="compact-form-wrap">
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:.4rem; align-items:end; min-width:520px">
                   <div class="field" style="margin:0">
                     <label class="text-sm">Intitulé <span class="req">*</span></label>
                     <input type="text" name="label" placeholder="Ex. Devis traiteur" required>
@@ -205,6 +210,7 @@
                     <input type="file" name="file" required>
                   </div>
                   <button type="submit" class="btn primary sm">Ajouter</button>
+                </div>
                 </div>
               </form>
             </td>

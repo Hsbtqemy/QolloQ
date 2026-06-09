@@ -1,6 +1,13 @@
 from django import forms
 from django.forms import inlineformset_factory
 
+_EMAIL_INPUT_ATTRS = {
+    "autocorrect": "off",
+    "autocapitalize": "none",
+    "spellcheck": "false",
+    "inputmode": "email",
+}
+
 from apps.events.models import Event
 
 from .models import Author, Evaluation, Proposal, SubmissionField, SubmissionFieldResponse
@@ -16,6 +23,7 @@ class PublicProposalForm(forms.ModelForm):
             "abstract": forms.Textarea(attrs={"rows": 6}),
             "bio": forms.Textarea(attrs={"rows": 4}),
             "availability": forms.Textarea(attrs={"rows": 3}),
+            "submitter_email": forms.EmailInput(attrs=_EMAIL_INPUT_ATTRS),
         }
         labels = {
             "submitter_email": "Votre adresse email (pour recevoir le lien de suivi)",
@@ -126,6 +134,9 @@ class AuthorForm(forms.ModelForm):
     class Meta:
         model = Author
         fields = ["first_name", "last_name", "institution", "email"]
+        widgets = {
+            "email": forms.EmailInput(attrs=_EMAIL_INPUT_ATTRS),
+        }
 
 
 AuthorFormSet = inlineformset_factory(
@@ -149,7 +160,10 @@ class EvaluationForm(forms.ModelForm):
 
 
 class ResendTokenForm(forms.Form):
-    email = forms.EmailField(label="Votre adresse email")
+    email = forms.EmailField(
+        label="Votre adresse email",
+        widget=forms.EmailInput(attrs=_EMAIL_INPUT_ATTRS),
+    )
 
 
 class SubmissionFieldForm(forms.ModelForm):

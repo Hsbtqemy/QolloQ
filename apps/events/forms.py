@@ -43,7 +43,15 @@ class EventPublicPageForm(forms.ModelForm):
 
 
 class MemberAddForm(forms.Form):
-    email = forms.EmailField(label="Adresse email")
+    email = forms.EmailField(
+        label="Adresse email",
+        widget=forms.EmailInput(attrs={
+            "autocorrect": "off",
+            "autocapitalize": "none",
+            "spellcheck": "false",
+            "inputmode": "email",
+        }),
+    )
     first_name = forms.CharField(max_length=150, required=False, label="Prénom")
     last_name = forms.CharField(max_length=150, required=False, label="Nom")
     role = forms.ChoiceField(

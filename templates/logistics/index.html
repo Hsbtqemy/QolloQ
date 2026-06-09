@@ -8,7 +8,7 @@
 
 {% include "logistics/_nav.html" with active="index" %}
 
-<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.25rem">
+<div class="grid-3col" style="margin-bottom:1.25rem">
   <div class="card" style="text-align:center; padding:1rem">
     <div style="font-size:1.6rem; font-weight:700; color:#2563eb">{{ logistics_forms|length }}</div>
     <div class="text-muted text-sm">formulaire{{ logistics_forms|length|pluralize }}</div>
@@ -27,7 +27,7 @@
   </div>
 </div>
 
-<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.25rem; align-items:start">
+<div class="grid-main-side">
 
   <div>
     {% if logistics_forms %}
