@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load l10n %}
 {% block title %}Budget — {{ event.name }}{% endblock %}
 
 {% block content %}
@@ -80,11 +81,11 @@
                   </div>
                   <div class="field">
                     <label>Prévu (€) <span class="req">*</span></label>
-                    <input type="number" name="amount_planned" value="{{ line.amount_planned }}" step="0.01" min="0" required>
+                    <input type="number" name="amount_planned" value="{{ line.amount_planned|unlocalize }}" step="0.01" min="0" required>
                   </div>
                   <div class="field">
                     <label>Réel (€)</label>
-                    <input type="number" name="amount_actual" value="{{ line.amount_actual }}" step="0.01" min="0">
+                    <input type="number" name="amount_actual" value="{{ line.amount_actual|unlocalize }}" step="0.01" min="0">
                   </div>
                 </div>
                 <div class="field" style="margin-bottom:.5rem">
@@ -253,7 +254,7 @@
             <div style="display:flex; gap:.5rem; align-items:flex-end">
               <div class="field" style="margin:0; flex:1">
                 <label>Enveloppe totale (€)</label>
-                <input type="number" name="envelope" value="{{ envelope }}" step="0.01" min="0"
+                <input type="number" name="envelope" value="{{ envelope|unlocalize }}" step="0.01" min="0"
                        placeholder="Ex. 5000">
               </div>
               <button type="submit" class="btn primary sm">OK</button>
