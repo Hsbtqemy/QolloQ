@@ -1,63 +1,51 @@
-{% load static %}<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ logistics_form.name }} — {{ event.name }}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2">
-</head>
-<body>
-<div class="public-layout">
-  <header class="public-header">
-    <span class="public-brand">QolloQ</span>
-    <span class="public-event-name">{{ event.name }}</span>
-  </header>
-  <main class="public-main" style="max-width:620px">
-    <div class="public-card">
-      <h1>{{ logistics_form.name }}</h1>
-      <p class="text-muted">Bonjour {{ response.respondent_name }},</p>
+{% extends "public_base.html" %}
+{% block title %}{{ logistics_form.name }} — {{ event.name }}{% endblock %}
+{% block header_event %}<span class="public-event-name">{{ event.name }}</span>{% endblock %}
+{% block main_style %}max-width:620px{% endblock %}
 
-      {% if logistics_form.instructions %}
-      <div class="message info" style="margin-bottom:1rem">{{ logistics_form.instructions }}</div>
-      {% endif %}
+{% block content %}
+<div class="public-card">
+  <h1>{{ logistics_form.name }}</h1>
+  <p class="text-muted">Bonjour {{ response.respondent_name }},</p>
 
-      {% if logistics_form.deadline %}
-      <p class="text-muted text-sm">Date limite : {{ logistics_form.deadline|date:"j F Y à H:i" }}</p>
-      {% endif %}
+  {% if logistics_form.instructions %}
+  <div class="message info" style="margin-bottom:1rem">{{ logistics_form.instructions }}</div>
+  {% endif %}
 
-      {% if editable %}
-      {% if fields %}
-      <form method="post">
-        {% csrf_token %}
-        {% for bound_field in form %}
-        <div class="field">
-          <label for="{{ bound_field.id_for_label }}">
-            {{ bound_field.label }}{% if bound_field.field.required %} <span class="req">*</span>{% endif %}
-          </label>
-          {{ bound_field }}
-          {% if bound_field.help_text %}<div class="helptext">{{ bound_field.help_text }}</div>{% endif %}
-          {% if bound_field.errors %}<ul class="errorlist">{% for e in bound_field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-        </div>
-        {% endfor %}
-        <div class="form-actions">
-          <button type="submit" class="btn primary">Enregistrer mes réponses</button>
-        </div>
-      </form>
-      {% else %}
-      <p class="text-muted">Le formulaire n'a pas encore de champs configurés.</p>
-      {% endif %}
+  {% if logistics_form.deadline %}
+  <p class="text-muted text-sm">Date limite : {{ logistics_form.deadline|date:"j F Y à H:i" }}</p>
+  {% endif %}
 
-      {% else %}
-      <div class="message warning">
-        {% if not logistics_form.is_open %}Le formulaire est actuellement fermé.
-        {% else %}La date limite de réponse est dépassée.{% endif %}
-      </div>
-      {% if response.is_complete %}
-      <p>Vos réponses ont été enregistrées. Merci.</p>
-      {% endif %}
-      {% endif %}
+  {% if editable %}
+  {% if fields %}
+  <form method="post">
+    {% csrf_token %}
+    {% for bound_field in form %}
+    <div class="field">
+      <label for="{{ bound_field.id_for_label }}">
+        {{ bound_field.label }}{% if bound_field.field.required %} <span class="req">*</span>{% endif %}
+      </label>
+      {{ bound_field }}
+      {% if bound_field.help_text %}<div class="helptext">{{ bound_field.help_text }}</div>{% endif %}
+      {% if bound_field.errors %}<ul class="errorlist">{% for e in bound_field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </div>
-  </main>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Enregistrer mes réponses</button>
+    </div>
+  </form>
+  {% else %}
+  <p class="text-muted">Le formulaire n'a pas encore de champs configurés.</p>
+  {% endif %}
+
+  {% else %}
+  <div class="message warning">
+    {% if not logistics_form.is_open %}Le formulaire est actuellement fermé.
+    {% else %}La date limite de réponse est dépassée.{% endif %}
+  </div>
+  {% if response.is_complete %}
+  <p>Vos réponses ont été enregistrées. Merci.</p>
+  {% endif %}
+  {% endif %}
 </div>
-</body>
-</html>
+{% endblock %}

@@ -1,24 +1,11 @@
-{% load static %}<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Formulaire enregistré — {{ event.name }}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2">
-</head>
-<body>
-<div class="public-layout">
-  <header class="public-header">
-    <span class="public-brand">QolloQ</span>
-    <span class="public-event-name">{{ event.name }}</span>
-  </header>
-  <main class="public-main">
-    <div class="public-card" style="text-align:center">
-      <h1>Réponses enregistrées ✓</h1>
-      <p class="text-muted">Merci {{ response.respondent_name }}, vos informations ont bien été prises en compte.</p>
-      <p><a href="{% url 'logistics:respond' token=response.token %}" class="btn ghost">Modifier mes réponses</a></p>
-    </div>
-  </main>
+{% extends "public_base.html" %}
+{% block title %}Formulaire enregistré — {{ event.name }}{% endblock %}
+{% block header_event %}<span class="public-event-name">{{ event.name }}</span>{% endblock %}
+
+{% block content %}
+<div class="public-card" style="text-align:center">
+  <h1>Réponses enregistrées ✓</h1>
+  <p class="text-muted">Merci {{ response.respondent_name }}, vos informations ont bien été prises en compte.</p>
+  <p><a href="{% url 'logistics:respond' token=response.token %}" class="btn ghost">Modifier mes réponses</a></p>
 </div>
-</body>
-</html>
+{% endblock %}

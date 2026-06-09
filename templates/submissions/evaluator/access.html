@@ -1,107 +1,89 @@
-{% load static qolloq_filters %}<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Évaluation — {{ event.name }}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2">
-</head>
-<body>
-<div class="public-layout">
-  <header class="public-header">
-    <span class="public-brand">QolloQ</span>
-    <span class="public-event-name">{{ event.name }}</span>
-  </header>
-  <main class="public-main" style="max-width:780px">
+{% extends "public_base.html" %}
+{% load qolloq_filters %}
+{% block title %}Évaluation — {{ event.name }}{% endblock %}
+{% block header_event %}<span class="public-event-name">{{ event.name }}</span>{% endblock %}
+{% block main_style %}max-width:780px{% endblock %}
 
-    {% if messages %}
-    <div style="margin-bottom:1rem">
-      {% for message in messages %}
-      <div class="message {{ message.tags }}">{{ message }}</div>
-      {% endfor %}
+{% block content %}
+<div class="public-card" style="margin-bottom:1rem">
+  <p style="margin:0">
+    Bonjour <strong>{{ membership.display_name }}</strong> — vous évaluez les propositions de
+    <strong>{{ event.name }}</strong> en tant que <em>{{ membership.get_role_display }}</em>.
+  </p>
+</div>
+
+{% if not proposals %}
+<div class="public-card">
+  <p class="text-muted">Aucune proposition ne vous a encore été assignée.</p>
+</div>
+{% endif %}
+
+{% for proposal in proposals %}
+{% with own_eval=own_evals|dict_get:proposal.pk %}
+<div class="public-card" style="margin-bottom:1.25rem" id="prop-{{ proposal.pk }}">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
+    <div>
+      <h2 style="margin:0 0 .2rem;font-size:1.1rem">{{ proposal.title }}</h2>
+      <div class="text-muted text-sm">
+        {% for author in proposal.authors.all %}{{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </div>
     </div>
+    {% if own_eval %}
+    <span class="badge eval-verdict {{ own_eval.verdict }}" style="white-space:nowrap">{{ own_eval.get_verdict_display }}</span>
+    {% else %}
+    <span class="badge" style="background:#f3f4f6;color:#6b7280;white-space:nowrap">Non évalué</span>
     {% endif %}
+  </div>
 
-    <div class="public-card" style="margin-bottom:1rem">
-      <p style="margin:0">
-        Bonjour <strong>{{ membership.display_name }}</strong> — vous évaluez les propositions de
-        <strong>{{ event.name }}</strong> en tant que <em>{{ membership.get_role_display }}</em>.
-      </p>
-    </div>
+  <div class="prose" style="font-size:.95rem;margin-bottom:.75rem">
+    <p>{{ proposal.abstract }}</p>
+  </div>
+  {% if proposal.bio %}
+  <div style="font-size:.88rem;color:#4b5563;margin-bottom:.75rem">
+    <strong>Bio-bibliographie :</strong> {{ proposal.bio|truncatewords:60 }}
+  </div>
+  {% endif %}
 
-    {% if not proposals %}
-    <div class="public-card">
-      <p class="text-muted">Aucune proposition ne vous a encore été assignée.</p>
-    </div>
-    {% endif %}
+  <div x-data="{ open: {% if not own_eval %}true{% else %}false{% endif %} }">
+    <button type="button" class="btn ghost sm" @click="open = !open" style="margin-bottom:.75rem">
+      <span x-text="open ? 'Masquer le formulaire' : ({% if own_eval %}'Modifier mon avis'{% else %}'Déposer mon avis'{% endif %})">
+        {% if own_eval %}Modifier mon avis{% else %}Déposer mon avis{% endif %}
+      </span>
+    </button>
 
-    {% for proposal in proposals %}
-    {% with own_eval=own_evals|dict_get:proposal.pk %}
-    <div class="public-card" style="margin-bottom:1.25rem" id="prop-{{ proposal.pk }}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.75rem">
-        <div>
-          <h2 style="margin:0 0 .2rem;font-size:1.1rem">{{ proposal.title }}</h2>
-          <div class="text-muted text-sm">
-            {% for author in proposal.authors.all %}{{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    <div x-show="open" {% if own_eval %}style="display:none"{% endif %}>
+      <form method="post" action="{% url 'submissions:evaluator_eval' token=token proposal_id=proposal.pk %}">
+        {% csrf_token %}
+        <div class="field">
+          <label>Avis <span class="req">*</span></label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            {% for val, label in verdict_choices %}
+            <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+              <input type="radio" name="verdict" value="{{ val }}"
+                     {% if own_eval and own_eval.verdict == val %}checked{% endif %}>
+              {{ label }}
+            </label>
+            {% endfor %}
           </div>
         </div>
-        {% if own_eval %}
-        <span class="badge eval-verdict {{ own_eval.verdict }}" style="white-space:nowrap">{{ own_eval.get_verdict_display }}</span>
-        {% else %}
-        <span class="badge" style="background:#f3f4f6;color:#6b7280;white-space:nowrap">Non évalué</span>
-        {% endif %}
-      </div>
-
-      <div class="prose" style="font-size:.95rem;margin-bottom:.75rem">
-        <p>{{ proposal.abstract }}</p>
-      </div>
-      {% if proposal.bio %}
-      <div style="font-size:.88rem;color:#4b5563;margin-bottom:.75rem">
-        <strong>Bio-bibliographie :</strong> {{ proposal.bio|truncatewords:60 }}
-      </div>
-      {% endif %}
-
-      <div x-data="{ open: {% if not own_eval %}true{% else %}false{% endif %}">
-        <button type="button" class="btn ghost sm" @click="open = !open" style="margin-bottom:.75rem">
-          <span x-text="open ? 'Masquer le formulaire' : ({% if own_eval %}'Modifier mon avis'{% else %}'Déposer mon avis'{% endif %})">
-            {% if own_eval %}Modifier mon avis{% else %}Déposer mon avis{% endif %}
-          </span>
-        </button>
-
-        <div x-show="open" {% if own_eval %}style="display:none"{% endif %}>
-          <form method="post" action="{% url 'submissions:evaluator_eval' token=token proposal_id=proposal.pk %}">
-            {% csrf_token %}
-            <div class="field">
-              <label>Avis <span class="req">*</span></label>
-              <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-                {% for val, label in verdict_choices %}
-                <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
-                  <input type="radio" name="verdict" value="{{ val }}"
-                         {% if own_eval and own_eval.verdict == val %}checked{% endif %}>
-                  {{ label }}
-                </label>
-                {% endfor %}
-              </div>
-            </div>
-            <div class="field">
-              <label for="comment-{{ proposal.pk }}">Commentaire</label>
-              <textarea name="comment" id="comment-{{ proposal.pk }}" rows="4"
-                        style="width:100%;box-sizing:border-box">{% if own_eval %}{{ own_eval.comment }}{% endif %}</textarea>
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="btn primary sm">
-                {% if own_eval %}Mettre à jour{% else %}Enregistrer{% endif %}
-              </button>
-            </div>
-          </form>
+        <div class="field">
+          <label for="comment-{{ proposal.pk }}">Commentaire</label>
+          <textarea name="comment" id="comment-{{ proposal.pk }}" rows="4"
+                    style="width:100%;box-sizing:border-box">{% if own_eval %}{{ own_eval.comment }}{% endif %}</textarea>
         </div>
-      </div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary sm">
+            {% if own_eval %}Mettre à jour{% else %}Enregistrer{% endif %}
+          </button>
+        </div>
+      </form>
     </div>
-    {% endwith %}
-    {% endfor %}
-
-  </main>
+  </div>
 </div>
+{% endwith %}
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
-</body>
-</html>
+{% endblock %}

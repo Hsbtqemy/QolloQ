@@ -1,23 +1,10 @@
-{% load static %}<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Email envoyé — {{ event.name }}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2">
-</head>
-<body>
-<div class="public-layout">
-  <header class="public-header">
-    <span class="public-brand">QolloQ</span>
-    <span class="public-event-name">{{ event.name }}</span>
-  </header>
-  <main class="public-main">
-    <div class="public-card" style="text-align:center">
-      <h1>Email envoyé</h1>
-      <p class="text-muted">Si une proposition est associée à cette adresse, un email contenant votre lien de suivi vient d'être envoyé.</p>
-    </div>
-  </main>
+{% extends "public_base.html" %}
+{% block title %}Email envoyé — {{ event.name }}{% endblock %}
+{% block header_event %}<span class="public-event-name">{{ event.name }}</span>{% endblock %}
+
+{% block content %}
+<div class="public-card" style="text-align:center">
+  <h1>Email envoyé</h1>
+  <p class="text-muted">Si une proposition est associée à cette adresse, un email contenant votre lien de suivi vient d'être envoyé.</p>
 </div>
-</body>
-</html>
+{% endblock %}

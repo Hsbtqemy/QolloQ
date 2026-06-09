@@ -1,28 +1,15 @@
-{% load static %}<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Proposition envoyée — {{ proposal.event.name }}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2">
-</head>
-<body>
-<div class="public-layout">
-  <header class="public-header">
-    <span class="public-brand">QolloQ</span>
-    <span class="public-event-name">{{ proposal.event.name }}</span>
-  </header>
-  <main class="public-main">
-    <div class="public-card" style="text-align:center">
-      <h1>Proposition envoyée ✓</h1>
-      <p>Merci, votre proposition <strong>« {{ proposal.title }} »</strong> a bien été reçue.</p>
-      <p class="text-muted">Un email de confirmation vous a été envoyé à <strong>{{ proposal.submitter_email }}</strong>.
-      Il contient un lien pour consulter ou modifier votre soumission.</p>
-      <a href="{% url 'submissions:token_access' token=proposal.token %}" class="btn primary" style="margin-top:.5rem">
-        Accéder à ma soumission
-      </a>
-    </div>
-  </main>
+{% extends "public_base.html" %}
+{% block title %}Proposition envoyée — {{ proposal.event.name }}{% endblock %}
+{% block header_event %}<span class="public-event-name">{{ proposal.event.name }}</span>{% endblock %}
+
+{% block content %}
+<div class="public-card" style="text-align:center">
+  <h1>Proposition envoyée ✓</h1>
+  <p>Merci, votre proposition <strong>« {{ proposal.title }} »</strong> a bien été reçue.</p>
+  <p class="text-muted">Un email de confirmation vous a été envoyé à <strong>{{ proposal.submitter_email }}</strong>.
+  Il contient un lien pour consulter ou modifier votre soumission.</p>
+  <a href="{% url 'submissions:token_access' token=proposal.token %}" class="btn primary" style="margin-top:.5rem">
+    Accéder à ma soumission
+  </a>
 </div>
-</body>
-</html>
+{% endblock %}

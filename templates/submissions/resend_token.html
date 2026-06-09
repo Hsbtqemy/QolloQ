@@ -1,46 +1,33 @@
-{% load static %}<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Retrouver mon lien — {{ event.name }}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=2">
-</head>
-<body>
-<div class="public-layout">
-  <header class="public-header">
-    <span class="public-brand">QolloQ</span>
-    <span class="public-event-name">{{ event.name }}</span>
-  </header>
-  <main class="public-main">
-    <div class="public-card">
-      <h1>Retrouver mon lien</h1>
-      <p class="text-muted">Saisissez l'adresse email utilisée lors de votre soumission. Si une proposition existe, un lien vous sera envoyé.</p>
-      <form method="post">
-        {% csrf_token %}
-        <div class="field">
-          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
-          <input
-            type="text"
-            inputmode="email"
-            name="{{ form.email.html_name }}"
-            id="{{ form.email.id_for_label }}"
-            value="{{ form.email.value|default:'' }}"
-            autocomplete="email"
-            autocorrect="off"
-            autocapitalize="none"
-            spellcheck="false"
-            required
-          >
-          {% if form.email.errors %}<ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn primary">Envoyer le lien</button>
-          <a href="{% url 'submissions:public_submit' event_slug=event.slug %}" class="btn ghost">Retour</a>
-        </div>
-      </form>
+{% extends "public_base.html" %}
+{% block title %}Retrouver mon lien — {{ event.name }}{% endblock %}
+{% block header_event %}<span class="public-event-name">{{ event.name }}</span>{% endblock %}
+
+{% block content %}
+<div class="public-card">
+  <h1>Retrouver mon lien</h1>
+  <p class="text-muted">Saisissez l'adresse email utilisée lors de votre soumission. Si une proposition existe, un lien vous sera envoyé.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+      <input
+        type="text"
+        inputmode="email"
+        name="{{ form.email.html_name }}"
+        id="{{ form.email.id_for_label }}"
+        value="{{ form.email.value|default:'' }}"
+        autocomplete="email"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        required
+      >
+      {% if form.email.errors %}<ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </div>
-  </main>
+    <div class="form-actions">
+      <button type="submit" class="btn primary">Envoyer le lien</button>
+      <a href="{% url 'submissions:public_submit' event_slug=event.slug %}" class="btn ghost">Retour</a>
+    </div>
+  </form>
 </div>
-</body>
-</html>
+{% endblock %}

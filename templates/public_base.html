@@ -1,0 +1,29 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}QolloQ{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=4">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="public-layout">
+  <header class="public-header">
+    <span class="public-brand">QolloQ</span>
+    {% block header_event %}{% endblock %}
+  </header>
+  <main class="public-main" style="{% block main_style %}{% endblock %}">
+    {% if messages %}
+    <div style="margin-bottom:1rem">
+      {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
