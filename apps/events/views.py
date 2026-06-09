@@ -290,7 +290,7 @@ class EventImportCallView(OrganizerRequiredMixin, View):
                 tmp_path = f.name
             result = subprocess.run(
                 ["pandoc", tmp_path, "--to", "markdown", "--wrap=none"],
-                capture_output=True, text=True, timeout=30,
+                capture_output=True, text=True, encoding="utf-8", timeout=30,
             )
             if result.returncode != 0:
                 logger.error("pandoc error: %s", result.stderr)
