@@ -40,16 +40,17 @@
         <hr class="sep">
         <h3>Auteur·ices</h3>
         {{ author_formset.management_form }}
+        <div id="author-container">
         {% for af in author_formset %}
-        <div class="formset-item" id="author-{{ forloop.counter0 }}">
+        <div class="formset-item">
           <div class="field-row three">
             <div class="field">
-              <label>Prénom</label>
+              <label>Prénom <span class="req">*</span></label>
               {{ af.first_name }}
               {% if af.first_name.errors %}<ul class="errorlist">{% for e in af.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
             </div>
             <div class="field">
-              <label>Nom</label>
+              <label>Nom <span class="req">*</span></label>
               {{ af.last_name }}
               {% if af.last_name.errors %}<ul class="errorlist">{% for e in af.last_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
             </div>
@@ -62,15 +63,46 @@
             <label>Institution</label>
             {{ af.institution }}
           </div>
-          {% if author_formset.can_delete %}
+          <div style="display:none">{{ af.DELETE }}</div>
+          {% if not forloop.first %}
           <div class="formset-remove">
-            <label class="field-checkbox">
-              {{ af.DELETE }} <span class="text-muted text-sm">Supprimer cet auteur</span>
-            </label>
+            <button type="button" class="author-remove-btn btn ghost sm">Supprimer cet auteur</button>
           </div>
           {% endif %}
         </div>
         {% endfor %}
+        </div>
+
+        <template id="author-empty-template">
+          <div class="formset-item">
+            <div class="field-row three">
+              <div class="field">
+                <label>Prénom <span class="req">*</span></label>
+                {{ author_formset.empty_form.first_name }}
+              </div>
+              <div class="field">
+                <label>Nom <span class="req">*</span></label>
+                {{ author_formset.empty_form.last_name }}
+              </div>
+              <div class="field">
+                <label>Email</label>
+                {{ author_formset.empty_form.email }}
+              </div>
+            </div>
+            <div class="field">
+              <label>Institution</label>
+              {{ author_formset.empty_form.institution }}
+            </div>
+            <div style="display:none">{{ author_formset.empty_form.DELETE }}</div>
+            <div class="formset-remove">
+              <button type="button" class="author-remove-btn btn ghost sm">Supprimer cet auteur</button>
+            </div>
+          </div>
+        </template>
+
+        <div style="margin-bottom:1rem">
+          <button type="button" id="add-author-btn" class="btn ghost sm">+ Ajouter un auteur</button>
+        </div>
 
         <div class="form-actions">
           <button type="submit" class="btn primary">Envoyer ma proposition</button>
@@ -83,5 +115,32 @@
     </p>
   </main>
 </div>
+<script>
+(function () {
+  const container  = document.getElementById('author-container');
+  const totalInput = document.getElementById('id_authors-TOTAL_FORMS');
+  const tmpl       = document.getElementById('author-empty-template');
+  const addBtn     = document.getElementById('add-author-btn');
+  if (!container || !totalInput || !tmpl || !addBtn) return;
+
+  addBtn.addEventListener('click', function () {
+    const idx  = parseInt(totalInput.value);
+    const html = tmpl.innerHTML.replace(/__prefix__/g, idx);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = html;
+    container.appendChild(wrap.firstElementChild);
+    totalInput.value = idx + 1;
+  });
+
+  container.addEventListener('click', function (e) {
+    const btn = e.target.closest('.author-remove-btn');
+    if (!btn) return;
+    const item = btn.closest('.formset-item');
+    const del  = item.querySelector('input[name$="-DELETE"]');
+    if (del) { del.checked = true; item.style.display = 'none'; }
+    else     { item.remove(); }
+  });
+})();
+</script>
 </body>
 </html>
