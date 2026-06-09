@@ -1,4 +1,7 @@
 import logging
+import os
+import subprocess
+import tempfile
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -260,6 +263,46 @@ class MemberRemoveView(OrganizerRequiredMixin, View):
         member.delete()
         messages.success(request, f"{name} retiré·e de l'événement.")
         return redirect("events:members", event_slug=event_slug)
+
+
+class EventImportCallView(OrganizerRequiredMixin, View):
+    MAX_SIZE = 10 * 1024 * 1024  # 10 Mo
+
+    def post(self, request, event_slug):
+        uploaded = request.FILES.get("document")
+        if not uploaded:
+            return JsonResponse({"error": "Aucun fichier reçu."}, status=400)
+        if uploaded.size > self.MAX_SIZE:
+            return JsonResponse({"error": "Fichier trop volumineux (max 10 Mo)."}, status=400)
+        name = uploaded.name.lower()
+        if name.endswith(".docx"):
+            ext = ".docx"
+        elif name.endswith(".odt"):
+            ext = ".odt"
+        else:
+            return JsonResponse({"error": "Format non supporté. Utilisez .docx ou .odt."}, status=400)
+
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as f:
+                for chunk in uploaded.chunks():
+                    f.write(chunk)
+                tmp_path = f.name
+            result = subprocess.run(
+                ["pandoc", tmp_path, "--to", "markdown", "--wrap=none"],
+                capture_output=True, text=True, timeout=30,
+            )
+            if result.returncode != 0:
+                logger.error("pandoc error: %s", result.stderr)
+                return JsonResponse({"error": "Erreur lors de la conversion."}, status=500)
+            return JsonResponse({"markdown": result.stdout})
+        except FileNotFoundError:
+            return JsonResponse({"error": "pandoc n'est pas installé sur ce serveur."}, status=500)
+        except subprocess.TimeoutExpired:
+            return JsonResponse({"error": "La conversion a pris trop de temps."}, status=500)
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
 
 
 class EventPublicSettingsView(OrganizerRequiredMixin, View):

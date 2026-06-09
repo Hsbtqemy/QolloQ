@@ -88,7 +88,14 @@
   <div class="card">
     {% with field=form.call_for_papers %}
     <div class="field">
-      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:.35rem">
+        <label for="{{ field.id_for_label }}" style="margin:0">{{ field.label }}</label>
+        <label class="btn ghost sm" style="cursor:pointer; margin:0" title="Importer depuis Word ou LibreOffice (.docx, .odt)">
+          ↑ Importer .docx / .odt
+          <input type="file" id="import-doc-input" accept=".docx,.odt" style="display:none">
+        </label>
+      </div>
+      <div id="import-status" style="display:none; font-size:.82rem; margin-bottom:.4rem"></div>
       {{ field }}
       {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
       {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
@@ -108,4 +115,46 @@
     <a href="{% url 'events:detail' event_slug=event.slug %}" class="btn ghost">Annuler</a>
   </div>
 </form>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  const input    = document.getElementById('import-doc-input');
+  const textarea = document.getElementById('id_call_for_papers');
+  const status   = document.getElementById('import-status');
+  if (!input || !textarea) return;
+
+  function setStatus(msg, isError) {
+    status.textContent = msg;
+    status.style.display = msg ? 'block' : 'none';
+    status.style.color = isError ? '#dc2626' : '#16a34a';
+  }
+
+  input.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    setStatus('Conversion en cours…', false);
+
+    const fd = new FormData();
+    fd.append('document', file);
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "events:import_call" event_slug=event.slug %}', {
+      method: 'POST',
+      body: fd,
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          setStatus(data.error, true);
+        } else {
+          textarea.value = data.markdown;
+          setStatus('Document importé. Relisez le texte ci-dessous avant d\'enregistrer.', false);
+        }
+      })
+      .catch(() => setStatus('Erreur réseau.', true))
+      .finally(() => { input.value = ''; });
+  });
+})();
+</script>
 {% endblock %}
