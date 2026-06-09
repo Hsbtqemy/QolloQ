@@ -15,6 +15,7 @@
 <body>
 
 <h1>{{ event.name }}</h1>
+{% if event.tagline %}<p style="font-size:12pt;color:#444;margin:-.2cm 0 .4cm">{{ event.tagline }}</p>{% endif %}
 <p class="meta">
   {{ event.start_date|date:"j F Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"j F Y" }}{% endif %}
   {% if event.location %} &middot; {{ event.location }}{% endif %}
@@ -28,6 +29,6 @@
 <div class="prose">{{ event.bibliography|linebreaks }}</div>
 {% endif %}
 
-<footer>Généré avec QolloQ</footer>
+<footer>{{ event.site_footer|default:"Généré avec QolloQ" }}</footer>
 </body>
 </html>

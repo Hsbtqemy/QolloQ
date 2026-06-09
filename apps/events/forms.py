@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth import get_user_model
 
@@ -43,6 +45,12 @@ class EventPublicPageForm(forms.ModelForm):
             "call_for_papers": "Affiché sur la page publique et dans le PDF téléchargeable.",
             "bibliography": "Références bibliographiques — optionnel.",
         }
+
+    def clean_primary_color(self):
+        color = self.cleaned_data.get("primary_color", "").strip()
+        if color and not re.match(r'^#[0-9a-fA-F]{6}$', color):
+            raise forms.ValidationError("Format invalide. Utilisez un code hexadécimal à 6 chiffres, ex. #1e3a5f.")
+        return color
 
 
 class MemberAddForm(forms.Form):
