@@ -612,23 +612,6 @@ table.data .actions { white-space: nowrap; text-align: right; }
 /* Conteneur qui scroll horizontalement sur mobile (formulaires de saisie denses) */
 .compact-form-wrap { }
 
-/* ─── Stats dashboard ────────────────────────────────────────────────────── */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: .75rem;
-  margin-bottom: 1.25rem;
-}
-.stat-box {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: .9rem 1rem;
-  text-align: center;
-}
-.stat-box--alert { border-color: #fcd34d; background: #fffbeb; }
-.stat-value { font-size: 1.6rem; font-weight: 700; color: #111; line-height: 1; }
-.stat-label { font-size: .75rem; color: #6b7280; margin-top: .2rem; }
 
 /* ─── Dates clés ─────────────────────────────────────────────────────────── */
 .keydate-row {
@@ -762,7 +745,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
   .grid-3col,
   .grid-main-side,
   .grid-prog { grid-template-columns: 1fr; }
-  .stat-grid { grid-template-columns: 1fr 1fr; }
+
   .col-span-2 { grid-column: span 1; }
 
   /* Page header : actions sous le titre */

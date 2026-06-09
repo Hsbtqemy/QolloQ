@@ -24,22 +24,18 @@
 </div>
 
 {% if membership.is_organizer %}
-<div class="stat-grid">
-  <div class="stat-box">
-    <div class="stat-value">{{ stats.total }}</div>
-    <div class="stat-label">Soumission{{ stats.total|pluralize }}</div>
+<div class="grid-3col" style="margin-bottom:1.25rem">
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.6rem; font-weight:700; color:#2563eb">{{ stats.total }}</div>
+    <div class="text-muted text-sm">Soumission{{ stats.total|pluralize }}</div>
   </div>
-  <div class="stat-box">
-    <div class="stat-value">{{ stats.accepted }}</div>
-    <div class="stat-label">Acceptée{{ stats.accepted|pluralize }}</div>
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.6rem; font-weight:700; color:#16a34a">{{ stats.accepted }}</div>
+    <div class="text-muted text-sm">Acceptée{{ stats.accepted|pluralize }}</div>
   </div>
-  <div class="stat-box">
-    <div class="stat-value">{{ stats.confirmed }}</div>
-    <div class="stat-label">Confirmée{{ stats.confirmed|pluralize }}</div>
-  </div>
-  <div class="stat-box {% if pending_tasks %}stat-box--alert{% endif %}">
-    <div class="stat-value">{{ pending_tasks }}</div>
-    <div class="stat-label">Tâche{{ pending_tasks|pluralize }} restante{{ pending_tasks|pluralize }}</div>
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.6rem; font-weight:700; {% if stats.accepted and not stats.confirmed %}color:#d97706{% else %}color:#2563eb{% endif %}">{{ stats.confirmed }}</div>
+    <div class="text-muted text-sm">Confirmée{{ stats.confirmed|pluralize }}</div>
   </div>
 </div>
 {% endif %}
