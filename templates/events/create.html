@@ -26,3 +26,19 @@
   </form>
 </div>
 {% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  const start = document.querySelector('[name="start_date"]');
+  const end   = document.querySelector('[name="end_date"]');
+  if (!start || !end) return;
+  start.addEventListener('change', function () {
+    end.min = this.value;
+    if (!end.value || end.value < this.value) end.value = this.value;
+  });
+  end.addEventListener('mousedown', function () {
+    if (!this.value && start.value) this.value = start.value;
+  });
+})();
+</script>
+{% endblock %}
