@@ -35,16 +35,33 @@ h3 { font-size: 1rem; }
   flex-direction: column;
   padding: 0;
 }
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #313244;
+}
 .sidebar-brand {
   display: block;
+  flex: 1;
   padding: 1.1rem 1.2rem;
   font-size: 1.1rem;
   font-weight: 700;
   color: #cba6f7;
   text-decoration: none;
-  border-bottom: 1px solid #313244;
 }
 .sidebar-brand:hover { text-decoration: none; color: #cba6f7; }
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #6c7086;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: .5rem .8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.sidebar-close-btn:hover { color: #cdd6f4; }
 
 .sidebar-section { padding: .5rem 0; }
 .sidebar-label {
@@ -584,3 +601,121 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .builder-item--fixed .builder-item__label { color: #6b7280; }
 .builder-item--optional.is-off .builder-item__label { color: #d1d5db; }
 .builder-lock { font-size: .75rem; color: #d1d5db; flex-shrink: 0; }
+
+/* ─── Grid helpers ───────────────────────────────────────────────────────── */
+.grid-2col      { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.grid-3col      { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.grid-main-side { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; align-items: start; }
+.grid-prog      { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
+.col-span-2 { grid-column: span 2; }
+
+/* Conteneur qui scroll horizontalement sur mobile (formulaires de saisie denses) */
+.compact-form-wrap { }
+
+/* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
+.mobile-topbar { display: none; }
+.sidebar-overlay { display: none; }
+
+/* ─── Responsive : mobile ────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Topbar mobile — position fixed, téléportée dans <body> */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 0 1rem;
+    background: #1e1e2e;
+    border-bottom: 1px solid #313244;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    z-index: 100;
+  }
+  .mobile-menu-btn {
+    background: none;
+    border: none;
+    color: #cdd6f4;
+    cursor: pointer;
+    padding: .2rem;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .mobile-brand {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #cba6f7;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .mobile-event-name {
+    font-size: .8rem;
+    color: #6c7086;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Sidebar → drawer fixe */
+  .app-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 270px;
+    z-index: 400;
+    transform: translateX(-100%);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    overflow-y: auto;
+  }
+  .app-sidebar.is-open { transform: translateX(0); }
+  .sidebar-close-btn { display: flex; }
+
+  /* Overlay sombre derrière le drawer, téléporté dans <body> */
+  .sidebar-overlay {
+    display: block;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 300;
+  }
+
+  /* Layout principal — padding-top pour compenser la topbar fixe */
+  .app-layout { flex-direction: column; }
+  .app-main { width: 100%; padding-top: 52px; }
+  .page-content { padding: 1rem; }
+
+  /* Grids → une colonne */
+  .field-row,
+  .field-row.three { grid-template-columns: 1fr; }
+  .grid-2col,
+  .grid-3col,
+  .grid-main-side,
+  .grid-prog { grid-template-columns: 1fr; }
+  .col-span-2 { grid-column: span 1; }
+
+  /* Page header : actions sous le titre */
+  .page-header { flex-direction: column; align-items: flex-start; gap: .75rem; }
+  .page-header .actions { flex-wrap: wrap; gap: .4rem; }
+
+  /* Tabs horizontalement scrollables */
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-link { white-space: nowrap; }
+
+  /* Modal → bottom sheet */
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal { max-width: 100%; border-radius: 14px 14px 0 0; max-height: 90vh; }
+
+  /* Formulaires de saisie denses (budget) → scroll horizontal */
+  .compact-form-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Divers */
+  .btn-group { flex-wrap: wrap; }
+  .messages { padding: .5rem .75rem 0; }
+  .form-actions { flex-wrap: wrap; }
+  .formset-item .field-row { grid-template-columns: 1fr; }
+
+  /* Pages publiques standalone */
+  .public-header { padding: .65rem 1rem; }
+  .public-event-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .public-card { padding: 1.25rem 1rem; }
+}

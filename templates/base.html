@@ -4,20 +4,47 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}QolloQ{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 <div class="app-layout" x-data>
-  <nav class="app-sidebar">
-    <a class="sidebar-brand" href="{% url 'events:home' %}">QolloQ</a>
+
+  {# ===== Topbar mobile + overlay — téléportés dans <body> pour z-index propre ===== #}
+  <template x-teleport="body">
+    <div class="mobile-topbar">
+      <button class="mobile-menu-btn"
+              @click="$store.nav.toggle()"
+              :aria-expanded="$store.nav.open.toString()"
+              aria-label="Menu de navigation">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <a class="mobile-brand" href="{% url 'events:home' %}">QolloQ</a>
+      {% if event %}<span class="mobile-event-name">{{ event.name|truncatechars:24 }}</span>{% endif %}
+    </div>
+    <div class="sidebar-overlay"
+         x-show="$store.nav.open"
+         @click="$store.nav.close()"
+         x-cloak
+         aria-hidden="true"></div>
+  </template>
+
+  <nav class="app-sidebar" :class="{ 'is-open': $store.nav.open }">
+    <div class="sidebar-top">
+      <a class="sidebar-brand" href="{% url 'events:home' %}">QolloQ</a>
+      <button class="sidebar-close-btn" @click="$store.nav.close()" aria-label="Fermer le menu">✕</button>
+    </div>
 
     {% if user_events %}
     <div class="sidebar-section">
       <span class="sidebar-label">Mes événements</span>
       {% for ev in user_events %}
         <a class="sidebar-link {% if event.pk == ev.pk %}active{% endif %}"
-           href="{% url 'events:detail' event_slug=ev.slug %}">{{ ev.name }}</a>
+           href="{% url 'events:detail' event_slug=ev.slug %}"
+           @click="$store.nav.close()">{{ ev.name }}</a>
       {% endfor %}
     </div>
     {% endif %}
@@ -26,18 +53,24 @@
     <div class="sidebar-section">
       <span class="sidebar-label">{{ event.name|truncatechars:24 }}</span>
       <a class="sidebar-link {% if request.resolver_match.app_name == 'submissions' %}active{% endif %}"
-         href="{% url 'submissions:list' event_slug=event.slug %}">Soumissions</a>
+         href="{% url 'submissions:list' event_slug=event.slug %}"
+         @click="$store.nav.close()">Soumissions</a>
       <a class="sidebar-link {% if request.resolver_match.app_name == 'programme' %}active{% endif %}"
-         href="{% url 'programme:programme' event_slug=event.slug %}">Programme</a>
+         href="{% url 'programme:programme' event_slug=event.slug %}"
+         @click="$store.nav.close()">Programme</a>
       <a class="sidebar-link {% if request.resolver_match.app_name == 'logistics' %}active{% endif %}"
-         href="{% url 'logistics:index' event_slug=event.slug %}">Logistique</a>
+         href="{% url 'logistics:index' event_slug=event.slug %}"
+         @click="$store.nav.close()">Logistique</a>
       <a class="sidebar-link {% if request.resolver_match.app_name == 'emails' %}active{% endif %}"
-         href="{% url 'emails:campaign_list' event_slug=event.slug %}">Emails</a>
+         href="{% url 'emails:campaign_list' event_slug=event.slug %}"
+         @click="$store.nav.close()">Emails</a>
       {% if membership.is_organizer %}
       <a class="sidebar-link {% if request.resolver_match.url_name == 'members' or request.resolver_match.url_name == 'member_add' %}active{% endif %}"
-         href="{% url 'events:members' event_slug=event.slug %}">Membres</a>
+         href="{% url 'events:members' event_slug=event.slug %}"
+         @click="$store.nav.close()">Membres</a>
       <a class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"
-         href="{% url 'events:settings' event_slug=event.slug %}">Paramètres</a>
+         href="{% url 'events:settings' event_slug=event.slug %}"
+         @click="$store.nav.close()">Paramètres</a>
       {% endif %}
     </div>
     {% endif %}
@@ -45,7 +78,8 @@
     {% if user.is_staff %}
     <div class="sidebar-section">
       <a class="sidebar-link {% if request.resolver_match.app_name == 'staff' %}active{% endif %}"
-         href="{% url 'staff:dashboard' %}">Staff</a>
+         href="{% url 'staff:dashboard' %}"
+         @click="$store.nav.close()">Staff</a>
     </div>
     {% endif %}
 
@@ -70,6 +104,15 @@
   </div>
 </div>
 
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.store('nav', {
+      open: false,
+      toggle() { this.open = !this.open; },
+      close() { this.open = false; }
+    })
+  })
+</script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
 {% block extra_js %}{% endblock %}
 </body>

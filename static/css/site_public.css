@@ -189,6 +189,27 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
 .prose p { margin: 0 0 .75rem; }
 .prose p:last-child { margin-bottom: 0; }
 
+/* ─── Mobile ─────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .site-header { padding: 1.25rem 0 1rem; }
+  .site-title { font-size: 1.35rem; }
+  .site-meta { font-size: .88rem; }
+
+  /* Nav horizontalement scrollable sans retour à la ligne */
+  .site-nav .container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    padding: 0 .5rem;
+  }
+  .site-nav .container::-webkit-scrollbar { display: none; }
+  .nav-link { padding: .5rem .7rem; font-size: .85rem; white-space: nowrap; }
+
+  main.container { padding-top: 1.25rem; padding-bottom: 2rem; }
+  .site-cards { grid-template-columns: 1fr; }
+}
+
 /* Empty state */
 .empty { color: var(--gray-500); font-style: italic; }
 
