@@ -4,12 +4,14 @@ from .base import *  # noqa: F401, F403
 
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 # Connexions DB persistantes (évite une reconnexion par requête)
 DATABASES["default"]["CONN_MAX_AGE"] = 60  # noqa: F405
 
-SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 # Mettre à False tant que le site tourne sans HTTPS ; passer à True une fois le SSL en place

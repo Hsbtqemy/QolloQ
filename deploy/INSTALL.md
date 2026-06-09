@@ -4,10 +4,16 @@ Ubuntu 24.04, même serveur qu'Edito. Base de données séparée.
 
 ## 1. Cloner le dépôt
 
+Le dépôt est privé — utiliser une clé SSH ou un Personal Access Token GitHub.
+
 ```bash
+# Ajouter la clé SSH du VPS à GitHub si ce n'est pas déjà fait :
+ssh-keygen -t ed25519 -C "vps-qolloq"
+cat ~/.ssh/id_ed25519.pub   # coller dans GitHub → Settings → SSH keys
+
 sudo mkdir -p /var/www/qolloq
 sudo chown ubuntu:ubuntu /var/www/qolloq
-git clone https://github.com/Hsbtqemy/QolloQ.git /var/www/qolloq
+git clone git@github.com:Hsbtqemy/QolloQ.git /var/www/qolloq
 cd /var/www/qolloq
 ```
 
@@ -22,8 +28,14 @@ python3 -m venv .venv
 
 ```bash
 cp .env.example .env
-nano .env   # remplir SECRET_KEY, DB_PASSWORD, ALLOWED_HOSTS (IP du serveur)
+nano .env
 ```
+
+À remplir au minimum :
+- `SECRET_KEY` (voir commande ci-dessous)
+- `ALLOWED_HOSTS` → mettre l'IP publique du VPS
+- `DB_USER` et `DB_PASSWORD`
+- Laisser `SESSION_COOKIE_SECURE=False` et `CSRF_COOKIE_SECURE=False` tant que le site tourne sans HTTPS
 
 Générer une SECRET_KEY :
 ```bash
