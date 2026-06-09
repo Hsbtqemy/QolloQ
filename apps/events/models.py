@@ -65,6 +65,14 @@ class Event(BaseModel):
         help_text="Les noms des auteurs sont masqués aux évaluateurs.",
     )
 
+    banner = models.ImageField(
+        upload_to="events/banners/",
+        blank=True,
+        null=True,
+        verbose_name="Visuel",
+        help_text="Affiché en haut de la page publique. Recommandé : 1200 × 400 px.",
+    )
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

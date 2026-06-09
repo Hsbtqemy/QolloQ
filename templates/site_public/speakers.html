@@ -8,6 +8,7 @@
 </head>
 <body>
 <header class="site-header">
+  {% if banner_zip %}<img src="{{ banner_zip }}" alt="" class="site-banner">{% endif %}
   <div class="container">
     <h1 class="site-title">{{ event.name }}</h1>
     <p class="site-meta">

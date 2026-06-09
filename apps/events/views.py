@@ -203,7 +203,7 @@ class EventPublicSettingsView(OrganizerRequiredMixin, View):
         })
 
     def post(self, request, event_slug):
-        form = EventPublicPageForm(request.POST, instance=self.event)
+        form = EventPublicPageForm(request.POST, request.FILES, instance=self.event)
         if form.is_valid():
             form.save()
             messages.success(request, "Contenu enregistré.")

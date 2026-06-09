@@ -1,4 +1,5 @@
 import io
+import os
 import zipfile
 
 from django.conf import settings
@@ -26,10 +27,16 @@ def build_site_zip(event, request):
             reverse("submissions:public_submit", kwargs={"event_slug": event.slug})
         )
 
+    banner_zip = None
+    if event.banner:
+        ext = os.path.splitext(event.banner.name)[1].lower() or ".jpg"
+        banner_zip = f"images/banner{ext}"
+
     ctx = {
         "event": event,
         "speakers": speakers,
         "submission_url": submission_url,
+        "banner_zip": banner_zip,
         **prog_ctx,
     }
 
@@ -48,5 +55,11 @@ def build_site_zip(event, request):
             zf.writestr(filename, render_to_string(template_name, ctx))
         if css_path.exists():
             zf.write(str(css_path), "css/style.css")
+        if banner_zip and event.banner:
+            try:
+                with event.banner.open("rb") as img:
+                    zf.writestr(banner_zip, img.read())
+            except (OSError, ValueError):
+                pass
     buf.seek(0)
     return buf

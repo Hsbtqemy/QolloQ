@@ -15,8 +15,25 @@
   </div>
 </div>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   {% csrf_token %}
+
+  <div class="card">
+    <h3 class="card-section-title">Visuel</h3>
+    {% if event.banner %}
+    <div style="margin-bottom:1rem">
+      <img src="{{ event.banner.url }}" alt="Visuel actuel" style="max-width:100%;max-height:200px;border-radius:6px;display:block;object-fit:cover">
+    </div>
+    {% endif %}
+    {% with field=form.banner %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{% if event.banner %}Remplacer le visuel{% else %}Ajouter un visuel{% endif %}</label>
+      {{ field }}
+      {% if not event.banner %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+    </div>
+    {% endwith %}
+  </div>
+
   <div class="card">
     {% with field=form.call_for_papers %}
     <div class="field">
