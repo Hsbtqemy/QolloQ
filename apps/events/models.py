@@ -100,6 +100,36 @@ class Event(BaseModel):
         super().save(*args, **kwargs)
 
 
+class KeyDate(BaseModel):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="key_dates")
+    label = models.CharField(max_length=150, verbose_name="Intitulé")
+    date  = models.DateField(verbose_name="Date")
+
+    class Meta:
+        ordering = ["date"]
+        verbose_name = "Date clé"
+        verbose_name_plural = "Dates clés"
+
+    def __str__(self):
+        return f"{self.label} ({self.date})"
+
+
+class Task(BaseModel):
+    event    = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="tasks")
+    title    = models.CharField(max_length=200, verbose_name="Tâche")
+    done     = models.BooleanField(default=False, verbose_name="Terminée")
+    due_date = models.DateField(null=True, blank=True, verbose_name="Échéance")
+    order    = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "due_date", "created_at"]
+        verbose_name = "Tâche"
+        verbose_name_plural = "Tâches"
+
+    def __str__(self):
+        return self.title
+
+
 class Membership(BaseModel):
     class Role(models.TextChoices):
         ORGANIZER = "organizer", "Organisateur·ice"

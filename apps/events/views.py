@@ -3,16 +3,20 @@ import logging
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models as db_models
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views import View
 
 from apps.core.mixins import EventMemberRequiredMixin, OrganizerRequiredMixin
 from apps.documents.views import annotate_documents
+from apps.submissions.models import Proposal
 
 from .forms import EventForm, EventPublicPageForm, MemberAddForm
 from .mail import send_member_invitation
-from .models import Event, Membership
+from .models import Event, KeyDate, Membership, Task
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +49,79 @@ class EventCreateView(LoginRequiredMixin, View):
 
 class EventDetailView(EventMemberRequiredMixin, View):
     def get(self, request, event_slug):
+        today = timezone.localdate()
+        proposals = self.event.proposals.all()
+        accepted = proposals.filter(status=Proposal.Status.ACCEPTED)
+        stats = {
+            "total":     proposals.count(),
+            "accepted":  accepted.count(),
+            "confirmed": accepted.filter(attendance=Proposal.Attendance.CONFIRMED).count(),
+            "cancelled": accepted.filter(attendance=Proposal.Attendance.CANCELLED).count(),
+        }
         documents = list(self.event.documents.select_related("uploaded_by").all())
         annotate_documents(documents, event_slug)
         return render(request, "events/detail.html", {
-            "event": self.event,
+            "event":      self.event,
             "membership": self.membership,
-            "documents": documents,
+            "documents":  documents,
             "is_editable": self.membership.is_organizer,
             "doc_create_url": reverse("documents:create", kwargs={"event_slug": event_slug}),
+            "stats":      stats,
+            "key_dates":  self.event.key_dates.all(),
+            "tasks":      self.event.tasks.all(),
+            "today":      today,
+            "pending_tasks": self.event.tasks.filter(done=False).count(),
         })
+
+
+class KeyDateCreateView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug):
+        label = request.POST.get("label", "").strip()
+        date_str = request.POST.get("date", "").strip()
+        if label and date_str:
+            try:
+                from datetime import date
+                KeyDate.objects.create(event=self.event, label=label, date=date.fromisoformat(date_str))
+            except ValueError:
+                pass
+        return redirect("events:detail", event_slug=event_slug)
+
+
+class KeyDateDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        KeyDate.objects.filter(event=self.event, pk=pk).delete()
+        return redirect("events:detail", event_slug=event_slug)
+
+
+class TaskCreateView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug):
+        title = request.POST.get("title", "").strip()
+        due_str = request.POST.get("due_date", "").strip()
+        if title:
+            due = None
+            if due_str:
+                try:
+                    from datetime import date
+                    due = date.fromisoformat(due_str)
+                except ValueError:
+                    pass
+            max_order = self.event.tasks.aggregate(m=db_models.Max("order"))["m"] or 0
+            Task.objects.create(event=self.event, title=title, due_date=due, order=max_order + 1)
+        return redirect("events:detail", event_slug=event_slug)
+
+
+class TaskToggleView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        task = get_object_or_404(Task, event=self.event, pk=pk)
+        task.done = not task.done
+        task.save(update_fields=["done", "updated_at"])
+        return JsonResponse({"done": task.done})
+
+
+class TaskDeleteView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, pk):
+        Task.objects.filter(event=self.event, pk=pk).delete()
+        return redirect("events:detail", event_slug=event_slug)
 
 
 class EventSettingsView(OrganizerRequiredMixin, View):

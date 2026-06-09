@@ -46,6 +46,7 @@
         <th>Auteur·ices</th>
         <th>Format</th>
         <th>Statut</th>
+        <th>Présence</th>
         <th>Avis</th>
         <th></th>
       </tr>
@@ -59,6 +60,19 @@
         </td>
         <td class="text-muted">{{ proposal.format|default:"—" }}</td>
         <td><span class="badge {{ proposal.status }}">{{ proposal.get_status_display }}</span></td>
+        <td>
+          {% if proposal.status == 'accepted' %}
+          <select class="select-inline attendance-select"
+                  data-url="{% url 'submissions:attendance_update' event_slug=event.slug proposal_id=proposal.pk %}"
+                  data-csrf="{{ csrf_token }}">
+            {% for val, label in proposal.Attendance.choices %}
+            <option value="{{ val }}" {% if proposal.attendance == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
         <td class="text-muted">{{ proposal.evaluations.all|length }}</td>
         <td class="actions">
           <a href="{% url 'submissions:detail' event_slug=event.slug proposal_id=proposal.pk %}" class="btn ghost sm">Voir</a>
@@ -71,4 +85,21 @@
 {% else %}
 <div class="empty-state">Aucune soumission pour le moment.</div>
 {% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll('.attendance-select').forEach(sel => {
+  sel.addEventListener('change', function () {
+    const fd = new FormData();
+    fd.append('attendance', this.value);
+    fd.append('csrfmiddlewaretoken', this.dataset.csrf);
+    fetch(this.dataset.url, { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(d => {
+        this.dataset.current = d.attendance;
+        this.className = 'select-inline attendance-select attendance--' + d.attendance;
+      });
+  });
+});
+</script>
 {% endblock %}

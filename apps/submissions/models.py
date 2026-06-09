@@ -25,11 +25,22 @@ class Proposal(BaseModel):
     keywords = models.CharField(max_length=255, blank=True, verbose_name="Mots-clés")
     format = models.CharField(max_length=255, blank=True, verbose_name="Format souhaité")
     availability = models.TextField(blank=True, verbose_name="Disponibilités")
+    class Attendance(models.TextChoices):
+        PENDING   = "pending",   "En attente"
+        CONFIRMED = "confirmed", "Confirmé·e"
+        CANCELLED = "cancelled", "Annulé·e"
+
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.SUBMITTED,
         verbose_name="Statut",
+    )
+    attendance = models.CharField(
+        max_length=20,
+        choices=Attendance.choices,
+        default=Attendance.PENDING,
+        verbose_name="Présence",
     )
 
     # Accès sans compte pour le soumissionnaire

@@ -15,46 +15,184 @@
     <a href="{% url 'site_public:page' event_slug=event.slug %}" class="btn ghost sm" target="_blank" rel="noopener">Page publique ↗</a>
     <form method="post" action="{% url 'site_public:publish' event_slug=event.slug %}" style="display:inline">
       {% csrf_token %}
-      <button type="submit" class="btn ghost">↓ Site ZIP</button>
+      <button type="submit" class="btn ghost sm">↓ Site ZIP</button>
     </form>
     <a href="{% url 'events:settings' event_slug=event.slug %}" class="btn ghost">Paramètres</a>
   </div>
   {% endif %}
 </div>
 
-<div class="grid-2col">
-  <a class="card" href="{% url 'submissions:list' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
-    <h3>Soumissions</h3>
-    <p class="text-muted">Propositions reçues, évaluations, acceptations.</p>
-  </a>
-  <a class="card" href="{% url 'programme:programme' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
-    <h3>Programme</h3>
-    <p class="text-muted">Sessions, communications, événements annexes.</p>
-  </a>
-  {% if membership.is_organizer %}
-  <a class="card" href="{% url 'logistics:index' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
-    <h3>Logistique</h3>
-    <p class="text-muted">Formulaires organisationnels, remboursements, budget.</p>
-  </a>
-  {% endif %}
-  <a class="card" href="{% url 'emails:campaign_list' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
-    <h3>Emails</h3>
-    <p class="text-muted">Campagnes email vers les membres et intervenants.</p>
-  </a>
-  {% if membership.is_organizer %}
-  <a class="card col-span-2" href="{% url 'events:public_settings' event_slug=event.slug %}" style="text-decoration:none; color:inherit">
-    <h3>Page publique</h3>
-    <p class="text-muted">Appel à communications, bibliographie, téléchargement PDF.</p>
-  </a>
-  {% endif %}
-</div>
-
-{% if event.description %}
-<div class="card">
-  <h3>Description</h3>
-  <p>{{ event.description }}</p>
+{% if membership.is_organizer %}
+<div class="stat-grid">
+  <div class="stat-box">
+    <div class="stat-value">{{ stats.total }}</div>
+    <div class="stat-label">Soumission{{ stats.total|pluralize }}</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">{{ stats.accepted }}</div>
+    <div class="stat-label">Acceptée{{ stats.accepted|pluralize }}</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-value">{{ stats.confirmed }}</div>
+    <div class="stat-label">Confirmée{{ stats.confirmed|pluralize }}</div>
+  </div>
+  <div class="stat-box {% if pending_tasks %}stat-box--alert{% endif %}">
+    <div class="stat-value">{{ pending_tasks }}</div>
+    <div class="stat-label">Tâche{{ pending_tasks|pluralize }} restante{{ pending_tasks|pluralize }}</div>
+  </div>
 </div>
 {% endif %}
 
-{% include "partials/_documents_panel.html" with documents=documents is_editable=is_editable doc_create_url=doc_create_url %}
+<div class="grid-main-side" style="align-items:start">
+
+  <div>
+    <div class="grid-2col">
+      <a class="card" href="{% url 'submissions:list' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
+        <h3>Soumissions</h3>
+        <p class="text-muted">Propositions reçues, évaluations, acceptations.</p>
+      </a>
+      <a class="card" href="{% url 'programme:programme' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
+        <h3>Programme</h3>
+        <p class="text-muted">Sessions, communications, événements annexes.</p>
+      </a>
+      {% if membership.is_organizer %}
+      <a class="card" href="{% url 'logistics:index' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
+        <h3>Logistique</h3>
+        <p class="text-muted">Formulaires organisationnels, remboursements, budget.</p>
+      </a>
+      {% endif %}
+      <a class="card" href="{% url 'emails:campaign_list' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
+        <h3>Emails</h3>
+        <p class="text-muted">Campagnes email vers les membres et intervenants.</p>
+      </a>
+      {% if membership.is_organizer %}
+      <a class="card col-span-2" href="{% url 'events:public_settings' event_slug=event.slug %}" style="text-decoration:none; color:inherit">
+        <h3>Contenu public</h3>
+        <p class="text-muted">Appel à communications, bibliographie, visuel, téléchargement PDF.</p>
+      </a>
+      {% endif %}
+    </div>
+
+    {% if event.description %}
+    <div class="card">
+      <p>{{ event.description }}</p>
+    </div>
+    {% endif %}
+
+    {% include "partials/_documents_panel.html" with documents=documents is_editable=is_editable doc_create_url=doc_create_url %}
+  </div>
+
+  {% if membership.is_organizer %}
+  <div>
+
+    {# ── Dates clés ── #}
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Dates clés</h3>
+      </div>
+      <div class="panel-body" style="padding:.5rem 0 .75rem">
+
+        {# Dates système #}
+        {% if event.submission_deadline %}
+        <div class="keydate-row keydate-row--system">
+          <span class="keydate-dot"></span>
+          <span class="keydate-label">Clôture soumissions</span>
+          <span class="keydate-date {% if event.submission_deadline.date < today %}keydate-past{% endif %}">
+            {{ event.submission_deadline|date:"j M Y" }}
+          </span>
+        </div>
+        {% endif %}
+        <div class="keydate-row keydate-row--system">
+          <span class="keydate-dot"></span>
+          <span class="keydate-label">Début de l'événement</span>
+          <span class="keydate-date {% if event.start_date < today %}keydate-past{% endif %}">
+            {{ event.start_date|date:"j M Y" }}
+          </span>
+        </div>
+
+        {# Dates personnalisées #}
+        {% for kd in key_dates %}
+        <div class="keydate-row">
+          <span class="keydate-dot keydate-dot--custom"></span>
+          <span class="keydate-label">{{ kd.label }}</span>
+          <span class="keydate-date {% if kd.date < today %}keydate-past{% elif kd.date == today %}keydate-today{% endif %}">
+            {{ kd.date|date:"j M Y" }}
+          </span>
+          <form method="post" action="{% url 'events:keydate_delete' event_slug=event.slug pk=kd.pk %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="keydate-del" title="Supprimer">×</button>
+          </form>
+        </div>
+        {% endfor %}
+
+        <form method="post" action="{% url 'events:keydate_create' event_slug=event.slug %}"
+              style="display:grid; grid-template-columns:1fr auto auto; gap:.4rem; padding:.5rem 1rem 0">
+          {% csrf_token %}
+          <input type="text" name="label" placeholder="Intitulé" required
+                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+          <input type="date" name="date" required
+                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+          <button type="submit" class="btn ghost sm">+</button>
+        </form>
+      </div>
+    </div>
+
+    {# ── Tâches ── #}
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Tâches</h3>
+        {% if pending_tasks %}<span class="badge draft">{{ pending_tasks }} restante{{ pending_tasks|pluralize }}</span>{% endif %}
+      </div>
+      <div class="panel-body" style="padding:.25rem 0 .75rem">
+        {% if tasks %}
+        <ul style="list-style:none; margin:0; padding:0">
+          {% for task in tasks %}
+          <li class="task-row{% if task.done %} task-row--done{% endif %}"
+              x-data="{ done: {{ task.done|yesno:'true,false' }} }"
+              :class="done ? 'task-row--done' : ''">
+            <label style="display:flex; align-items:flex-start; gap:.6rem; flex:1; cursor:pointer; min-width:0">
+              <input type="checkbox" :checked="done"
+                     @change="
+                       fetch('{% url 'events:task_toggle' event_slug=event.slug pk=task.pk %}', {
+                         method: 'POST',
+                         headers: {'X-CSRFToken': '{{ csrf_token }}'}
+                       }).then(r => r.json()).then(d => done = d.done)
+                     "
+                     style="margin-top:.2rem; flex-shrink:0; accent-color:#2563eb">
+              <span>
+                <span class="task-title" :class="done ? 'task-done-text' : ''">{{ task.title }}</span>
+                {% if task.due_date %}
+                <span class="task-due {% if task.due_date < today and not task.done %}task-due--overdue{% endif %}">
+                  {{ task.due_date|date:"j M" }}
+                </span>
+                {% endif %}
+              </span>
+            </label>
+            <form method="post" action="{% url 'events:task_delete' event_slug=event.slug pk=task.pk %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="keydate-del" title="Supprimer">×</button>
+            </form>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted text-sm" style="padding:.5rem 1rem 0">Aucune tâche pour le moment.</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'events:task_create' event_slug=event.slug %}"
+              style="display:grid; grid-template-columns:1fr auto auto; gap:.4rem; padding:.75rem 1rem 0">
+          {% csrf_token %}
+          <input type="text" name="title" placeholder="Nouvelle tâche…" required
+                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+          <input type="date" name="due_date"
+                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+          <button type="submit" class="btn ghost sm">+</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+
+</div>
 {% endblock %}

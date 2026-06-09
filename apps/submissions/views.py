@@ -389,3 +389,13 @@ class SubmissionFieldReorderView(OrganizerRequiredMixin, View):
             return JsonResponse({"error": "Champ non trouvé"}, status=404)
         SubmissionField.objects.bulk_update(updates, ["order"])
         return JsonResponse({"ok": True})
+
+
+class AttendanceUpdateView(OrganizerRequiredMixin, View):
+    def post(self, request, event_slug, proposal_id):
+        proposal = get_object_or_404(Proposal, event=self.event, pk=proposal_id)
+        attendance = request.POST.get("attendance", "")
+        if attendance in Proposal.Attendance.values:
+            proposal.attendance = attendance
+            proposal.save(update_fields=["attendance", "updated_at"])
+        return JsonResponse({"attendance": proposal.attendance})

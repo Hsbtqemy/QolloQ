@@ -612,6 +612,78 @@ table.data .actions { white-space: nowrap; text-align: right; }
 /* Conteneur qui scroll horizontalement sur mobile (formulaires de saisie denses) */
 .compact-form-wrap { }
 
+/* ─── Stats dashboard ────────────────────────────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+.stat-box {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: .9rem 1rem;
+  text-align: center;
+}
+.stat-box--alert { border-color: #fcd34d; background: #fffbeb; }
+.stat-value { font-size: 1.6rem; font-weight: 700; color: #111; line-height: 1; }
+.stat-label { font-size: .75rem; color: #6b7280; margin-top: .2rem; }
+
+/* ─── Dates clés ─────────────────────────────────────────────────────────── */
+.keydate-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .3rem 1rem;
+  font-size: .85rem;
+}
+.keydate-row:hover { background: #fafafa; }
+.keydate-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #d1d5db;
+  flex-shrink: 0;
+}
+.keydate-dot--custom { background: #93c5fd; }
+.keydate-label { flex: 1; color: #374151; }
+.keydate-date { font-size: .8rem; color: #6b7280; white-space: nowrap; }
+.keydate-past { color: #9ca3af; }
+.keydate-today { color: #2563eb; font-weight: 600; }
+.keydate-del {
+  background: none; border: none; color: #d1d5db; cursor: pointer;
+  font-size: 1rem; line-height: 1; padding: 0 .15rem;
+  flex-shrink: 0;
+}
+.keydate-del:hover { color: #dc2626; }
+.keydate-row--system .keydate-label { color: #6b7280; font-style: italic; }
+
+/* ─── Tâches ─────────────────────────────────────────────────────────────── */
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  padding: .35rem 1rem;
+  font-size: .875rem;
+  transition: background .1s;
+}
+.task-row:hover { background: #fafafa; }
+.task-row--done .task-title { text-decoration: line-through; color: #9ca3af; }
+.task-done-text { text-decoration: line-through; color: #9ca3af; }
+.task-title { color: #374151; }
+.task-due {
+  display: block;
+  font-size: .75rem;
+  color: #9ca3af;
+  margin-top: .1rem;
+}
+.task-due--overdue { color: #dc2626; font-weight: 500; }
+
+/* Attendance select */
+.attendance--confirmed { color: #15803d; }
+.attendance--cancelled { color: #dc2626; }
+.attendance--pending   { color: #6b7280; }
+
 /* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
 .mobile-topbar { display: none; }
 .sidebar-overlay { display: none; }
@@ -690,6 +762,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
   .grid-3col,
   .grid-main-side,
   .grid-prog { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
   .col-span-2 { grid-column: span 1; }
 
   /* Page header : actions sous le titre */

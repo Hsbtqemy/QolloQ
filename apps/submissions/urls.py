@@ -85,4 +85,9 @@ urlpatterns = [
         views.SubmissionFieldReorderView.as_view(),
         name="field_reorder",
     ),
+    path(
+        "evenements/<slug:event_slug>/soumissions/<int:proposal_id>/presence/",
+        views.AttendanceUpdateView.as_view(),
+        name="attendance_update",
+    ),
 ]
