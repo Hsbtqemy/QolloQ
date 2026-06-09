@@ -1,13 +1,17 @@
 PYTHON = venv/bin/python
+PIP    = venv/bin/pip
 SETTINGS = config.settings.production
 
-.PHONY: deploy pull migrate static restart logs shell createsuperuser
+.PHONY: deploy pull deps migrate static restart logs shell createsuperuser
 
-deploy: pull migrate static restart
+deploy: pull deps migrate static restart
 	@echo "Déploiement terminé."
 
 pull:
 	sudo -u qolloq git pull
+
+deps:
+	sudo -u qolloq $(PIP) install -q -r requirements/production.txt
 
 migrate:
 	sudo -u qolloq $(PYTHON) manage.py migrate --settings=$(SETTINGS)
