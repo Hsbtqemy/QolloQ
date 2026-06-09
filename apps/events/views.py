@@ -320,7 +320,6 @@ class EventPublicSettingsView(OrganizerRequiredMixin, View):
             "form": form or EventPublicPageForm(instance=self.event),
             "versions": versions,
             "available_languages": available_languages,
-            "new_version_form": CallVersionForm(),
         })
 
     def get(self, request, event_slug):
@@ -363,6 +362,6 @@ class CallVersionDeleteView(OrganizerRequiredMixin, View):
     def post(self, request, event_slug, pk):
         version = get_object_or_404(CallVersion, event=self.event, pk=pk)
         label = version.get_language_display()
-        version.delete()
+        version.hard_delete()
         messages.success(request, f"Version « {label} » supprimée.")
         return redirect("events:public_settings", event_slug=event_slug)
