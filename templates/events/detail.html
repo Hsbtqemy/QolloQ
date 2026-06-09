@@ -125,7 +125,7 @@
         {% endfor %}
 
         <form method="post" action="{% url 'events:keydate_create' event_slug=event.slug %}"
-              style="display:grid; grid-template-columns:1fr auto auto; gap:.4rem; padding:.5rem 1rem 0">
+              class="panel-add-row" style="padding:.5rem 1rem 0">
           {% csrf_token %}
           <input type="text" name="label" placeholder="Intitulé" required
                  style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
@@ -179,7 +179,7 @@
         {% endif %}
 
         <form method="post" action="{% url 'events:task_create' event_slug=event.slug %}"
-              style="display:grid; grid-template-columns:1fr auto auto; gap:.4rem; padding:.75rem 1rem 0">
+              class="panel-add-row" style="padding:.75rem 1rem 0">
           {% csrf_token %}
           <input type="text" name="title" placeholder="Nouvelle tâche…" required
                  style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">

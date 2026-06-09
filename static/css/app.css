@@ -640,6 +640,11 @@ table.data .actions { white-space: nowrap; text-align: right; }
 }
 .keydate-del:hover { color: #dc2626; }
 .keydate-row--system .keydate-label { color: #6b7280; font-style: italic; }
+.panel-add-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: .4rem;
+}
 
 /* ─── Tâches ─────────────────────────────────────────────────────────────── */
 .task-row {
@@ -744,7 +749,8 @@ table.data .actions { white-space: nowrap; text-align: right; }
   .grid-2col,
   .grid-3col,
   .grid-main-side,
-  .grid-prog { grid-template-columns: 1fr; }
+  .grid-prog { grid-template-columns: minmax(0, 1fr); }
+  .panel-add-row { grid-template-columns: 1fr; }
 
   .col-span-2 { grid-column: span 1; }
 
