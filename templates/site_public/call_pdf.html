@@ -1,4 +1,4 @@
-<!doctype html>
+{% load qolloq_filters %}<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -9,6 +9,12 @@
   h2 { font-size: 13pt; margin-top: 1cm; margin-bottom: .3cm; border-bottom: 1px solid #ccc; padding-bottom: .15cm; }
   .meta { color: #555; font-size: 10pt; margin-bottom: 1cm; }
   .prose p { margin: 0 0 .5em; }
+  .prose sup { font-size: 7.5pt; line-height: 1; }
+  .prose sup a { color: #333; text-decoration: none; }
+  .prose .footnotes { margin-top: 1.5cm; padding-top: .3cm; border-top: 1px solid #ccc; font-size: 9pt; color: #444; }
+  .prose .footnotes ol { padding-left: 1.2em; margin: 0; }
+  .prose .footnotes li { margin-bottom: .25em; }
+  .prose .footnotes a.footnote-backref { text-decoration: none; color: #888; }
   footer { margin-top: 2cm; font-size: 9pt; color: #888; border-top: 1px solid #ddd; padding-top: .3cm; }
 </style>
 </head>
@@ -22,11 +28,11 @@
 </p>
 
 <h2>Appel à communications</h2>
-<div class="prose">{{ event.call_for_papers|linebreaks }}</div>
+<div class="prose">{{ event.call_for_papers|md }}</div>
 
 {% if event.bibliography %}
 <h2>Bibliographie</h2>
-<div class="prose">{{ event.bibliography|linebreaks }}</div>
+<div class="prose">{{ event.bibliography|md }}</div>
 {% endif %}
 
 <footer>{{ event.site_footer|default:"Généré avec QolloQ" }}</footer>

@@ -1,4 +1,4 @@
-{% load static %}<!doctype html>
+{% load static qolloq_filters %}<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -30,14 +30,14 @@
         ↓ Télécharger le PDF
       </a>
     </div>
-    <div class="prose">{{ event.call_for_papers|linebreaks }}</div>
+    <div class="prose">{{ event.call_for_papers|md }}</div>
   </section>
   {% endif %}
 
   {% if event.bibliography %}
   <section class="site-section">
     <h2>Bibliographie</h2>
-    <div class="prose">{{ event.bibliography|linebreaks }}</div>
+    <div class="prose">{{ event.bibliography|md }}</div>
   </section>
   {% endif %}
 

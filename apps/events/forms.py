@@ -42,8 +42,12 @@ class EventPublicPageForm(forms.ModelForm):
             "site_footer": forms.TextInput(),
         }
         help_texts = {
-            "call_for_papers": "Affiché sur la page publique et dans le PDF téléchargeable.",
-            "bibliography": "Références bibliographiques — optionnel.",
+            "call_for_papers": (
+                "Affiché sur la page publique et dans le PDF. "
+                "Mise en forme Markdown acceptée. "
+                "Notes de bas de page : écrire [^1] dans le texte, puis [^1]: texte de la note à la fin."
+            ),
+            "bibliography": "Références bibliographiques — optionnel. Markdown accepté.",
         }
 
     def clean_primary_color(self):

@@ -196,6 +196,19 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
 /* Prose */
 .prose p { margin: 0 0 .75rem; }
 .prose p:last-child { margin-bottom: 0; }
+.prose strong { font-weight: 700; }
+.prose em { font-style: italic; }
+
+/* Footnotes (markdown extension) */
+.prose sup { font-size: .72em; line-height: 1; vertical-align: super; }
+.prose sup a.footnote-ref { color: var(--blue); text-decoration: none; }
+.prose sup a.footnote-ref:hover { text-decoration: underline; }
+.prose .footnote { margin-top: 2em; font-size: .88rem; color: var(--gray-500); }
+.prose .footnote hr { border: none; border-top: 1px solid var(--border); margin: 0 0 .75em; }
+.prose .footnote ol { padding-left: 1.5em; margin: 0; }
+.prose .footnote li { margin-bottom: .35em; }
+.prose .footnote p { margin: 0; }
+.prose .footnote a.footnote-backref { text-decoration: none; color: var(--gray-500); margin-left: .2em; }
 
 /* ─── Mobile ─────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
