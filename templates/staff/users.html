@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Utilisateurs — Staff{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Utilisateurs</h1>
+  <div class="actions">
+    <a href="{% url 'staff:dashboard' %}" class="btn ghost sm">← Dashboard</a>
+    <a href="{% url 'staff:user_create' %}" class="btn primary sm">+ Créer un compte</a>
+  </div>
+</div>
+
+{% if users %}
+<div class="card" style="padding:0; overflow:hidden">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Utilisateur·ice</th>
+        <th>Email</th>
+        <th>Événements</th>
+        <th>Statut</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          {{ u.get_full_name|default:"—" }}
+          {% if u.is_staff %}<span class="badge" style="background:#ede9fe;color:#5b21b6">staff</span>{% endif %}
+        </td>
+        <td class="text-muted">{{ u.email }}</td>
+        <td class="text-muted">{{ u.event_count }}</td>
+        <td>
+          {% if u.is_active %}
+            <span class="badge open">Actif</span>
+          {% else %}
+            <span class="badge closed">Inactif</span>
+          {% endif %}
+          {% if u.must_change_password %}
+            <span class="badge" style="background:#fef3c7;color:#92400e">mdp à changer</span>
+          {% endif %}
+        </td>
+        <td class="actions">
+          <a href="{% url 'staff:user_edit' pk=u.pk %}" class="btn ghost sm">Modifier</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">Aucun utilisateur.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Staff — QolloQ{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Tableau de bord staff</h1>
+  <div class="actions">
+    <a href="{% url 'staff:users' %}" class="btn ghost sm">Utilisateurs</a>
+    <a href="{% url 'staff:user_create' %}" class="btn primary sm">+ Créer un compte</a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem">
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.8rem; font-weight:700; color:#2563eb">{{ total_events }}</div>
+    <div class="text-muted text-sm">événement{{ total_events|pluralize }}</div>
+  </div>
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.8rem; font-weight:700; color:#2563eb">{{ total_users }}</div>
+    <div class="text-muted text-sm">utilisateur{{ total_users|pluralize }}</div>
+  </div>
+  <div class="card" style="text-align:center; padding:1rem">
+    <div style="font-size:1.8rem; font-weight:700; color:#2563eb">{{ total_submissions }}</div>
+    <div class="text-muted text-sm">soumission{{ total_submissions|pluralize }}</div>
+  </div>
+</div>
+
+{% if events %}
+<div class="card" style="padding:0; overflow:hidden">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Événement</th>
+        <th>Dates</th>
+        <th>Membres</th>
+        <th>Soumissions</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ev in events %}
+      <tr>
+        <td>
+          <strong>{{ ev.name }}</strong>
+          {% if ev.location %}<div class="text-muted text-sm">{{ ev.location }}</div>{% endif %}
+        </td>
+        <td class="text-muted" style="white-space:nowrap">
+          {% if ev.start_date %}{{ ev.start_date|date:"d/m/Y" }}{% endif %}
+          {% if ev.end_date %} – {{ ev.end_date|date:"d/m/Y" }}{% endif %}
+        </td>
+        <td class="text-muted">{{ ev.member_count }}</td>
+        <td class="text-muted">{{ ev.submission_count }}</td>
+        <td class="actions">
+          <div class="btn-group">
+            <a href="{% url 'events:detail' event_slug=ev.slug %}" class="btn ghost sm">Vue d'ensemble</a>
+            <a href="{% url 'submissions:list' event_slug=ev.slug %}" class="btn ghost sm">Soumissions</a>
+            <a href="{% url 'logistics:index' event_slug=ev.slug %}" class="btn ghost sm">Logistique</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">Aucun événement sur la plateforme.</div>
+{% endif %}
+{% endblock %}

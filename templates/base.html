@@ -42,6 +42,13 @@
     </div>
     {% endif %}
 
+    {% if user.is_staff %}
+    <div class="sidebar-section">
+      <a class="sidebar-link {% if request.resolver_match.app_name == 'staff' %}active{% endif %}"
+         href="{% url 'staff:dashboard' %}">Staff</a>
+    </div>
+    {% endif %}
+
     <div class="sidebar-footer">
       <div>{{ user.get_full_name|default:user.email }}</div>
       <a href="{% url 'account_logout' %}">Se déconnecter</a>

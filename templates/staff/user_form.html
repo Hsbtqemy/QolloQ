@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{% if target_user %}Modifier {{ target_user.email }}{% else %}Créer un compte{% endif %} — Staff{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{% if target_user %}Modifier {{ target_user.get_full_name|default:target_user.email }}{% else %}Créer un compte{% endif %}</h1>
+  <div class="actions">
+    <a href="{% url 'staff:users' %}" class="btn ghost sm">← Utilisateurs</a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; align-items:start">
+
+  <div class="card">
+    <h3>{% if target_user %}Profil{% else %}Nouveau compte{% endif %}</h3>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="field{% if field.field.widget.input_type == 'checkbox' %}-checkbox{% endif %}">
+        {% if field.field.widget.input_type == 'checkbox' %}
+          {{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% else %}
+          <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+          {{ field }}
+        {% endif %}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit" class="btn primary sm">{% if target_user %}Enregistrer{% else %}Créer{% endif %}</button>
+        <a href="{% url 'staff:users' %}" class="btn ghost sm">Annuler</a>
+      </div>
+    </form>
+  </div>
+
+  {% if target_user %}
+  <div class="card">
+    <h3>Réinitialiser le mot de passe</h3>
+    <p class="text-muted text-sm" style="margin-bottom:.75rem">
+      L'utilisateur·ice devra changer son mot de passe à la prochaine connexion.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="set_password">
+      {% for field in password_form %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit" class="btn ghost sm">Réinitialiser</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
