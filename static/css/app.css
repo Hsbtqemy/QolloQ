@@ -603,10 +603,10 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .builder-lock { font-size: .75rem; color: #d1d5db; flex-shrink: 0; }
 
 /* ─── Grid helpers ───────────────────────────────────────────────────────── */
-.grid-2col      { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.grid-3col      { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.grid-main-side { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; align-items: start; }
-.grid-prog      { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
+.grid-2col      { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.grid-3col      { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.grid-main-side { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+.grid-prog      { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.25rem; align-items: start; }
 .col-span-2 { grid-column: span 2; }
 
 /* Conteneur qui scroll horizontalement sur mobile (formulaires de saisie denses) */
