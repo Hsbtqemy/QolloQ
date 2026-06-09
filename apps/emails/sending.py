@@ -1,8 +1,11 @@
+import logging
 from email.utils import parseaddr
 
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 from apps.events.models import Membership
 from apps.submissions.models import Proposal
@@ -65,8 +68,11 @@ def send_campaign(campaign):
             from_email=from_email,
             to=[email],
         )
-        msg.send()
-        count += 1
+        try:
+            msg.send()
+            count += 1
+        except Exception:
+            logger.exception("Échec envoi campagne %s à %s", campaign.pk, email)
 
     campaign.sent_at = timezone.now()
     campaign.sent_count = count

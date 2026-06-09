@@ -1,5 +1,6 @@
 import csv
 import json
+import logging
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
@@ -21,6 +22,8 @@ from .forms import (
     LogisticsResponseAdminForm,
     build_response_form,
 )
+logger = logging.getLogger(__name__)
+
 from .mail import send_logistics_link
 from .models import (
     BudgetCharge,
@@ -288,8 +291,12 @@ class SendLinkView(OrganizerRequiredMixin, View):
     def post(self, request, event_slug, form_id, response_id):
         lf = _get_lf(self.event, form_id)
         response = get_object_or_404(LogisticsResponse, pk=response_id, form=lf)
-        send_logistics_link(response, request=request)
-        messages.success(request, f"Lien envoyé à {response.respondent_email}.")
+        try:
+            send_logistics_link(response, request=request)
+            messages.success(request, f"Lien envoyé à {response.respondent_email}.")
+        except Exception:
+            logger.exception("Échec envoi lien logistique réponse %s", response.pk)
+            messages.error(request, "L'email n'a pas pu être envoyé.")
         return redirect("logistics:response_list", event_slug=event_slug, form_id=form_id)
 
 
@@ -299,8 +306,11 @@ class SendAllLinksView(OrganizerRequiredMixin, View):
         pending = lf.responses.filter(is_complete=False)
         count = 0
         for response in pending:
-            send_logistics_link(response, request=request)
-            count += 1
+            try:
+                send_logistics_link(response, request=request)
+                count += 1
+            except Exception:
+                logger.exception("Échec envoi lien logistique réponse %s", response.pk)
         messages.success(request, f"{count} lien(s) envoyé(s).")
         return redirect("logistics:response_list", event_slug=event_slug, form_id=form_id)
 
