@@ -84,6 +84,7 @@ class AnnexEvent(BaseModel):
         BREAK = "break", "Pause"
         MEAL = "meal", "Repas"
         PLENARY = "plenary", "Plénière"
+        CULTURAL = "cultural", "Événement culturel"
         OTHER = "other", "Autre"
 
     event = models.ForeignKey(
