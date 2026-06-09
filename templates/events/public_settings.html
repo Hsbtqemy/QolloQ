@@ -21,17 +21,28 @@
   <div class="card">
     <h3 class="card-section-title">Visuel</h3>
     {% if event.banner %}
-    <div style="margin-bottom:1rem">
-      <img src="{{ event.banner.url }}" alt="Visuel actuel" style="max-width:100%;max-height:200px;border-radius:6px;display:block;object-fit:cover">
+    <div style="margin-bottom:.75rem">
+      <img src="{{ event.banner.url }}" alt="" style="max-width:100%;max-height:200px;border-radius:6px;display:block;object-fit:cover">
     </div>
-    {% endif %}
+    <div class="field-checkbox" style="margin-bottom:.75rem">
+      <input type="checkbox" name="banner-clear" id="banner-clear-id">
+      <label for="banner-clear-id">Supprimer ce visuel</label>
+    </div>
+    <div class="field">
+      <label for="id_banner">Remplacer par un autre visuel</label>
+      <input type="file" name="banner" accept="image/*" id="id_banner">
+      {% if form.banner.errors %}<ul class="errorlist">{% for e in form.banner.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% else %}
     {% with field=form.banner %}
     <div class="field">
-      <label for="{{ field.id_for_label }}">{% if event.banner %}Remplacer le visuel{% else %}Ajouter un visuel{% endif %}</label>
+      <label for="{{ field.id_for_label }}">Ajouter un visuel</label>
       {{ field }}
-      {% if not event.banner %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      <div class="helptext">{{ field.help_text }}</div>
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </div>
     {% endwith %}
+    {% endif %}
   </div>
 
   <div class="card">
