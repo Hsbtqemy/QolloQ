@@ -8,29 +8,30 @@
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
-<body>
-<div class="app-layout" x-data>
+<body x-data>
 
-  {# ===== Topbar mobile + overlay — téléportés dans <body> pour z-index propre ===== #}
-  <template x-teleport="body">
-    <div class="mobile-topbar">
-      <button class="mobile-menu-btn"
-              @click="$store.nav.toggle()"
-              :aria-expanded="$store.nav.open.toString()"
-              aria-label="Menu de navigation">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
-      <a class="mobile-brand" href="{% url 'events:home' %}">QolloQ</a>
-      {% if event %}<span class="mobile-event-name">{{ event.name|truncatechars:24 }}</span>{% endif %}
-    </div>
-    <div class="sidebar-overlay"
-         x-show="$store.nav.open"
-         @click="$store.nav.close()"
-         x-cloak
-         aria-hidden="true"></div>
-  </template>
+{# Topbar mobile — directement dans <body>, pas de x-teleport, position: fixed fonctionne immédiatement #}
+<div class="mobile-topbar">
+  <button class="mobile-menu-btn"
+          @click="$store.nav.toggle()"
+          :aria-expanded="$store.nav.open.toString()"
+          aria-label="Menu de navigation">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+    </svg>
+  </button>
+  <a class="mobile-brand" href="{% url 'events:home' %}">QolloQ</a>
+  {% if event %}<span class="mobile-event-name">{{ event.name|truncatechars:24 }}</span>{% endif %}
+</div>
+
+{# Overlay sidebar — directement dans <body> #}
+<div class="sidebar-overlay"
+     x-show="$store.nav.open"
+     @click="$store.nav.close()"
+     x-cloak
+     aria-hidden="true"></div>
+
+<div class="app-layout">
 
   <nav class="app-sidebar" :class="{ 'is-open': $store.nav.open }">
     <div class="sidebar-top">
@@ -102,6 +103,7 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+
 </div>
 
 <script>
