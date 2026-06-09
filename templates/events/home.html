@@ -9,7 +9,7 @@
   </div>
 </div>
 
-{% if events %}
+{% if memberships %}
 <div class="card" style="padding:0; overflow:hidden;">
   <table class="data">
     <thead>
@@ -22,16 +22,14 @@
       </tr>
     </thead>
     <tbody>
-      {% for ev in events %}
+      {% for m in memberships %}
       <tr>
-        <td><a href="{% url 'events:detail' event_slug=ev.slug %}">{{ ev.name }}</a></td>
-        <td class="text-muted">{{ ev.start_date|date:"j M Y" }}{% if ev.end_date != ev.start_date %} – {{ ev.end_date|date:"j M Y" }}{% endif %}</td>
-        <td class="text-muted">{{ ev.location|default:"—" }}</td>
-        <td>
-          {% for m in ev.memberships.all %}{% if m.user == user %}{{ m.get_role_display }}{% endif %}{% endfor %}
-        </td>
+        <td><a href="{% url 'events:detail' event_slug=m.event.slug %}">{{ m.event.name }}</a></td>
+        <td class="text-muted">{{ m.event.start_date|date:"j M Y" }}{% if m.event.end_date != m.event.start_date %} – {{ m.event.end_date|date:"j M Y" }}{% endif %}</td>
+        <td class="text-muted">{{ m.event.location|default:"—" }}</td>
+        <td>{{ m.get_role_display }}</td>
         <td class="actions">
-          <a href="{% url 'events:detail' event_slug=ev.slug %}" class="btn ghost sm">Ouvrir</a>
+          <a href="{% url 'events:detail' event_slug=m.event.slug %}" class="btn ghost sm">Ouvrir</a>
         </td>
       </tr>
       {% endfor %}

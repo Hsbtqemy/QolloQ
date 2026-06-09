@@ -19,7 +19,7 @@ from apps.documents.views import annotate_documents
 from apps.submissions.models import Proposal
 
 from .forms import CallVersionForm, EventForm, EventPublicPageForm, MemberAddForm
-from .mail import send_member_invitation
+from .mail import send_committee_invitation, send_member_invitation
 from .models import CallVersion, Event, KeyDate, Membership, Task
 
 logger = logging.getLogger(__name__)
@@ -27,13 +27,12 @@ logger = logging.getLogger(__name__)
 
 class HomeView(LoginRequiredMixin, View):
     def get(self, request):
-        events = (
-            Event.objects.filter(memberships__user=request.user)
-            .prefetch_related("memberships__user")
-            .order_by("-start_date")
-            .distinct()
+        memberships = (
+            Membership.objects.filter(user=request.user)
+            .select_related("event")
+            .order_by("-event__start_date")
         )
-        return render(request, "events/home.html", {"events": events})
+        return render(request, "events/home.html", {"memberships": memberships})
 
 
 class EventCreateView(LoginRequiredMixin, View):
@@ -46,7 +45,7 @@ class EventCreateView(LoginRequiredMixin, View):
             event = form.save(commit=False)
             event.created_by = request.user
             event.save()
-            Membership.objects.create(user=request.user, event=event, role=Membership.Role.ORGANIZER)
+            Membership.objects.create(user=request.user, event=event, role=Membership.Role.ORGANIZER, eval_token=uuid.uuid4())
             return redirect("events:detail", event_slug=event.slug)
         return render(request, "events/create.html", {"form": form})
 
@@ -153,7 +152,11 @@ class MemberListView(OrganizerRequiredMixin, View):
         members = (
             self.event.memberships
             .select_related("user")
-            .order_by("role", "last_name", "user__last_name")
+            .annotate(sort_name=db_models.Case(
+                db_models.When(user__isnull=False, then=db_models.F("user__last_name")),
+                default=db_models.F("last_name"),
+            ))
+            .order_by("role", "sort_name")
         )
         return render(request, "events/members.html", {
             "event": self.event,
@@ -215,7 +218,6 @@ class MemberAddView(OrganizerRequiredMixin, View):
                     reverse("submissions:evaluator_access", kwargs={"token": str(membership.eval_token)})
                 )
                 try:
-                    from .mail import send_committee_invitation
                     send_committee_invitation(membership, self.event, eval_link)
                 except Exception:
                     logger.exception("send_committee_invitation failed for %s on event %s", email, self.event.pk)
@@ -227,7 +229,11 @@ class MemberAddView(OrganizerRequiredMixin, View):
         members = (
             self.event.memberships
             .select_related("user")
-            .order_by("role", "last_name", "user__last_name")
+            .annotate(sort_name=db_models.Case(
+                db_models.When(user__isnull=False, then=db_models.F("user__last_name")),
+                default=db_models.F("last_name"),
+            ))
+            .order_by("role", "sort_name")
         )
         return render(request, "events/members.html", {
             "event": self.event,

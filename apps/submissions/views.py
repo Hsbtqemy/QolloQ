@@ -407,7 +407,6 @@ class EvaluatorAccessView(View):
     """Accès comité via lien tokenisé : liste des propositions + formulaires d'évaluation."""
 
     def _get_membership(self, token):
-        from apps.events.models import Membership
         return get_object_or_404(Membership, eval_token=token)
 
     def _get_proposals(self, membership):
@@ -437,7 +436,7 @@ class EvaluatorAccessView(View):
             "membership": membership,
             "proposals": proposals,
             "own_evals": own_evals,
-            "eval_form": EvaluationForm(),
+            "verdict_choices": Evaluation.Verdict.choices,
             "token": str(token),
         })
 
@@ -446,7 +445,6 @@ class EvaluatorEvalView(View):
     """Dépôt ou mise à jour d'un avis via lien tokenisé."""
 
     def post(self, request, token, proposal_id):
-        from apps.events.models import Membership
         membership = get_object_or_404(Membership, eval_token=token)
         proposal = get_object_or_404(Proposal, pk=proposal_id, event=membership.event)
         existing = Evaluation.objects.filter(proposal=proposal, evaluator=membership).first()
@@ -457,4 +455,6 @@ class EvaluatorEvalView(View):
             evaluation.evaluator = membership
             evaluation.save()
             messages.success(request, "Avis enregistré.")
+        else:
+            messages.error(request, "Veuillez sélectionner un avis avant d'enregistrer.")
         return redirect("submissions:evaluator_access", token=str(token))

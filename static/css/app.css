@@ -778,6 +778,13 @@ table.data .actions { white-space: nowrap; text-align: right; }
   .modal-backdrop { align-items: flex-end; padding: 0; }
   .modal { max-width: 100%; border-radius: 14px 14px 0 0; max-height: 90vh; }
 
+  /* Tables → scroll horizontal plutôt que débordement de page */
+  table.data {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   /* Formulaires de saisie denses (budget) → scroll horizontal */
   .compact-form-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 

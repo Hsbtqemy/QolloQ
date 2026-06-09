@@ -66,7 +66,11 @@
         <p class="text-muted">Campagnes email vers les membres et intervenants.</p>
       </a>
       {% if membership.is_organizer %}
-      <a class="card col-span-2" href="{% url 'events:public_settings' event_slug=event.slug %}" style="text-decoration:none; color:inherit">
+      <a class="card" href="{% url 'events:members' event_slug=event.slug %}" style="text-decoration:none; color:inherit;">
+        <h3>Membres</h3>
+        <p class="text-muted">Comité scientifique et intervenants — liens personnalisés d'accès.</p>
+      </a>
+      <a class="card" href="{% url 'events:public_settings' event_slug=event.slug %}" style="text-decoration:none; color:inherit">
         <h3>Contenu public</h3>
         <p class="text-muted">Appel à communications (multilingue), visuel, personnalisation, PDF.</p>
       </a>

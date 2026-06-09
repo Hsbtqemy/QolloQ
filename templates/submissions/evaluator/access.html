@@ -52,30 +52,29 @@
         {% endif %}
       </div>
 
-      <div x-data="{ open: {% if not own_eval %}true{% else %}false{% endif %}" x-cloak>
+      <div class="prose" style="font-size:.95rem;margin-bottom:.75rem">
+        <p>{{ proposal.abstract }}</p>
+      </div>
+      {% if proposal.bio %}
+      <div style="font-size:.88rem;color:#4b5563;margin-bottom:.75rem">
+        <strong>Bio-bibliographie :</strong> {{ proposal.bio|truncatewords:60 }}
+      </div>
+      {% endif %}
 
-        <div class="prose" style="font-size:.95rem;margin-bottom:.75rem">
-          <p>{{ proposal.abstract }}</p>
-        </div>
-        {% if proposal.bio %}
-        <div style="font-size:.88rem;color:#4b5563;margin-bottom:.75rem">
-          <strong>Bio-bibliographie :</strong> {{ proposal.bio|truncatewords:60 }}
-        </div>
-        {% endif %}
-
+      <div x-data="{ open: {% if not own_eval %}true{% else %}false{% endif %}">
         <button type="button" class="btn ghost sm" @click="open = !open" style="margin-bottom:.75rem">
           <span x-text="open ? 'Masquer le formulaire' : ({% if own_eval %}'Modifier mon avis'{% else %}'Déposer mon avis'{% endif %})">
             {% if own_eval %}Modifier mon avis{% else %}Déposer mon avis{% endif %}
           </span>
         </button>
 
-        <div x-show="open">
+        <div x-show="open" {% if own_eval %}style="display:none"{% endif %}>
           <form method="post" action="{% url 'submissions:evaluator_eval' token=token proposal_id=proposal.pk %}">
             {% csrf_token %}
             <div class="field">
               <label>Avis <span class="req">*</span></label>
               <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-                {% for val, label in eval_form.fields.verdict.choices %}
+                {% for val, label in verdict_choices %}
                 <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
                   <input type="radio" name="verdict" value="{{ val }}"
                          {% if own_eval and own_eval.verdict == val %}checked{% endif %}>
