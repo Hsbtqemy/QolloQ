@@ -5,12 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Intervenant·es — {{ event.name }}</title>
 <link rel="stylesheet" href="./css/style.css">
+{% if event.primary_color %}<style>:root{--blue:{{ event.primary_color }}}</style>{% endif %}
 </head>
 <body>
 <header class="site-header">
   {% if banner_zip %}<img src="{{ banner_zip }}" alt="" class="site-banner">{% endif %}
   <div class="container">
     <h1 class="site-title">{{ event.name }}</h1>
+    {% if event.tagline %}<p class="site-tagline">{{ event.tagline }}</p>{% endif %}
     <p class="site-meta">
       {{ event.start_date|date:"j F Y" }}{% if event.end_date != event.start_date %} – {{ event.end_date|date:"j F Y" }}{% endif %}
       {% if event.location %} &middot; {{ event.location }}{% endif %}
@@ -52,7 +54,7 @@
 </main>
 
 <footer class="site-footer">
-  <div class="container">Généré avec QolloQ</div>
+  <div class="container">{{ event.site_footer|default:"Généré avec QolloQ" }}</div>
 </footer>
 </body>
 </html>

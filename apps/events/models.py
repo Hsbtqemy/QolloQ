@@ -73,6 +73,26 @@ class Event(BaseModel):
         help_text="Affiché en haut de la page publique. Recommandé : 1200 × 400 px.",
     )
 
+    # Personnalisation du site public
+    primary_color = models.CharField(
+        max_length=7,
+        blank=True,
+        verbose_name="Couleur principale",
+        help_text="Code hexadécimal, ex. #1e3a5f. Laisser vide pour la couleur par défaut.",
+    )
+    tagline = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Sous-titre",
+        help_text="Court texte affiché sous le nom de l'événement sur la page publique.",
+    )
+    site_footer = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name="Pied de page",
+        help_text="Texte affiché en bas de chaque page. Ex. : « Organisé par l'Univ. de Lyon ».",
+    )
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

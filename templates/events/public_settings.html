@@ -46,6 +46,46 @@
   </div>
 
   <div class="card">
+    <h3 class="card-section-title">Personnalisation</h3>
+    <div class="field">
+      <label>Couleur principale</label>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <input type="color" id="cp-picker"
+               value="{{ form.primary_color.value|default:'#1e3a5f' }}"
+               style="width:38px;height:34px;padding:2px;border:1px solid #d1d5db;border-radius:5px;cursor:pointer"
+               oninput="document.getElementById('id_primary_color').value=this.value">
+        <input type="text" name="primary_color" id="id_primary_color"
+               value="{{ form.primary_color.value|default:'' }}"
+               placeholder="#1e3a5f" maxlength="7"
+               style="width:90px;font-family:monospace"
+               oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('cp-picker').value=this.value">
+        <button type="button" class="btn ghost sm"
+                onclick="document.getElementById('id_primary_color').value=''; document.getElementById('cp-picker').value='#1e3a5f'">
+          Réinitialiser
+        </button>
+      </div>
+      <div class="helptext">Couleur de l'en-tête et des liens. Laisser vide pour la valeur par défaut.</div>
+      {% if form.primary_color.errors %}<ul class="errorlist">{% for e in form.primary_color.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% with field=form.tagline %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      <div class="helptext">{{ field.help_text }}</div>
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endwith %}
+    {% with field=form.site_footer %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      <div class="helptext">{{ field.help_text }}</div>
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endwith %}
+  </div>
+
+  <div class="card">
     {% with field=form.call_for_papers %}
     <div class="field">
       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
