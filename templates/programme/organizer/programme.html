@@ -235,7 +235,8 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
-const slug = "{{ event.slug }}";
+const URL_SESSION_REORDER = "{% url 'programme:session_reorder' event_slug=event.slug %}";
+const URL_COMM_REORDER    = "{% url 'programme:comm_reorder'    event_slug=event.slug %}";
 document.querySelectorAll(".prog-day").forEach(day => {
   Sortable.create(day, {
     animation: 150,
@@ -245,7 +246,7 @@ document.querySelectorAll(".prog-day").forEach(day => {
       const items = [...day.querySelectorAll(".prog-session")].map((el, i) => ({
         id: parseInt(el.dataset.id), order: i + 1
       }));
-      fetch(`/evenements/${slug}/programme/sessions/reorder/`, {
+      fetch(URL_SESSION_REORDER, {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
         body: JSON.stringify(items)
@@ -263,7 +264,7 @@ document.querySelectorAll("[id^='comms-']").forEach(el => {
       const items = [...el.querySelectorAll(".prog-comm")].map((r, i) => ({
         id: parseInt(r.dataset.id), order: i + 1, session_id: parseInt(sessionId)
       }));
-      fetch(`/evenements/${slug}/programme/communications/reorder/`, {
+      fetch(URL_COMM_REORDER, {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
         body: JSON.stringify(items)
