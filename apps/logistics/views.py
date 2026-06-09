@@ -351,17 +351,6 @@ class BudgetChargeCreateView(OrganizerRequiredMixin, View):
         return redirect("logistics:budget", event_slug=event_slug)
 
 
-class BudgetChargeEditView(OrganizerRequiredMixin, View):
-    def post(self, request, event_slug, charge_pk):
-        charge = get_object_or_404(BudgetCharge, pk=charge_pk, budget_line__event=self.event)
-        form = BudgetChargeForm(request.POST, instance=charge, event=self.event)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Prise en charge mise à jour.")
-        else:
-            messages.error(request, "Erreur dans le formulaire.")
-        return redirect("logistics:budget", event_slug=event_slug)
-
 
 class BudgetChargeDeleteView(OrganizerRequiredMixin, View):
     def post(self, request, event_slug, charge_pk):
@@ -471,7 +460,6 @@ class BudgetView(OrganizerRequiredMixin, View):
             "remaining": remaining,
             "form": form or BudgetLineForm(),
             "doc_form": BudgetDocumentForm(),
-            "charge_form": BudgetChargeForm(event=self.event),
             "category_choices": BudgetLine.Category.choices,
             "charge_status_choices": BudgetCharge.Status.choices,
         }

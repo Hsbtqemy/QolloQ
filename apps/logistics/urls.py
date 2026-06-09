@@ -91,11 +91,6 @@ urlpatterns = [
         name="budget_charge_create",
     ),
     path(
-        "evenements/<slug:event_slug>/logistique/budget/charges/<int:charge_pk>/modifier/",
-        views.BudgetChargeEditView.as_view(),
-        name="budget_charge_edit",
-    ),
-    path(
         "evenements/<slug:event_slug>/logistique/budget/charges/<int:charge_pk>/supprimer/",
         views.BudgetChargeDeleteView.as_view(),
         name="budget_charge_delete",

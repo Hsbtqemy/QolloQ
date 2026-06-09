@@ -57,7 +57,7 @@
                 <button type="button" class="btn ghost sm" @click="editing = true">Modifier</button>
                 <form method="post" action="{% url 'logistics:budget_line_delete' event_slug=event.slug pk=line.pk %}" class="inline-form">
                   {% csrf_token %}
-                  <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ce poste et ses documents ?')">✕</button>
+                  <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ce poste, ses documents et ses prises en charge ?')">✕</button>
                 </form>
               </div>
             </td>
