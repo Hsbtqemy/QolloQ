@@ -22,24 +22,34 @@
       <tbody>
         {% for m in members %}
         <tr>
-          <td>{{ m.user.get_full_name|default:"—" }}</td>
-          <td class="text-muted">{{ m.user.email }}</td>
+          <td>
+            {{ m.display_name|default:"—" }}
+            {% if not m.user_id %}
+            <span class="badge" style="font-size:.7rem;margin-left:.3rem">sans compte</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">{{ m.contact_email }}</td>
           <td>
             <form method="post" action="{% url 'events:member_update' event_slug=event.slug membership_id=m.pk %}" class="inline-form">
               {% csrf_token %}
               <select name="role" onchange="this.form.submit()" class="select-inline">
                 {% for val, label in role_choices %}
-                <option value="{{ val }}" {% if m.role == val %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ val }}" {% if m.role == val %}selected{% endif %}
+                        {% if val == 'organizer' and not m.user_id %}disabled{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </form>
           </td>
-          <td class="actions">
-            {% if m.user != request.user %}
+          <td class="actions" style="display:flex;gap:.35rem;align-items:center;flex-wrap:wrap">
+            {% if not m.user_id and m.eval_token %}
+            <a href="{% url 'submissions:evaluator_access' token=m.eval_token %}"
+               class="btn ghost sm" target="_blank" rel="noopener" title="Lien d'évaluation">↗ Lien</a>
+            {% endif %}
+            {% if not m.user_id or m.user != request.user %}
             <form method="post" action="{% url 'events:member_remove' event_slug=event.slug membership_id=m.pk %}" class="inline-form">
               {% csrf_token %}
               <button type="submit" class="btn ghost sm text-danger"
-                      onclick="return confirm('Retirer {{ m.user.get_full_name|default:m.user.email }} de l\'événement ?')">Retirer</button>
+                      onclick="return confirm('Retirer {{ m.display_name }} de l\'événement ?')">Retirer</button>
             </form>
             {% else %}
             <span class="text-muted text-sm">vous</span>
@@ -53,7 +63,7 @@
 
   <div class="card">
     <h3>Inviter un membre</h3>
-    <p class="text-muted text-sm">Un compte sera créé automatiquement si l'adresse email n'existe pas encore. La personne recevra un lien pour définir son mot de passe.</p>
+    <p class="text-muted text-sm">Les organisateurs ont un compte. Le comité scientifique et les intervenants reçoivent un lien personnel d'accès — pas de compte requis.</p>
     <form method="post" action="{% url 'events:member_add' event_slug=event.slug %}">
       {% csrf_token %}
       <div class="field">
@@ -71,7 +81,7 @@
           {{ form.last_name }}
         </div>
       </div>
-      <p class="text-muted text-sm" style="margin-top:-.25rem">Optionnel — si la personne n'a pas encore de compte.</p>
+      <p class="text-muted text-sm" style="margin-top:-.25rem">Obligatoire pour le comité et les intervenants.</p>
       <div class="field">
         <label for="{{ form.role.id_for_label }}">{{ form.role.label }} <span class="req">*</span></label>
         {{ form.role }}

@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import tempfile
+import uuid
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -152,7 +153,7 @@ class MemberListView(OrganizerRequiredMixin, View):
         members = (
             self.event.memberships
             .select_related("user")
-            .order_by("role", "user__last_name")
+            .order_by("role", "last_name", "user__last_name")
         )
         return render(request, "events/members.html", {
             "event": self.event,
@@ -169,40 +170,64 @@ class MemberAddView(OrganizerRequiredMixin, View):
         if form.is_valid():
             role = form.cleaned_data["role"]
             email = form.cleaned_data["email"]
+            first_name = form.cleaned_data.get("first_name", "")
+            last_name = form.cleaned_data.get("last_name", "")
 
-            if form.is_new_user:
-                User = get_user_model()
-                user = User.objects.create_user(
-                    email=email,
-                    password=None,
-                    first_name=form.cleaned_data.get("first_name", ""),
-                    last_name=form.cleaned_data.get("last_name", ""),
-                    must_change_password=True,
+            if role == Membership.Role.ORGANIZER:
+                if form.is_new_user:
+                    User = get_user_model()
+                    user = User.objects.create_user(
+                        email=email,
+                        password=None,
+                        first_name=first_name,
+                        last_name=last_name,
+                        must_change_password=True,
+                    )
+                    user.set_unusable_password()
+                    user.save(update_fields=["password"])
+                else:
+                    user = form.cleaned_user
+                membership = Membership.objects.create(
+                    user=user, event=self.event, role=role,
+                    eval_token=uuid.uuid4(),
                 )
-                user.set_unusable_password()
-                user.save(update_fields=["password"])
+                invitation_url = self._build_invitation_url(request, user)
+                try:
+                    send_member_invitation(user, self.event, role, invitation_url)
+                except Exception:
+                    logger.exception("send_member_invitation failed for %s on event %s", email, self.event.pk)
+                name = user.get_full_name() or email
+                if form.is_new_user:
+                    messages.success(request, f"Compte créé et invitation envoyée à {email}.")
+                else:
+                    messages.success(request, f"{name} ajouté·e — invitation envoyée.")
             else:
-                user = form.cleaned_user
+                membership = Membership.objects.create(
+                    user=None,
+                    event=self.event,
+                    role=role,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    eval_token=uuid.uuid4(),
+                )
+                eval_link = request.build_absolute_uri(
+                    reverse("submissions:evaluator_access", kwargs={"token": str(membership.eval_token)})
+                )
+                try:
+                    from .mail import send_committee_invitation
+                    send_committee_invitation(membership, self.event, eval_link)
+                except Exception:
+                    logger.exception("send_committee_invitation failed for %s on event %s", email, self.event.pk)
+                name = f"{first_name} {last_name}".strip() or email
+                messages.success(request, f"{name} ajouté·e — lien d'accès envoyé.")
 
-            Membership.objects.create(user=user, event=self.event, role=role)
-
-            invitation_url = self._build_invitation_url(request, user)
-            try:
-                send_member_invitation(user, self.event, role, invitation_url)
-            except Exception:
-                logger.exception("send_member_invitation failed for %s on event %s", email, self.event.pk)
-
-            name = user.get_full_name() or email
-            if form.is_new_user:
-                messages.success(request, f"Compte créé et invitation envoyée à {email}.")
-            else:
-                messages.success(request, f"{name} ajouté·e — invitation envoyée.")
             return redirect("events:members", event_slug=event_slug)
 
         members = (
             self.event.memberships
             .select_related("user")
-            .order_by("role", "user__last_name")
+            .order_by("role", "last_name", "user__last_name")
         )
         return render(request, "events/members.html", {
             "event": self.event,
@@ -239,6 +264,10 @@ class MemberUpdateView(OrganizerRequiredMixin, View):
         if new_role not in Membership.Role.values:
             messages.error(request, "Rôle invalide.")
             return redirect("events:members", event_slug=event_slug)
+        # Un membre sans compte ne peut pas devenir organisateur
+        if new_role == Membership.Role.ORGANIZER and not member.user_id:
+            messages.error(request, "Impossible : un organisateur doit avoir un compte. Supprimez ce membre et invitez-le en tant qu'organisateur.")
+            return redirect("events:members", event_slug=event_slug)
         # Empêche de rétrograder le dernier organisateur
         if member.is_organizer and new_role != Membership.Role.ORGANIZER:
             organizer_count = self.event.memberships.filter(role=Membership.Role.ORGANIZER).count()
@@ -259,8 +288,8 @@ class MemberRemoveView(OrganizerRequiredMixin, View):
             if organizer_count <= 1:
                 messages.error(request, "Impossible : il doit rester au moins un organisateur.")
                 return redirect("events:members", event_slug=event_slug)
-        name = member.user.get_full_name() or member.user.email
-        member.delete()
+        name = member.display_name
+        member.hard_delete()
         messages.success(request, f"{name} retiré·e de l'événement.")
         return redirect("events:members", event_slug=event_slug)
 

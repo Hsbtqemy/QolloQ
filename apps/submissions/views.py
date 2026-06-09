@@ -191,7 +191,7 @@ class ProposalDetailView(CommitteeRequiredMixin, View):
     def _get_visible_evaluations(self, proposal):
         # Les organisateurs voient toujours tout
         if self.membership.is_organizer:
-            return proposal.evaluations.select_related("evaluator__user").all()
+            return proposal.evaluations.select_related("evaluator").all()
 
         # Pour le comité : respect du paramètre eval_visibility
         own_exists = Evaluation.objects.filter(
@@ -203,7 +203,7 @@ class ProposalDetailView(CommitteeRequiredMixin, View):
         # Anonymat inter-évaluateurs
         if self.event.eval_anonymous:
             return proposal.evaluations.all()  # template masque les noms
-        return proposal.evaluations.select_related("evaluator__user").all()
+        return proposal.evaluations.select_related("evaluator").all()
 
 
 class ProposalStatusView(OrganizerRequiredMixin, View):
@@ -399,3 +399,62 @@ class AttendanceUpdateView(OrganizerRequiredMixin, View):
             proposal.attendance = attendance
             proposal.save(update_fields=["attendance", "updated_at"])
         return JsonResponse({"attendance": proposal.attendance})
+
+
+# ── Évaluation tokenisée (sans compte) ──────────────────────────────────────
+
+class EvaluatorAccessView(View):
+    """Accès comité via lien tokenisé : liste des propositions + formulaires d'évaluation."""
+
+    def _get_membership(self, token):
+        from apps.events.models import Membership
+        return get_object_or_404(Membership, eval_token=token)
+
+    def _get_proposals(self, membership):
+        event = membership.event
+        if event.eval_assignment == Event.EvalAssignment.MANUAL:
+            return (
+                membership.assigned_proposals
+                .filter(event=event)
+                .prefetch_related("authors")
+                .order_by("title")
+            )
+        return (
+            Proposal.objects.filter(event=event)
+            .prefetch_related("authors")
+            .order_by("title")
+        )
+
+    def get(self, request, token):
+        membership = self._get_membership(token)
+        proposals = self._get_proposals(membership)
+        own_evals = {
+            e.proposal_id: e
+            for e in Evaluation.objects.filter(evaluator=membership)
+        }
+        return render(request, "submissions/evaluator/access.html", {
+            "event": membership.event,
+            "membership": membership,
+            "proposals": proposals,
+            "own_evals": own_evals,
+            "eval_form": EvaluationForm(),
+            "token": str(token),
+        })
+
+
+class EvaluatorEvalView(View):
+    """Dépôt ou mise à jour d'un avis via lien tokenisé."""
+
+    def post(self, request, token, proposal_id):
+        from apps.events.models import Membership
+        membership = get_object_or_404(Membership, eval_token=token)
+        proposal = get_object_or_404(Proposal, pk=proposal_id, event=membership.event)
+        existing = Evaluation.objects.filter(proposal=proposal, evaluator=membership).first()
+        form = EvaluationForm(request.POST, instance=existing)
+        if form.is_valid():
+            evaluation = form.save(commit=False)
+            evaluation.proposal = proposal
+            evaluation.evaluator = membership
+            evaluation.save()
+            messages.success(request, "Avis enregistré.")
+        return redirect("submissions:evaluator_access", token=str(token))

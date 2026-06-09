@@ -86,7 +86,7 @@
       {% for eval in evaluations %}
       <div style="border-bottom: 1px solid #f3f4f6; padding: .6rem 0;">
         {% if not event.eval_anonymous or membership.is_organizer %}
-        <div class="text-sm" style="font-weight:500">{{ eval.evaluator.user.get_full_name|default:eval.evaluator.user.email }}</div>
+        <div class="text-sm" style="font-weight:500">{{ eval.evaluator.display_name }}</div>
         {% else %}
         <div class="text-sm text-muted">Évaluateur anonyme</div>
         {% endif %}

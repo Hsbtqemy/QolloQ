@@ -5,6 +5,18 @@ from . import views
 app_name = "submissions"
 
 urlpatterns = [
+    # Évaluation tokenisée (comité sans compte)
+    path(
+        "evaluer/<uuid:token>/",
+        views.EvaluatorAccessView.as_view(),
+        name="evaluator_access",
+    ),
+    path(
+        "evaluer/<uuid:token>/<int:proposal_id>/",
+        views.EvaluatorEvalView.as_view(),
+        name="evaluator_eval",
+    ),
+
     # Flux public (sans compte)
     path(
         "soumettre/<slug:event_slug>/",

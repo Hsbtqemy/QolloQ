@@ -14,3 +14,9 @@ def md(value):
         value,
         extensions=["footnotes", "nl2br"],
     ))
+
+
+@register.filter
+def dict_get(d, key):
+    """Lookup a dict by key in a template: {{ mydict|dict_get:key }}."""
+    return d.get(key)

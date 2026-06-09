@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
@@ -190,6 +192,8 @@ class Membership(BaseModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="memberships",
         verbose_name="Utilisateur·ice",
     )
@@ -206,13 +210,29 @@ class Membership(BaseModel):
         verbose_name="Rôle",
     )
 
+    # Champs pour les membres sans compte (comité, intervenants)
+    first_name = models.CharField(max_length=150, blank=True, verbose_name="Prénom")
+    last_name = models.CharField(max_length=150, blank=True, verbose_name="Nom")
+    email = models.EmailField(blank=True, verbose_name="Email")
+    eval_token = models.UUIDField(null=True, unique=True, editable=False, verbose_name="Token d'évaluation")
+
     class Meta:
         verbose_name = "Membre"
         verbose_name_plural = "Membres"
         unique_together = [("user", "event")]
 
     def __str__(self):
-        return f"{self.user} — {self.event} ({self.get_role_display()})"
+        return f"{self.display_name} — {self.event} ({self.get_role_display()})"
+
+    @property
+    def display_name(self):
+        if self.user_id:
+            return self.user.get_full_name() or self.user.email
+        return f"{self.first_name} {self.last_name}".strip() or self.email
+
+    @property
+    def contact_email(self):
+        return self.user.email if self.user_id else self.email
 
     @property
     def is_organizer(self):

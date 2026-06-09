@@ -66,14 +66,16 @@ class CallVersionForm(forms.ModelForm):
 
 
 class MemberAddForm(forms.Form):
+    _EMAIL_ATTRS = {
+        "autocorrect": "off",
+        "autocapitalize": "none",
+        "spellcheck": "false",
+        "inputmode": "email",
+    }
+
     email = forms.EmailField(
         label="Adresse email",
-        widget=forms.EmailInput(attrs={
-            "autocorrect": "off",
-            "autocapitalize": "none",
-            "spellcheck": "false",
-            "inputmode": "email",
-        }),
+        widget=forms.EmailInput(attrs=_EMAIL_ATTRS),
     )
     first_name = forms.CharField(max_length=150, required=False, label="Prénom")
     last_name = forms.CharField(max_length=150, required=False, label="Nom")
@@ -92,15 +94,37 @@ class MemberAddForm(forms.Form):
         self.cleaned_user = None
         self.is_new_user = False
 
-    def clean_email(self):
-        email = self.cleaned_data["email"]
+    def clean(self):
+        cleaned = super().clean()
+        email = cleaned.get("email")
+        role = cleaned.get("role")
+        if not email or not role:
+            return cleaned
+
         User = get_user_model()
-        try:
-            self.cleaned_user = User.objects.get(email=email)
-            self.is_new_user = False
-        except User.DoesNotExist:
-            self.is_new_user = True
-        if not self.is_new_user and self._event:
-            if Membership.objects.filter(user=self.cleaned_user, event=self._event).exists():
-                raise forms.ValidationError("Cette personne est déjà membre de l'événement.")
-        return email
+        if role == Membership.Role.ORGANIZER:
+            try:
+                self.cleaned_user = User.objects.get(email=email)
+                self.is_new_user = False
+            except User.DoesNotExist:
+                self.is_new_user = True
+            if not self.is_new_user and self._event:
+                if Membership.objects.filter(user=self.cleaned_user, event=self._event).exists():
+                    self.add_error("email", "Cette personne est déjà membre de l'événement.")
+        else:
+            # Comité / intervenant — pas de compte. Vérification par email.
+            if not cleaned.get("first_name") or not cleaned.get("last_name"):
+                raise forms.ValidationError("Le prénom et le nom sont obligatoires pour le comité et les intervenants.")
+            if self._event:
+                # Doublon via compte existant
+                try:
+                    existing_user = User.objects.get(email=email)
+                    if Membership.objects.filter(user=existing_user, event=self._event).exists():
+                        self.add_error("email", "Cette personne est déjà membre de l'événement.")
+                except User.DoesNotExist:
+                    pass
+                # Doublon via membership sans compte
+                if Membership.objects.filter(email=email, event=self._event).exists():
+                    self.add_error("email", "Cette adresse email est déjà enregistrée pour cet événement.")
+
+        return cleaned

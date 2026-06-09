@@ -17,3 +17,19 @@ def send_member_invitation(user, event, role, invitation_url):
         },
         event=event,
     )
+
+
+def send_committee_invitation(membership, event, eval_link):
+    role_label = dict(Membership.Role.choices).get(membership.role, membership.role)
+    send_template_email(
+        to=membership.email,
+        subject=f"Invitation à évaluer — {event.name}",
+        template_base="committee_invitation",
+        context={
+            "membership": membership,
+            "event": event,
+            "role_label": role_label,
+            "eval_link": eval_link,
+        },
+        event=event,
+    )

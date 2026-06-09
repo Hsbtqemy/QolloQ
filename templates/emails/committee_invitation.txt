@@ -1,0 +1,11 @@
+Bonjour {{ membership.first_name }},
+
+Vous avez été invité·e à participer à l'évaluation des propositions soumises à « {{ event.name }} » en tant que {{ role_label }}.
+
+Cliquez sur le lien ci-dessous pour accéder aux propositions à évaluer :
+
+{{ eval_link }}
+
+Ce lien est personnel — gardez-le précieusement, il vous permettra de retrouver vos évaluations à tout moment.
+
+{{ event.name }}
