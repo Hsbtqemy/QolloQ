@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ event.name }} — QolloQ{% endblock %}
+{% block content_wide %} wide{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -43,7 +44,7 @@
 </div>
 {% endif %}
 
-<div class="grid-main-side" style="align-items:start">
+<div class="{% if membership.is_organizer %}grid-main-side{% endif %}" style="align-items:start">
 
   <div>
     <div class="grid-2col">

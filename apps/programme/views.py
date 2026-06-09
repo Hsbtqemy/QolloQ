@@ -306,6 +306,7 @@ class CalendarView(CommitteeRequiredMixin, View):
             for day_data in ctx["programme"]
             for item in day_data["items"]
             for key in ("start", "end")
+            if item[key] is not None
         ]
         grid_start = min(times).replace(minute=0, second=0) if times else None
         grid_end = max(times) if times else None

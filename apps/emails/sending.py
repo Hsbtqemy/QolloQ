@@ -11,21 +11,23 @@ from .models import EmailCampaign
 
 
 def _collect_recipients(campaign):
-    """Retourne la liste dédupliquée des adresses email selon l'audience."""
+    """Retourne la liste dédupliquée des adresses email selon l'audience.
+
+    Utilise contact_email pour couvrir les membres avec compte (user.email)
+    ET les membres tokenisés sans compte (membership.email).
+    """
     event = campaign.event
     emails = set()
 
     if campaign.audience == EmailCampaign.Audience.ALL_MEMBERS:
-        emails.update(
-            Membership.objects.filter(event=event)
-            .values_list("user__email", flat=True)
-        )
+        qs = Membership.objects.filter(event=event).select_related("user")
+        emails.update(m.contact_email for m in qs if m.contact_email)
 
     elif campaign.audience == EmailCampaign.Audience.SPEAKERS:
-        emails.update(
-            Membership.objects.filter(event=event, role=Membership.Role.SPEAKER)
-            .values_list("user__email", flat=True)
-        )
+        qs = Membership.objects.filter(
+            event=event, role=Membership.Role.SPEAKER
+        ).select_related("user")
+        emails.update(m.contact_email for m in qs if m.contact_email)
 
     elif campaign.audience == EmailCampaign.Audience.ACCEPTED:
         emails.update(
@@ -34,13 +36,11 @@ def _collect_recipients(campaign):
         )
 
     elif campaign.audience == EmailCampaign.Audience.COMMITTEE:
-        emails.update(
-            Membership.objects.filter(
-                event=event,
-                role__in=[Membership.Role.ORGANIZER, Membership.Role.COMMITTEE],
-            )
-            .values_list("user__email", flat=True)
-        )
+        qs = Membership.objects.filter(
+            event=event,
+            role__in=[Membership.Role.ORGANIZER, Membership.Role.COMMITTEE],
+        ).select_related("user")
+        emails.update(m.contact_email for m in qs if m.contact_email)
 
     return list(emails)
 
