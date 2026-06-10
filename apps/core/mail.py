@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def send_template_email(
-    to: str, subject: str, template_base: str, context: dict, *, event=None
+    to: str, subject: str, template_base: str, context: dict, *, event=None, connection=None
 ) -> None:
     """Envoie un email HTML + texte brut à partir d'un nom de template de base."""
     context.setdefault("site_url", settings.SITE_URL)
@@ -42,4 +42,6 @@ def send_template_email(
     html = render_to_string(f"emails/{template_base}.html", context)
     msg = EmailMultiAlternatives(subject, txt, from_email, [to])
     msg.attach_alternative(html, "text/html")
+    if connection is not None:
+        msg.connection = connection
     msg.send()

@@ -4,6 +4,7 @@ import logging
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.core.mail import get_connection
 from django.db.models import Count, Max, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -303,14 +304,15 @@ class SendLinkView(OrganizerRequiredMixin, View):
 class SendAllLinksView(OrganizerRequiredMixin, View):
     def post(self, request, event_slug, form_id):
         lf = _get_lf(self.event, form_id)
-        pending = lf.responses.filter(is_complete=False)
+        pending = list(lf.responses.filter(is_complete=False))
         count = 0
-        for response in pending:
-            try:
-                send_logistics_link(response, request=request)
-                count += 1
-            except Exception:
-                logger.exception("Échec envoi lien logistique réponse %s", response.pk)
+        with get_connection() as conn:
+            for response in pending:
+                try:
+                    send_logistics_link(response, request=request, connection=conn)
+                    count += 1
+                except Exception:
+                    logger.exception("Échec envoi lien logistique réponse %s", response.pk)
         messages.success(request, f"{count} lien(s) envoyé(s).")
         return redirect("logistics:response_list", event_slug=event_slug, form_id=form_id)
 

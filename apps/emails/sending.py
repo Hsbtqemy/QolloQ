@@ -2,7 +2,7 @@ import logging
 from email.utils import parseaddr
 
 from django.conf import settings
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, get_connection
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -61,18 +61,20 @@ def send_campaign(campaign):
     from_email = f"{campaign.event.name} <{addr or settings.DEFAULT_FROM_EMAIL}>"
 
     count = 0
-    for email in recipients:
-        msg = EmailMessage(
-            subject=campaign.subject,
-            body=campaign.body,
-            from_email=from_email,
-            to=[email],
-        )
-        try:
-            msg.send()
-            count += 1
-        except Exception:
-            logger.exception("Échec envoi campagne %s à %s", campaign.pk, email)
+    with get_connection() as conn:
+        for email in recipients:
+            msg = EmailMessage(
+                subject=campaign.subject,
+                body=campaign.body,
+                from_email=from_email,
+                to=[email],
+                connection=conn,
+            )
+            try:
+                msg.send()
+                count += 1
+            except Exception:
+                logger.exception("Échec envoi campagne %s à %s", campaign.pk, email)
 
     campaign.sent_at = timezone.now()
     campaign.sent_count = count

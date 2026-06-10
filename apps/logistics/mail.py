@@ -3,7 +3,7 @@ from django.urls import reverse
 from apps.core.mail import send_template_email
 
 
-def send_logistics_link(response, request=None):
+def send_logistics_link(response, request=None, connection=None):
     """Envoie le lien d'accès au formulaire logistique à un intervenant."""
     token_url = reverse("logistics:respond", kwargs={"token": str(response.token)})
     if request:
@@ -21,4 +21,5 @@ def send_logistics_link(response, request=None):
             "is_bilingual": response.form.event.is_bilingual,
         },
         event=response.form.event,
+        connection=connection,
     )
