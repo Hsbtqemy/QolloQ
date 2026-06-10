@@ -54,19 +54,28 @@ User
 └── Campagnes email
 ```
 
+## Infrastructure QolloQ (patterns natifs)
+
+| Besoin | Implémentation |
+|---|---|
+| Email transactionnel HTML+text | `apps/core/mail.py` → `send_template_email()` |
+| Templates email éditables (superadmin) | `apps/emails/models.py` → `EmailTemplate` — sujet + corps FR/EN éditables via `/staff/email-templates/` |
+| Nom d'expéditeur par événement | `Event.from_name` — affiché dans la boîte de réception, fallback sur `event.name` |
+| Notification organisateur (nouvelle soumission) | `apps/submissions/mail.py` → `send_new_submission_notification()` |
+
 ## Points encore ouverts
 
-- Flux public soumissions (lien tokenisé sans compte, date limite, renvoi lien)
-- Périmètre formulaire logistique (champs fixes vs entièrement configurables)
-- Niveau constructeur de programme (formulaire structuré vs drag-and-drop)
-- Périmètre campagnes email (envoi simple vs suivi)
+- **Notifications de décision** (accepté/refusé aux soumettants) — délibérément différé.
+  Nécessite : interface de sélection/confirmation, calibration de l'envoi en masse,
+  garde-fous contre les envois accidentels avant validation finale.
+- **Suivi campagnes email** — envoi simple implémenté ; open rate / click tracking non prévu.
+- **Hub commun avec Edito** — SSO ou base utilisateurs partagée, projet futur.
 
 ## Patterns à réutiliser depuis Edito
 
 | Besoin | Source dans Edito |
 |---|---|
 | BaseModel (soft-delete, timestamps) | `apps/core/models.py` |
-| Envoi email HTML+text | `apps/core/mail.py` → `send_template_email()` |
 | CRUD mixins | `apps/core/views.py` |
 | Documents attachés | `templates/partials/_documents_panel.html` |
 | Drag-and-drop Sortable.js | `templates/issues/detail.html` (lignes 14–89) |

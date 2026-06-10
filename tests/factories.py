@@ -84,3 +84,32 @@ class CommunicationFactory(DjangoModelFactory):
     speaker_name = "Jean Martin"
     duration = 20
     order = factory.Sequence(lambda n: n + 1)
+
+
+class LogisticsFormFactory(DjangoModelFactory):
+    class Meta:
+        model = "logistics.LogisticsForm"
+
+    event = factory.SubFactory(EventFactory)
+    name = "Formulaire logistique test"
+    is_open = False
+
+
+class LogisticsResponseFactory(DjangoModelFactory):
+    class Meta:
+        model = "logistics.LogisticsResponse"
+
+    form = factory.SubFactory(LogisticsFormFactory)
+    respondent_name = "Jean Martin"
+    respondent_email = factory.Sequence(lambda n: f"intervenant{n}@example.com")
+    is_complete = False
+
+
+class EmailCampaignFactory(DjangoModelFactory):
+    class Meta:
+        model = "emails.EmailCampaign"
+
+    event = factory.SubFactory(EventFactory)
+    subject = factory.Sequence(lambda n: f"Campagne test {n}")
+    body = "Corps du message de test."
+    audience = "all_members"
