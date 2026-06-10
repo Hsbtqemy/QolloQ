@@ -650,8 +650,12 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .keydate-row--system .keydate-label { color: #6b7280; font-style: italic; }
 .panel-add-row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: .4rem;
+}
+.panel-add-row input[type="date"] {
+  min-width: 0;
+  width: 7.5rem;
 }
 
 /* ─── Tâches ─────────────────────────────────────────────────────────────── */
