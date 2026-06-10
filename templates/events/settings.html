@@ -42,6 +42,18 @@
   </div>
 
   <div class="card">
+    <h3 class="card-section-title">Emails</h3>
+    {% with field=form.from_name %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endwith %}
+  </div>
+
+  <div class="card">
     <h3 class="card-section-title">Dépôt de propositions</h3>
     <div class="field-checkbox">
       {{ form.submissions_open }}

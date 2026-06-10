@@ -11,7 +11,7 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = [
             "name", "description", "location", "start_date", "end_date",
-            "is_bilingual",
+            "is_bilingual", "from_name",
             "submissions_open", "submission_deadline",
             "eval_visibility", "eval_anonymous", "eval_assignment", "double_blind",
         ]

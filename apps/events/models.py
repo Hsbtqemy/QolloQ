@@ -75,6 +75,14 @@ class Event(BaseModel):
         help_text="Active les champs anglais et le sélecteur de langue sur les pages publiques.",
     )
 
+    # Emails
+    from_name = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Nom d'expéditeur",
+        help_text="Affiché dans la boîte de réception à la place du nom de l'événement. Ex. : « Jean Dupont — Colloque 2026 ».",
+    )
+
     banner = models.ImageField(
         upload_to="events/banners/",
         blank=True,

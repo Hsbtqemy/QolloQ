@@ -34,7 +34,8 @@ def send_template_email(
 
     if event:
         _, addr = parseaddr(settings.DEFAULT_FROM_EMAIL)
-        from_email = f"{event.name} <{addr or settings.DEFAULT_FROM_EMAIL}>"
+        display_name = event.from_name or event.name
+        from_email = f"{display_name} <{addr or settings.DEFAULT_FROM_EMAIL}>"
     else:
         from_email = settings.DEFAULT_FROM_EMAIL
     txt = render_to_string(f"emails/{template_base}.txt", context)
