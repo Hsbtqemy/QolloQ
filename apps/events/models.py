@@ -32,6 +32,9 @@ class Event(BaseModel):
     submission_instructions = models.TextField(
         blank=True, verbose_name="Instructions pour les soumissionnaires"
     )
+    submission_instructions_en = models.TextField(
+        blank=True, verbose_name="Instructions pour les soumissionnaires (EN)"
+    )
 
     # Évaluation — options configurables
     class EvalVisibility(models.TextChoices):
@@ -65,6 +68,13 @@ class Event(BaseModel):
         help_text="Les noms des auteurs sont masqués aux évaluateurs.",
     )
 
+    # Bilingue
+    is_bilingual = models.BooleanField(
+        default=False,
+        verbose_name="Événement bilingue (FR/EN)",
+        help_text="Active les champs anglais et le sélecteur de langue sur les pages publiques.",
+    )
+
     banner = models.ImageField(
         upload_to="events/banners/",
         blank=True,
@@ -86,12 +96,14 @@ class Event(BaseModel):
         verbose_name="Sous-titre",
         help_text="Court texte affiché sous le nom de l'événement sur la page publique.",
     )
+    tagline_en = models.CharField(max_length=200, blank=True, verbose_name="Sous-titre (EN)")
     site_footer = models.CharField(
         max_length=200,
         blank=True,
         verbose_name="Pied de page",
         help_text="Texte affiché en bas de chaque page. Ex. : « Organisé par l'Univ. de Lyon ».",
     )
+    site_footer_en = models.CharField(max_length=200, blank=True, verbose_name="Pied de page (EN)")
 
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

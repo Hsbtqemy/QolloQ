@@ -29,7 +29,7 @@ class PublicProposalForm(forms.ModelForm):
             "submitter_email": "Votre adresse email (pour recevoir le lien de suivi)",
         }
 
-    def __init__(self, *args, event=None, **kwargs):
+    def __init__(self, *args, event=None, lang='fr', **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["bio"].required = True
         self._custom_fields = []
@@ -51,8 +51,8 @@ class PublicProposalForm(forms.ModelForm):
             for cf in self._custom_fields:
                 key = f"custom_{cf.pk}"
                 field_kwargs = {
-                    "label": cf.label,
-                    "help_text": cf.help_text,
+                    "label": (cf.label_en if lang == 'en' and cf.label_en else cf.label),
+                    "help_text": (cf.help_text_en if lang == 'en' and cf.help_text_en else cf.help_text),
                     "required": cf.required,
                     "initial": existing.get(cf.pk, ""),
                 }
@@ -176,7 +176,7 @@ class SubmissionFieldForm(forms.ModelForm):
 
     class Meta:
         model = SubmissionField
-        fields = ["label", "help_text", "kind", "required"]
+        fields = ["label", "label_en", "help_text", "help_text_en", "kind", "required"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -195,13 +195,16 @@ class SubmissionFieldForm(forms.ModelForm):
 class SubmissionInstructionsForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ["submission_instructions"]
+        fields = ["submission_instructions", "submission_instructions_en"]
         widgets = {
             "submission_instructions": forms.Textarea(attrs={"rows": 4}),
+            "submission_instructions_en": forms.Textarea(attrs={"rows": 4}),
         }
         labels = {
             "submission_instructions": "Texte introductif",
+            "submission_instructions_en": "Texte introductif (EN)",
         }
         help_texts = {
             "submission_instructions": "Affiché au-dessus du formulaire. Laissez vide si inutile.",
+            "submission_instructions_en": "English version. Displayed when visitor selects EN.",
         }

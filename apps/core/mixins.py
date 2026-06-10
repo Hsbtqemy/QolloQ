@@ -65,6 +65,19 @@ class OrganizerRequiredMixin(EventMemberRequiredMixin):
             raise PermissionDenied
 
 
+class PublicLangMixin:
+    """Lit/écrit la langue préférée en session pour les pages publiques.
+
+    Pose self.lang = 'fr' | 'en'. Lit ?lang= dans GET et le persiste en session.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.GET.get('lang') in ('fr', 'en'):
+            request.session['public_lang'] = request.GET['lang']
+        self.lang = request.session.get('public_lang', 'fr')
+        return super().dispatch(request, *args, **kwargs)
+
+
 class SuperuserRequiredMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_superuser:

@@ -20,5 +20,27 @@ Cliquez sur le lien ci-dessous pour définir votre mot de passe et accéder à l
 {% endif %}
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
 <p style="font-size:.85rem;color:#6b7280">{{ event.name }}</p>
+{% if is_bilingual %}
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
+<p>Hello,</p>
+<p>You have been invited to join the event <strong>{{ event.name }}</strong> as <strong>{{ role_label }}</strong>.</p>
+{% if is_new_account %}
+<p>A QolloQ account has been created for you with this email address.<br>
+Click the link below to set your password and access the application:</p>
+{% else %}
+<p>Click the link below to log in and access the event:</p>
+{% endif %}
+<p style="margin:1.5rem 0">
+  <a href="{{ invitation_url }}"
+     style="display:inline-block;padding:.6rem 1.2rem;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">
+    {% if is_new_account %}Set my password{% else %}Access the event{% endif %}
+  </a>
+</p>
+{% if is_new_account %}
+<p style="font-size:.85rem;color:#6b7280">This link is single-use and expires after 3 days.</p>
+{% endif %}
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
+<p style="font-size:.85rem;color:#6b7280">{{ event.name }}</p>
+{% endif %}
 </body>
 </html>

@@ -18,9 +18,11 @@ class LogisticsForm(BaseModel):
         verbose_name="Événement",
     )
     name = models.CharField(max_length=255, default="Formulaire logistique", verbose_name="Nom du formulaire")
+    name_en = models.CharField(max_length=255, blank=True, verbose_name="Nom du formulaire (EN)")
     is_open = models.BooleanField(default=False, verbose_name="Ouvert aux réponses")
     deadline = models.DateTimeField(null=True, blank=True, verbose_name="Date limite de réponse")
     instructions = models.TextField(blank=True, verbose_name="Instructions")
+    instructions_en = models.TextField(blank=True, verbose_name="Instructions (EN)")
 
     class Meta:
         verbose_name = "Formulaire logistique"
@@ -49,7 +51,9 @@ class LogisticsField(models.Model):
         verbose_name="Formulaire",
     )
     label = models.CharField(max_length=255, verbose_name="Intitulé")
+    label_en = models.CharField(max_length=255, blank=True, verbose_name="Intitulé (EN)")
     help_text = models.CharField(max_length=500, blank=True, verbose_name="Texte d'aide")
+    help_text_en = models.CharField(max_length=500, blank=True, verbose_name="Texte d'aide (EN)")
     kind = models.CharField(max_length=20, choices=Kind.choices, verbose_name="Type")
     options = models.JSONField(
         default=list,
@@ -68,11 +72,11 @@ class LogisticsField(models.Model):
     def __str__(self):
         return f"{self.label} ({self.get_kind_display()})"
 
-    def as_form_field(self):
+    def as_form_field(self, lang='fr'):
         """Retourne le champ Django Forms correspondant à ce champ logistique."""
         kwargs = {
-            "label": self.label,
-            "help_text": self.help_text,
+            "label": (self.label_en if lang == 'en' and self.label_en else self.label),
+            "help_text": (self.help_text_en if lang == 'en' and self.help_text_en else self.help_text),
             "required": self.required,
         }
         if self.kind == self.Kind.TEXT:

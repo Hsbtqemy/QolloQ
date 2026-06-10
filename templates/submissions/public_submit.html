@@ -1,16 +1,18 @@
 {% extends "public_base.html" %}
+{% load qolloq_filters %}
 {% block title %}Soumettre une proposition — {{ event.name }}{% endblock %}
 {% block header_event %}<span class="public-event-name">{{ event.name }}</span>{% endblock %}
 {% block main_style %}max-width:700px{% endblock %}
 
 {% block content %}
 <div class="public-card">
-  <h1>Soumettre une proposition</h1>
+  <h1>{% if lang == 'en' %}Submit a proposal{% else %}Soumettre une proposition{% endif %}</h1>
   {% if event.submission_deadline %}
-  <p class="text-muted">Date limite : {{ event.submission_deadline|date:"j F Y à H:i" }}</p>
+  <p class="text-muted">{% if lang == 'en' %}Deadline{% else %}Date limite{% endif %} : {{ event.submission_deadline|date:"j F Y à H:i" }}</p>
   {% endif %}
-  {% if event.submission_instructions %}
-  <div class="prose" style="margin-bottom:1.25rem">{{ event.submission_instructions|linebreaks }}</div>
+  {% localized event "submission_instructions" lang as instructions %}
+  {% if instructions %}
+  <div class="prose" style="margin-bottom:1.25rem">{{ instructions|linebreaks }}</div>
   {% endif %}
 
   <form method="post">

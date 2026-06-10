@@ -24,6 +24,16 @@
           {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         </div>
         {% endwith %}
+        {% if event.is_bilingual %}
+        {% with field=instructions_form.submission_instructions_en %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endwith %}
+        {% endif %}
         <div class="form-actions">
           <button type="submit" class="btn primary sm">Enregistrer</button>
         </div>
@@ -135,12 +145,28 @@
         {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
       </div>
       {% endwith %}
+      {% if event.is_bilingual %}
+      {% with field=field_form.label_en %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endwith %}
+      {% endif %}
       {% with field=field_form.help_text %}
       <div class="field">
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
         {{ field }}
       </div>
       {% endwith %}
+      {% if event.is_bilingual %}
+      {% with field=field_form.help_text_en %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endwith %}
+      {% endif %}
       {% with field=field_form.kind %}
       <div class="field">
         <label for="{{ field.id_for_label }}">{{ field.label }} <span class="req">*</span></label>

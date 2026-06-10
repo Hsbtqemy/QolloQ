@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}QolloQ{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=4">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=5">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -12,6 +12,12 @@
   <header class="public-header">
     <span class="public-brand">QolloQ</span>
     {% block header_event %}{% endblock %}
+    {% if event and event.is_bilingual %}
+    <div class="lang-toggle">
+      <a href="?lang=fr" class="lang-btn {% if lang != 'en' %}active{% endif %}">FR</a>
+      <a href="?lang=en" class="lang-btn {% if lang == 'en' %}active{% endif %}">EN</a>
+    </div>
+    {% endif %}
   </header>
   <main class="public-main" style="{% block main_style %}{% endblock %}">
     {% if messages %}

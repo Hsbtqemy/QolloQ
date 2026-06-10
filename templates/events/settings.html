@@ -33,6 +33,15 @@
   </div>
 
   <div class="card">
+    <h3 class="card-section-title">Langue</h3>
+    <div class="field-checkbox">
+      {{ form.is_bilingual }}
+      <label for="{{ form.is_bilingual.id_for_label }}">{{ form.is_bilingual.label }}</label>
+      {% if form.is_bilingual.help_text %}<div class="helptext">{{ form.is_bilingual.help_text }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="card">
     <h3 class="card-section-title">Dépôt de propositions</h3>
     <div class="field-checkbox">
       {{ form.submissions_open }}

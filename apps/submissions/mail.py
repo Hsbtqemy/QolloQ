@@ -21,6 +21,7 @@ def send_submission_confirmation(proposal) -> None:
                 "event_name": proposal.event.name,
                 "proposal_title": proposal.title,
                 "token_url": token_url,
+                "is_bilingual": proposal.event.is_bilingual,
             },
             event=proposal.event,
         )
@@ -41,6 +42,7 @@ def send_token_reminder(proposal) -> None:
                 "event_name": proposal.event.name,
                 "proposal_title": proposal.title,
                 "token_url": token_url,
+                "is_bilingual": proposal.event.is_bilingual,
             },
             event=proposal.event,
         )

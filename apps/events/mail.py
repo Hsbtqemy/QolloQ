@@ -14,6 +14,7 @@ def send_member_invitation(user, event, role, invitation_url):
             "role_label": role_label,
             "invitation_url": invitation_url,
             "is_new_account": not user.has_usable_password(),
+            "is_bilingual": event.is_bilingual,
         },
         event=event,
     )
@@ -30,6 +31,7 @@ def send_committee_invitation(membership, event, eval_link):
             "event": event,
             "role_label": role_label,
             "eval_link": eval_link,
+            "is_bilingual": event.is_bilingual,
         },
         event=event,
     )

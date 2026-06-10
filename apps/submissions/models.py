@@ -108,7 +108,9 @@ class SubmissionField(models.Model):
         verbose_name="Événement",
     )
     label = models.CharField(max_length=255, verbose_name="Intitulé")
+    label_en = models.CharField(max_length=255, blank=True, verbose_name="Intitulé (EN)")
     help_text = models.CharField(max_length=500, blank=True, verbose_name="Texte d'aide")
+    help_text_en = models.CharField(max_length=500, blank=True, verbose_name="Texte d'aide (EN)")
     kind = models.CharField(max_length=20, choices=Kind.choices, verbose_name="Type")
     options = models.JSONField(default=list, blank=True, verbose_name="Options")
     required = models.BooleanField(default=False, verbose_name="Obligatoire")

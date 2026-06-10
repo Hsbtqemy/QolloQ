@@ -11,6 +11,7 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = [
             "name", "description", "location", "start_date", "end_date",
+            "is_bilingual",
             "submissions_open", "submission_deadline",
             "eval_visibility", "eval_anonymous", "eval_assignment", "double_blind",
         ]
@@ -33,11 +34,13 @@ class EventForm(forms.ModelForm):
 class EventPublicPageForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ["banner", "primary_color", "tagline", "site_footer"]
+        fields = ["banner", "primary_color", "tagline", "tagline_en", "site_footer", "site_footer_en"]
         widgets = {
             "banner": forms.ClearableFileInput(attrs={"accept": "image/*"}),
             "tagline": forms.TextInput(),
+            "tagline_en": forms.TextInput(),
             "site_footer": forms.TextInput(),
+            "site_footer_en": forms.TextInput(),
         }
 
     def clean_primary_color(self):

@@ -73,6 +73,15 @@
       {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </div>
     {% endwith %}
+    {% if event.is_bilingual %}
+    {% with field=form.tagline_en %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endwith %}
+    {% endif %}
     {% with field=form.site_footer %}
     <div class="field">
       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -81,6 +90,15 @@
       {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </div>
     {% endwith %}
+    {% if event.is_bilingual %}
+    {% with field=form.site_footer_en %}
+    <div class="field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    {% endwith %}
+    {% endif %}
   </div>
 
   <div class="form-actions">

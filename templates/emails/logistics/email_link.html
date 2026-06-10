@@ -20,5 +20,23 @@
 {% endif %}
 
 <p>Cordialement,<br>L'équipe d'organisation — {{ event.name }}</p>
+{% if is_bilingual %}
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
+<p>Hello {{ response.respondent_name }},</p>
+<p>You are invited to fill in the logistics form for the event <strong>« {{ event.name }} »</strong>.</p>
+<p><a href="{{ token_url }}">Access my logistics form</a></p>
+<p>This link is personal. You can come back to complete it at any time.</p>
+{% if logistics_form.deadline %}
+<p>Response deadline: <strong>{{ logistics_form.deadline|date:"j F Y, H:i" }}</strong>.</p>
+{% endif %}
+{% if logistics_form.instructions_en %}
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0">
+<p>{{ logistics_form.instructions_en|linebreaksbr }}</p>
+{% elif logistics_form.instructions %}
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:1rem 0">
+<p>{{ logistics_form.instructions|linebreaksbr }}</p>
+{% endif %}
+<p>Best regards,<br>The organising committee — {{ event.name }}</p>
+{% endif %}
 </body>
 </html>

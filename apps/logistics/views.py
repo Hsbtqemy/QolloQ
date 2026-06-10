@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
 
-from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin
+from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin, PublicLangMixin
 
 from .forms import (
     BudgetChargeForm,
@@ -547,7 +547,7 @@ class BudgetDocumentDeleteView(OrganizerRequiredMixin, View):
 # ---------------------------------------------------------------------------
 
 
-class PublicRespondView(View):
+class PublicRespondView(PublicLangMixin, View):
     def _get_response(self, token):
         return get_object_or_404(
             LogisticsResponse.objects.select_related("form__event"), token=token
@@ -564,7 +564,7 @@ class PublicRespondView(View):
         response = self._get_response(token)
         lf = response.form
         editable = self._is_open(lf)
-        form, fields = build_response_form(lf, instance=response)
+        form, fields = build_response_form(lf, instance=response, lang=self.lang)
         return render(request, "logistics/public_respond.html", {
             "logistics_form": lf,
             "event": lf.event,
@@ -572,6 +572,7 @@ class PublicRespondView(View):
             "form": form,
             "fields": fields,
             "editable": editable,
+            "lang": self.lang,
         })
 
     def post(self, request, token):
@@ -579,7 +580,7 @@ class PublicRespondView(View):
         lf = response.form
         if not self._is_open(lf):
             raise PermissionDenied
-        form, fields = build_response_form(lf, data=request.POST, instance=response)
+        form, fields = build_response_form(lf, data=request.POST, instance=response, lang=self.lang)
         if form.is_valid():
             _save_response(form, response, fields)
             return redirect("logistics:respond_done", token=token)
@@ -590,6 +591,7 @@ class PublicRespondView(View):
             "form": form,
             "fields": fields,
             "editable": True,
+            "lang": self.lang,
         })
 
 
@@ -612,10 +614,13 @@ def _save_response(form, response, fields):
     response.save(update_fields=["is_complete", "updated_at"])
 
 
-class PublicRespondDoneView(View):
+class PublicRespondDoneView(PublicLangMixin, View):
     def get(self, request, token):
-        response = get_object_or_404(LogisticsResponse, token=token)
+        response = get_object_or_404(
+            LogisticsResponse.objects.select_related("form__event"), token=token
+        )
         return render(request, "logistics/public_respond_done.html", {
             "event": response.form.event,
             "response": response,
+            "lang": self.lang,
         })

@@ -1,15 +1,17 @@
 {% extends "public_base.html" %}
+{% load qolloq_filters %}
 {% block title %}{{ logistics_form.name }} — {{ event.name }}{% endblock %}
 {% block header_event %}<span class="public-event-name">{{ event.name }}</span>{% endblock %}
 {% block main_style %}max-width:620px{% endblock %}
 
 {% block content %}
 <div class="public-card">
-  <h1>{{ logistics_form.name }}</h1>
-  <p class="text-muted">Bonjour {{ response.respondent_name }},</p>
+  <h1>{% localized logistics_form "name" lang %}</h1>
+  <p class="text-muted">{% if lang == 'en' %}Hello{% else %}Bonjour{% endif %} {{ response.respondent_name }},</p>
 
-  {% if logistics_form.instructions %}
-  <div class="message info" style="margin-bottom:1rem">{{ logistics_form.instructions }}</div>
+  {% localized logistics_form "instructions" lang as form_instructions %}
+  {% if form_instructions %}
+  <div class="message info" style="margin-bottom:1rem">{{ form_instructions }}</div>
   {% endif %}
 
   {% if logistics_form.deadline %}

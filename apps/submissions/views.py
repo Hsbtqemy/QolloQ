@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views import View
 
-from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin
+from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin, PublicLangMixin
 from apps.events.models import Event, Membership
 
 from .forms import (
@@ -26,7 +26,7 @@ from .models import Evaluation, Proposal, SubmissionField
 
 # ── Vues publiques (sans compte) ─────────────────────────────────────────────
 
-class PublicSubmitView(View):
+class PublicSubmitView(PublicLangMixin, View):
     """Formulaire public de soumission diffusé par l'organisateur."""
 
     def _get_open_event(self, event_slug):
@@ -41,13 +41,14 @@ class PublicSubmitView(View):
         event = self._get_open_event(event_slug)
         return render(request, "submissions/public_submit.html", {
             "event": event,
-            "form": PublicProposalForm(event=event),
+            "form": PublicProposalForm(event=event, lang=self.lang),
             "author_formset": AuthorFormSet(),
+            "lang": self.lang,
         })
 
     def post(self, request, event_slug):
         event = self._get_open_event(event_slug)
-        form = PublicProposalForm(request.POST, event=event)
+        form = PublicProposalForm(request.POST, event=event, lang=self.lang)
         author_formset = AuthorFormSet(request.POST)
         if form.is_valid() and author_formset.is_valid():
             proposal = form.save(commit=False)
@@ -62,18 +63,23 @@ class PublicSubmitView(View):
             "event": event,
             "form": form,
             "author_formset": author_formset,
+            "lang": self.lang,
         })
 
 
-class SubmissionSubmittedView(View):
+class SubmissionSubmittedView(PublicLangMixin, View):
     """Page de confirmation après soumission."""
 
     def get(self, request, token):
         proposal = get_object_or_404(Proposal, token=token)
-        return render(request, "submissions/submitted.html", {"proposal": proposal})
+        return render(request, "submissions/submitted.html", {
+            "proposal": proposal,
+            "event": proposal.event,
+            "lang": self.lang,
+        })
 
 
-class TokenAccessView(View):
+class TokenAccessView(PublicLangMixin, View):
     """Accès soumissionnaire via lien tokenisé : consulter, modifier, retirer."""
 
     def _is_still_editable(self, proposal):
@@ -90,9 +96,11 @@ class TokenAccessView(View):
         event = proposal.event
         return render(request, "submissions/token_access.html", {
             "proposal": proposal,
+            "event": event,
             "editable": editable,
-            "form": PublicProposalForm(instance=proposal, event=event) if editable else None,
+            "form": PublicProposalForm(instance=proposal, event=event, lang=self.lang) if editable else None,
             "author_formset": AuthorFormSet(instance=proposal) if editable else None,
+            "lang": self.lang,
         })
 
     def post(self, request, token):
@@ -102,12 +110,12 @@ class TokenAccessView(View):
 
         action = request.POST.get("action")
         if action == "withdraw":
-            event = proposal.event  # sauvegardé avant suppression
+            event = proposal.event
             proposal.hard_delete()
-            return render(request, "submissions/withdrawn.html", {"event": event})
+            return render(request, "submissions/withdrawn.html", {"event": event, "lang": self.lang})
 
         event = proposal.event
-        form = PublicProposalForm(request.POST, instance=proposal, event=event)
+        form = PublicProposalForm(request.POST, instance=proposal, event=event, lang=self.lang)
         author_formset = AuthorFormSet(request.POST, instance=proposal)
         if form.is_valid() and author_formset.is_valid():
             proposal = form.save()
@@ -117,13 +125,15 @@ class TokenAccessView(View):
             return redirect("submissions:token_access", token=token)
         return render(request, "submissions/token_access.html", {
             "proposal": proposal,
+            "event": event,
             "editable": True,
             "form": form,
             "author_formset": author_formset,
+            "lang": self.lang,
         })
 
 
-class ResendTokenView(View):
+class ResendTokenView(PublicLangMixin, View):
     """Renvoi du lien tokenisé sur saisie de l'email."""
 
     def get(self, request, event_slug):
@@ -131,6 +141,7 @@ class ResendTokenView(View):
         return render(request, "submissions/resend_token.html", {
             "event": event,
             "form": ResendTokenForm(),
+            "lang": self.lang,
         })
 
     def post(self, request, event_slug):
@@ -140,9 +151,8 @@ class ResendTokenView(View):
             email = form.cleaned_data["email"]
             for proposal in Proposal.objects.filter(event=event, submitter_email=email):
                 send_token_reminder(proposal)
-            # Réponse neutre même si aucune proposition trouvée (anti-énumération)
-            return render(request, "submissions/resend_token_sent.html", {"event": event})
-        return render(request, "submissions/resend_token.html", {"event": event, "form": form})
+            return render(request, "submissions/resend_token_sent.html", {"event": event, "lang": self.lang})
+        return render(request, "submissions/resend_token.html", {"event": event, "form": form, "lang": self.lang})
 
 
 # ── Vues organisateur / comité ────────────────────────────────────────────────

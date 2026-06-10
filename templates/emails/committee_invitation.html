@@ -13,5 +13,20 @@
 <p style="font-size:.85rem;color:#6b7280">Ce lien est personnel — gardez-le précieusement, il vous permettra de retrouver vos évaluations à tout moment.</p>
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
 <p style="font-size:.85rem;color:#6b7280">{{ event.name }}</p>
+{% if is_bilingual %}
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
+<p>Hello {{ membership.first_name }},</p>
+<p>You have been invited to review the proposals submitted to <strong>{{ event.name }}</strong> as <strong>{{ role_label }}</strong>.</p>
+<p>Click the link below to access the proposals to review:</p>
+<p style="margin:1.5rem 0">
+  <a href="{{ eval_link }}"
+     style="display:inline-block;padding:.6rem 1.2rem;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">
+    Access proposals
+  </a>
+</p>
+<p style="font-size:.85rem;color:#6b7280">This link is personal — please keep it safe, it will allow you to retrieve your reviews at any time.</p>
+<hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
+<p style="font-size:.85rem;color:#6b7280">{{ event.name }}</p>
+{% endif %}
 </body>
 </html>

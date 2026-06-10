@@ -26,19 +26,50 @@
       </div>
       <form method="post">
         {% csrf_token %}
-        {% for field in form %}
-        <div class="field{% if field.field.widget.input_type == 'checkbox' %}-checkbox{% endif %}">
-          {% if field.field.widget.input_type == 'checkbox' %}
-            {{ field }}
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {% else %}
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-          {% endif %}
-          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% with field=form.name %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
           {% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         </div>
-        {% endfor %}
+        {% endwith %}
+        {% if event.is_bilingual %}
+        {% with field=form.name_en %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endwith %}
+        {% endif %}
+        <div class="field-checkbox">
+          {{ form.is_open }}
+          <label for="{{ form.is_open.id_for_label }}">{{ form.is_open.label }}</label>
+        </div>
+        {% with field=form.deadline %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endwith %}
+        {% with field=form.instructions %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endwith %}
+        {% if event.is_bilingual %}
+        {% with field=form.instructions_en %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endwith %}
+        {% endif %}
         <div class="form-actions">
           <button type="submit" class="btn primary sm">Enregistrer</button>
         </div>
@@ -82,10 +113,22 @@
                   <input type="hidden" name="kind" value="{{ field.kind }}">
                 </div>
               </div>
+              {% if event.is_bilingual %}
+              <div class="field">
+                <label>Intitulé (EN)</label>
+                <input type="text" name="label_en" value="{{ field.label_en }}">
+              </div>
+              {% endif %}
               <div class="field">
                 <label>Texte d'aide</label>
                 <input type="text" name="help_text" value="{{ field.help_text }}">
               </div>
+              {% if event.is_bilingual %}
+              <div class="field">
+                <label>Texte d'aide (EN)</label>
+                <input type="text" name="help_text_en" value="{{ field.help_text_en }}">
+              </div>
+              {% endif %}
               {% if field.options %}
               <div class="field">
                 <label>Options</label>
@@ -118,6 +161,12 @@
         <label>Intitulé <span class="req">*</span></label>
         <input type="text" name="label" required>
       </div>
+      {% if event.is_bilingual %}
+      <div class="field">
+        <label>Intitulé (EN)</label>
+        <input type="text" name="label_en">
+      </div>
+      {% endif %}
       <div class="field">
         <label>Type <span class="req">*</span></label>
         <select name="kind" @change="open = ['choice','multichoice'].includes($event.target.value)">
@@ -139,6 +188,12 @@
         <label>Texte d'aide</label>
         <input type="text" name="help_text">
       </div>
+      {% if event.is_bilingual %}
+      <div class="field">
+        <label>Texte d'aide (EN)</label>
+        <input type="text" name="help_text_en">
+      </div>
+      {% endif %}
       <div class="field-checkbox">
         <input type="checkbox" name="required" id="field-required">
         <label for="field-required">Obligatoire</label>

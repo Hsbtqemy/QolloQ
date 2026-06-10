@@ -18,6 +18,7 @@ def send_logistics_link(response, request=None):
             "logistics_form": response.form,
             "event": response.form.event,
             "token_url": token_url,
+            "is_bilingual": response.form.event.is_bilingual,
         },
         event=response.form.event,
     )

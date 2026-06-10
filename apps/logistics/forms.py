@@ -8,10 +8,11 @@ from .models import BudgetCharge, BudgetDocument, BudgetLine, BudgetSettings, Lo
 class LogisticsFormSettingsForm(forms.ModelForm):
     class Meta:
         model = LogisticsForm
-        fields = ["name", "is_open", "deadline", "instructions"]
+        fields = ["name", "name_en", "is_open", "deadline", "instructions", "instructions_en"]
         widgets = {
             "deadline": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "instructions": forms.Textarea(attrs={"rows": 4}),
+            "instructions_en": forms.Textarea(attrs={"rows": 4}),
         }
         help_texts = {
             "name": "Ex. « Formulaire intervenants pris en charge », « Fiche logistique générale »…",
@@ -28,7 +29,7 @@ class LogisticsFieldForm(forms.ModelForm):
 
     class Meta:
         model = LogisticsField
-        fields = ["label", "help_text", "kind", "required"]
+        fields = ["label", "label_en", "help_text", "help_text_en", "kind", "required"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -105,7 +106,7 @@ class BudgetDocumentForm(forms.ModelForm):
         fields = ["label", "kind", "file", "amount"]
 
 
-def build_response_form(logistics_form, data=None, instance=None):
+def build_response_form(logistics_form, data=None, instance=None, lang='fr'):
     """Construit dynamiquement le form de réponse depuis les définitions de champs."""
     fields_qs = logistics_form.fields.order_by("order")
 
@@ -116,7 +117,7 @@ def build_response_form(logistics_form, data=None, instance=None):
 
     form_fields = {}
     for field in fields_qs:
-        form_fields[f"field_{field.pk}"] = field.as_form_field()
+        form_fields[f"field_{field.pk}"] = field.as_form_field(lang=lang)
 
     DynamicForm = type("DynamicResponseForm", (forms.BaseForm,), {"base_fields": form_fields})
     form = DynamicForm(data=data)
