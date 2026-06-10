@@ -9,3 +9,19 @@ Cliquez sur le lien ci-dessous pour accéder aux propositions à évaluer :
 Ce lien est personnel — gardez-le précieusement, il vous permettra de retrouver vos évaluations à tout moment.
 
 {{ event.name }}
+{% if is_bilingual %}
+
+---
+
+Hello {{ membership.first_name }},
+
+You have been invited to review the proposals submitted to « {{ event.name }} » as {{ role_label }}.
+
+Click the link below to access the proposals to review:
+
+{{ eval_link }}
+
+This link is personal — please keep it safe, it will allow you to retrieve your reviews at any time.
+
+{{ event.name }}
+{% endif %}

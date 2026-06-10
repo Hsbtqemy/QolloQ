@@ -12,3 +12,22 @@ Si vous n'êtes pas à l'origine de cette demande, ignorez simplement ce message
 
 Cordialement,
 L'équipe organisatrice
+{% if is_bilingual %}
+
+---
+
+Hello,
+
+You requested to retrieve the access link to your submission for {{ event_name }}.
+
+Title: {{ proposal_title }}
+
+Your personal link:
+
+{{ token_url }}
+
+If you did not make this request, please ignore this message.
+
+Best regards,
+The organising committee
+{% endif %}

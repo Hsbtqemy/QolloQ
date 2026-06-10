@@ -14,3 +14,24 @@ Ce lien est à usage unique et expire après 3 jours.
 {% endif %}
 
 {{ event.name }}
+{% if is_bilingual %}
+
+---
+
+Hello,
+
+You have been invited to join the event « {{ event.name }} » as {{ role_label }}.
+
+{% if is_new_account %}A QolloQ account has been created for you with this email address.
+Click the link below to set your password and access the application:
+
+{{ invitation_url }}
+
+This link is single-use and expires after 3 days.
+{% else %}Click the link below to log in and access the event:
+
+{{ invitation_url }}
+{% endif %}
+
+{{ event.name }}
+{% endif %}

@@ -17,3 +17,30 @@ Ce lien vous est personnel. Vous pouvez revenir le compléter à tout moment.
 
 Cordialement,
 L'équipe d'organisation — {{ event.name }}
+{% if is_bilingual %}
+
+---
+
+Hello {{ response.respondent_name }},
+
+You are invited to fill in the logistics form for the event « {{ event.name }} ».
+
+Access your form via the following link:
+
+{{ token_url }}
+
+This link is personal. You can come back to complete it at any time.
+
+{% if logistics_form.deadline %}Response deadline: {{ logistics_form.deadline|date:"j F Y, H:i" }}.{% endif %}
+
+{% if logistics_form.instructions_en %}
+---
+{{ logistics_form.instructions_en }}
+{% elif logistics_form.instructions %}
+---
+{{ logistics_form.instructions }}
+{% endif %}
+
+Best regards,
+The organising committee — {{ event.name }}
+{% endif %}

@@ -413,7 +413,7 @@ class AttendanceUpdateView(OrganizerRequiredMixin, View):
 
 # ── Évaluation tokenisée (sans compte) ──────────────────────────────────────
 
-class EvaluatorAccessView(View):
+class EvaluatorAccessView(PublicLangMixin, View):
     """Accès comité via lien tokenisé : liste des propositions + formulaires d'évaluation."""
 
     def _get_membership(self, token):
@@ -448,6 +448,7 @@ class EvaluatorAccessView(View):
             "own_evals": own_evals,
             "verdict_choices": Evaluation.Verdict.choices,
             "token": str(token),
+            "lang": self.lang,
         })
 
 

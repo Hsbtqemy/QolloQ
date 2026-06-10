@@ -14,3 +14,23 @@ Vous recevrez un message dès qu'une décision sera prise concernant votre propo
 
 Cordialement,
 L'équipe organisatrice
+{% if is_bilingual %}
+
+---
+
+Hello,
+
+We have received your proposal for {{ event_name }}.
+
+Title: {{ proposal_title }}
+
+You can track the progress of your submission or make changes via the link below.
+Please keep it safe — it allows you to access your submission without creating an account.
+
+{{ token_url }}
+
+You will receive a message once a decision has been made regarding your proposal.
+
+Best regards,
+The organising committee
+{% endif %}
