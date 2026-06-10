@@ -1,13 +1,8 @@
 <!doctype html>
 <html lang="fr">
-<head><meta charset="utf-8"><title>Votre lien de suivi</title></head>
+<head><meta charset="utf-8"></head>
 <body style="font-family:sans-serif;color:#111;max-width:600px;margin:0 auto;padding:24px;">
-<p>Bonjour,</p>
-<p>Vous avez demandé à retrouver le lien d'accès à votre soumission pour <strong>{{ event_name }}</strong>.</p>
-<table style="border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;width:100%;margin:16px 0;">
-  <tr><td style="color:#6b7280;font-size:.9em;">Titre</td></tr>
-  <tr><td style="font-weight:600;">{{ proposal_title }}</td></tr>
-</table>
+{{ email_body_fr|linebreaks }}
 <p style="margin:24px 0;">
   <a href="{{ token_url }}"
      style="background:#2563eb;color:#fff;text-decoration:none;padding:10px 20px;border-radius:6px;display:inline-block;">
@@ -15,16 +10,9 @@
   </a>
 </p>
 <p style="font-size:.85em;color:#6b7280;">Ou copiez ce lien dans votre navigateur :<br>{{ token_url }}</p>
-<p style="font-size:.85em;color:#6b7280;">Si vous n'êtes pas à l'origine de cette demande, ignorez simplement ce message.</p>
-<p>Cordialement,<br>L'équipe organisatrice</p>
-{% if is_bilingual %}
+{% if is_bilingual and email_body_en %}
 <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
-<p>Hello,</p>
-<p>You requested to retrieve the access link to your submission for <strong>{{ event_name }}</strong>.</p>
-<table style="border:1px solid #e5e7eb;border-radius:6px;padding:16px 20px;width:100%;margin:16px 0;">
-  <tr><td style="color:#6b7280;font-size:.9em;">Title</td></tr>
-  <tr><td style="font-weight:600;">{{ proposal_title }}</td></tr>
-</table>
+{{ email_body_en|linebreaks }}
 <p style="margin:24px 0;">
   <a href="{{ token_url }}"
      style="background:#2563eb;color:#fff;text-decoration:none;padding:10px 20px;border-radius:6px;display:inline-block;">
@@ -32,8 +20,6 @@
   </a>
 </p>
 <p style="font-size:.85em;color:#6b7280;">Or copy this link into your browser:<br>{{ token_url }}</p>
-<p style="font-size:.85em;color:#6b7280;">If you did not make this request, please ignore this message.</p>
-<p>Best regards,<br>The organising committee</p>
 {% endif %}
 </body>
 </html>

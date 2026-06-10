@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import SetPasswordForm
@@ -6,12 +7,25 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from apps.core.mixins import SuperuserRequiredMixin
+from apps.emails.models import EmailTemplate
 from apps.events.models import Event
 from apps.submissions.models import Proposal
 
 from .forms_staff import StaffUserCreateForm, StaffUserEditForm
 
 User = get_user_model()
+
+
+class EmailTemplateForm(forms.ModelForm):
+    class Meta:
+        model = EmailTemplate
+        fields = ["subject_fr", "subject_en", "body_fr", "body_en"]
+        widgets = {
+            "subject_fr": forms.TextInput(attrs={"class": "input"}),
+            "subject_en": forms.TextInput(attrs={"class": "input"}),
+            "body_fr": forms.Textarea(attrs={"class": "input", "rows": 14, "style": "font-family:monospace;font-size:.9em"}),
+            "body_en": forms.Textarea(attrs={"class": "input", "rows": 14, "style": "font-family:monospace;font-size:.9em"}),
+        }
 
 
 class StaffDashboardView(SuperuserRequiredMixin, View):
@@ -79,4 +93,33 @@ class StaffUserEditView(SuperuserRequiredMixin, View):
             "form": form,
             "target_user": target,
             "password_form": SetPasswordForm(target),
+        })
+
+
+class StaffEmailTemplateListView(SuperuserRequiredMixin, View):
+    def get(self, request):
+        templates = EmailTemplate.objects.all()
+        return render(request, "staff/email_templates.html", {"templates": templates})
+
+
+class StaffEmailTemplateEditView(SuperuserRequiredMixin, View):
+    def get(self, request, key):
+        tmpl = get_object_or_404(EmailTemplate, key=key)
+        return render(request, "staff/email_template_edit.html", {
+            "tmpl": tmpl,
+            "form": EmailTemplateForm(instance=tmpl),
+            "variables": tmpl.variables_help(),
+        })
+
+    def post(self, request, key):
+        tmpl = get_object_or_404(EmailTemplate, key=key)
+        form = EmailTemplateForm(request.POST, instance=tmpl)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Template mis à jour.")
+            return redirect("staff:email_templates")
+        return render(request, "staff/email_template_edit.html", {
+            "tmpl": tmpl,
+            "form": form,
+            "variables": tmpl.variables_help(),
         })

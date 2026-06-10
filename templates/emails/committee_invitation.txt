@@ -1,27 +1,11 @@
-Bonjour {{ membership.first_name }},
-
-Vous avez été invité·e à participer à l'évaluation des propositions soumises à « {{ event.name }} » en tant que {{ role_label }}.
-
-Cliquez sur le lien ci-dessous pour accéder aux propositions à évaluer :
+{{ email_body_fr }}
 
 {{ eval_link }}
-
-Ce lien est personnel — gardez-le précieusement, il vous permettra de retrouver vos évaluations à tout moment.
-
-{{ event.name }}
-{% if is_bilingual %}
+{% if is_bilingual and email_body_en %}
 
 ---
 
-Hello {{ membership.first_name }},
-
-You have been invited to review the proposals submitted to « {{ event.name }} » as {{ role_label }}.
-
-Click the link below to access the proposals to review:
+{{ email_body_en }}
 
 {{ eval_link }}
-
-This link is personal — please keep it safe, it will allow you to retrieve your reviews at any time.
-
-{{ event.name }}
 {% endif %}

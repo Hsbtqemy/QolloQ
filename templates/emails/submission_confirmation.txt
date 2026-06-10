@@ -1,36 +1,11 @@
-Bonjour,
-
-Nous avons bien reçu votre proposition pour {{ event_name }}.
-
-Titre : {{ proposal_title }}
-
-Vous pouvez suivre l'avancement de votre dossier ou apporter des modifications
-via le lien ci-dessous. Conservez-le précieusement — il vous permettra d'accéder
-à votre soumission sans créer de compte.
+{{ email_body_fr }}
 
 {{ token_url }}
-
-Vous recevrez un message dès qu'une décision sera prise concernant votre proposition.
-
-Cordialement,
-L'équipe organisatrice
-{% if is_bilingual %}
+{% if is_bilingual and email_body_en %}
 
 ---
 
-Hello,
-
-We have received your proposal for {{ event_name }}.
-
-Title: {{ proposal_title }}
-
-You can track the progress of your submission or make changes via the link below.
-Please keep it safe — it allows you to access your submission without creating an account.
+{{ email_body_en }}
 
 {{ token_url }}
-
-You will receive a message once a decision has been made regarding your proposal.
-
-Best regards,
-The organising committee
 {% endif %}

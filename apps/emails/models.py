@@ -4,6 +4,70 @@ from apps.core.models import BaseModel
 from apps.events.models import Event
 
 
+class EmailTemplate(models.Model):
+    """Corps éditables des emails transactionnels (sujet + texte FR/EN)."""
+
+    KEY_CHOICES = [
+        ("submission_confirmation", "Confirmation de soumission"),
+        ("submission_token_reminder", "Renvoi du lien de suivi"),
+        ("member_invitation", "Invitation d'un membre"),
+        ("committee_invitation", "Invitation comité scientifique"),
+        ("logistics_email_link", "Lien formulaire logistique"),
+    ]
+
+    VARIABLES_HELP = {
+        "submission_confirmation": [
+            ("{{ event_name }}", "Nom de l'événement"),
+            ("{{ proposal_title }}", "Titre de la proposition"),
+            ("{{ token_url }}", "Lien de suivi — inséré automatiquement après le texte"),
+        ],
+        "submission_token_reminder": [
+            ("{{ event_name }}", "Nom de l'événement"),
+            ("{{ proposal_title }}", "Titre de la proposition"),
+            ("{{ token_url }}", "Lien de suivi — inséré automatiquement après le texte"),
+        ],
+        "member_invitation": [
+            ("{{ event.name }}", "Nom de l'événement"),
+            ("{{ role_label }}", "Rôle (ex. Organisateur)"),
+            ("{{ invitation_url }}", "Lien d'invitation — inséré automatiquement après le texte"),
+            ("{% if is_new_account %}...{% endif %}", "Contenu conditionnel — nouveau compte"),
+        ],
+        "committee_invitation": [
+            ("{{ membership.first_name }}", "Prénom du membre"),
+            ("{{ event.name }}", "Nom de l'événement"),
+            ("{{ role_label }}", "Rôle"),
+            ("{{ eval_link }}", "Lien d'évaluation — inséré automatiquement après le texte"),
+        ],
+        "logistics_email_link": [
+            ("{{ response.respondent_name }}", "Nom du répondant"),
+            ("{{ event.name }}", "Nom de l'événement"),
+            ("{{ token_url }}", "Lien du formulaire — inséré automatiquement après le texte"),
+        ],
+    }
+
+    key = models.CharField(
+        max_length=100,
+        unique=True,
+        choices=KEY_CHOICES,
+        verbose_name="Identifiant",
+    )
+    subject_fr = models.CharField(max_length=500, verbose_name="Objet (FR)")
+    subject_en = models.CharField(max_length=500, blank=True, verbose_name="Objet (EN)")
+    body_fr = models.TextField(verbose_name="Corps (FR)")
+    body_en = models.TextField(blank=True, verbose_name="Corps (EN)")
+
+    class Meta:
+        ordering = ["key"]
+        verbose_name = "Template email"
+        verbose_name_plural = "Templates email"
+
+    def __str__(self):
+        return self.get_key_display()
+
+    def variables_help(self):
+        return self.VARIABLES_HELP.get(self.key, [])
+
+
 class EmailCampaign(BaseModel):
     """Campagne email envoyée à un groupe de membres d'un événement."""
 

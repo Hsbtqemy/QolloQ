@@ -1,38 +1,23 @@
-Bonjour {{ response.respondent_name }},
-
-Vous êtes invité·e à remplir le formulaire logistique de l'événement « {{ event.name }} ».
-
-Accédez à votre formulaire via le lien suivant :
+{{ email_body_fr }}
 
 {{ token_url }}
-
-Ce lien vous est personnel. Vous pouvez revenir le compléter à tout moment.
-
-{% if logistics_form.deadline %}La date limite de réponse est le {{ logistics_form.deadline|date:"j F Y à H:i" }}.{% endif %}
-
+{% if logistics_form.deadline %}
+Date limite de réponse : {{ logistics_form.deadline|date:"j F Y à H:i" }}.
+{% endif %}
 {% if logistics_form.instructions %}
 ---
 {{ logistics_form.instructions }}
 {% endif %}
-
-Cordialement,
-L'équipe d'organisation — {{ event.name }}
-{% if is_bilingual %}
+{% if is_bilingual and email_body_en %}
 
 ---
 
-Hello {{ response.respondent_name }},
-
-You are invited to fill in the logistics form for the event « {{ event.name }} ».
-
-Access your form via the following link:
+{{ email_body_en }}
 
 {{ token_url }}
-
-This link is personal. You can come back to complete it at any time.
-
-{% if logistics_form.deadline %}Response deadline: {{ logistics_form.deadline|date:"j F Y, H:i" }}.{% endif %}
-
+{% if logistics_form.deadline %}
+Response deadline: {{ logistics_form.deadline|date:"j F Y, H:i" }}.
+{% endif %}
 {% if logistics_form.instructions_en %}
 ---
 {{ logistics_form.instructions_en }}
@@ -40,7 +25,4 @@ This link is personal. You can come back to complete it at any time.
 ---
 {{ logistics_form.instructions }}
 {% endif %}
-
-Best regards,
-The organising committee — {{ event.name }}
 {% endif %}
