@@ -20,7 +20,7 @@ from .forms import (
     SubmissionFieldForm,
     SubmissionInstructionsForm,
 )
-from .mail import send_submission_confirmation, send_token_reminder
+from .mail import send_new_submission_notification, send_submission_confirmation, send_token_reminder
 from .models import Evaluation, Proposal, SubmissionField
 
 
@@ -58,6 +58,7 @@ class PublicSubmitView(PublicLangMixin, View):
             author_formset.save()
             form.save_custom_responses(proposal)
             send_submission_confirmation(proposal)
+            send_new_submission_notification(proposal)
             return redirect("submissions:submitted", token=str(proposal.token))
         return render(request, "submissions/public_submit.html", {
             "event": event,

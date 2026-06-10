@@ -10,6 +10,7 @@ class EmailTemplate(models.Model):
     KEY_CHOICES = [
         ("submission_confirmation", "Confirmation de soumission"),
         ("submission_token_reminder", "Renvoi du lien de suivi"),
+        ("new_submission_notification", "Notification organisateur — nouvelle soumission"),
         ("member_invitation", "Invitation d'un membre"),
         ("committee_invitation", "Invitation comité scientifique"),
         ("logistics_email_link", "Lien formulaire logistique"),
@@ -25,6 +26,12 @@ class EmailTemplate(models.Model):
             ("{{ event_name }}", "Nom de l'événement"),
             ("{{ proposal_title }}", "Titre de la proposition"),
             ("{{ token_url }}", "Lien de suivi — inséré automatiquement après le texte"),
+        ],
+        "new_submission_notification": [
+            ("{{ event.name }}", "Nom de l'événement"),
+            ("{{ proposal.title }}", "Titre de la proposition"),
+            ("{{ proposal.submitter_email }}", "Email du soumettant"),
+            ("{{ proposal_url }}", "Lien vers la proposition — inséré automatiquement après le texte"),
         ],
         "member_invitation": [
             ("{{ event.name }}", "Nom de l'événement"),
