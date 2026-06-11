@@ -1,7 +1,7 @@
 {# Bouton préférences d'affichage — inclus dans .sidebar-footer #}
 <div x-data="{ open: false, pos: { bottom: '0', left: '0' } }">
 
-  <button type="button" class="prefs-btn"
+  <button type="button" class="prefs-btn" x-ref="toggle"
           @click="
             var r = $el.getBoundingClientRect();
             pos = { bottom: (window.innerHeight - r.top + 10) + 'px',
@@ -18,7 +18,7 @@
 
   <template x-teleport="body">
     <div x-show="open" x-cloak
-         @click.outside="open = false"
+         @click.outside="if (!$refs.toggle.contains($event.target)) open = false"
          @keydown.escape.window="open = false"
          :style="'position:fixed;bottom:'+pos.bottom+';left:'+pos.left+';z-index:600'"
          class="prefs-panel"
