@@ -77,19 +77,23 @@ def _build_programme_context(event, sort_by_order=False):
 class ProgrammeView(OrganizerRequiredMixin, View):
     def get(self, request, event_slug):
         ctx = _build_programme_context(self.event, sort_by_order=True)
-        unscheduled = list(
+        accepted = list(
             Proposal.objects.filter(
                 event=self.event,
                 status=Proposal.Status.ACCEPTED,
-                communication__isnull=True,
             ).prefetch_related("authors")
         )
+        scheduled_ids = set(
+            Communication.objects.filter(session__event=self.event, proposal__isnull=False)
+            .values_list("proposal_id", flat=True)
+        )
+        unscheduled = [p for p in accepted if p.pk not in scheduled_ids]
         proposals_data = {
             str(p.pk): {
                 "title": p.title,
                 "speaker": ", ".join(a.full_name for a in p.authors.all()),
             }
-            for p in unscheduled
+            for p in accepted
         }
         return render(request, "programme/organizer/programme.html", {
             "event": self.event,

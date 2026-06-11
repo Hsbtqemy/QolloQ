@@ -247,8 +247,8 @@
 </div>
 {% endblock %}
 
-{{ proposals_data|json_script:"proposals-data" }}
 {% block extra_js %}
+{{ proposals_data|json_script:"proposals-data" }}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const URL_SESSION_REORDER = "{% url 'programme:session_reorder' event_slug=event.slug %}";
@@ -280,8 +280,8 @@ document.addEventListener('change', function (e) {
   const titleInput   = form.querySelector('[name="title"]');
   const speakerInput = form.querySelector('[name="speaker_name"]');
   if (p) {
-    if (titleInput   && !titleInput.value)   titleInput.value   = p.title;
-    if (speakerInput && !speakerInput.value) speakerInput.value = p.speaker;
+    if (titleInput)   titleInput.value   = p.title;
+    if (speakerInput) speakerInput.value = p.speaker;
   }
 });
 
@@ -289,15 +289,20 @@ document.querySelectorAll("[id^='comms-']").forEach(el => {
   Sortable.create(el, {
     animation: 150,
     handle: ".prog-comm-handle",
-    onEnd() {
-      const sessionId = el.dataset.session;
-      const items = [...el.querySelectorAll(".prog-comm")].map((r, i) => ({
-        id: parseInt(r.dataset.id), order: i + 1, session_id: parseInt(sessionId)
-      }));
+    group: "communications",
+    onEnd(evt) {
+      const containers = new Set([evt.from, evt.to]);
+      const updates = [];
+      containers.forEach(container => {
+        const sessionId = parseInt(container.dataset.session);
+        [...container.querySelectorAll(".prog-comm")].forEach((r, i) => {
+          updates.push({ id: parseInt(r.dataset.id), order: i + 1, session_id: sessionId });
+        });
+      });
       fetch(URL_COMM_REORDER, {
         method: "POST",
         headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
-        body: JSON.stringify(items)
+        body: JSON.stringify(updates)
       });
     }
   });
