@@ -100,7 +100,7 @@ class LogisticsField(models.Model):
             )
         if self.kind == self.Kind.DATE:
             return django_forms.DateField(
-                widget=django_forms.DateInput(attrs={"type": "date"}), **kwargs
+                widget=django_forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), **kwargs
             )
         if self.kind == self.Kind.TIME:
             return django_forms.TimeField(

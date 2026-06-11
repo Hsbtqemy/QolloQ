@@ -10,7 +10,7 @@ class SessionForm(forms.ModelForm):
         model = Session
         fields = ["date", "start_time", "end_time", "location", "title", "moderator"]
         widgets = {
-            "date": forms.DateInput(attrs={"type": "date"}),
+            "date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "start_time": forms.TimeInput(attrs={"type": "time"}),
             "end_time": forms.TimeInput(attrs={"type": "time"}),
         }
@@ -73,7 +73,7 @@ class AnnexEventForm(forms.ModelForm):
         model = AnnexEvent
         fields = ["date", "start_time", "end_time", "label", "kind", "description"]
         widgets = {
-            "date": forms.DateInput(attrs={"type": "date"}),
+            "date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "start_time": forms.TimeInput(attrs={"type": "time"}),
             "end_time": forms.TimeInput(attrs={"type": "time"}),
             "description": forms.Textarea(attrs={"rows": 3}),

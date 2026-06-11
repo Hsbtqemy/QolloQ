@@ -16,9 +16,9 @@ class EventForm(forms.ModelForm):
             "eval_visibility", "eval_anonymous", "eval_assignment", "double_blind",
         ]
         widgets = {
-            "start_date": forms.DateInput(attrs={"type": "date"}),
-            "end_date": forms.DateInput(attrs={"type": "date"}),
-            "submission_deadline": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "end_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "submission_deadline": forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
             "description": forms.Textarea(attrs={"rows": 4}),
         }
 

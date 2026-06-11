@@ -10,7 +10,7 @@ class LogisticsFormSettingsForm(forms.ModelForm):
         model = LogisticsForm
         fields = ["name", "name_en", "is_open", "deadline", "instructions", "instructions_en"]
         widgets = {
-            "deadline": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "deadline": forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
             "instructions": forms.Textarea(attrs={"rows": 4}),
             "instructions_en": forms.Textarea(attrs={"rows": 4}),
         }
