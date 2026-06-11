@@ -177,6 +177,8 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
 .pub-comm-speaker { font-size: .82rem; color: var(--gray-500); grid-column: 1; }
 .pub-comm-title { font-size: .9rem; grid-column: 1; }
 .pub-comm-duration { font-size: .8rem; color: var(--gray-500); grid-row: 1 / span 2; grid-column: 2; align-self: center; white-space: nowrap; }
+.speaker-card--cancelled { opacity: .65; }
+.speaker-cancelled-label { color: #c2410c; font-style: italic; font-size: .85em; }
 .pub-comm--cancelled { opacity: .6; }
 .pub-comm--cancelled .pub-comm-title { text-decoration: line-through; }
 .pub-comm-cancelled-label { color: #c2410c; font-style: italic; }
@@ -285,3 +287,4 @@ html[data-theme="sombre"] .lang-tab:hover { background: #22283a; color: var(--gr
 html[data-theme="sombre"] .btn-primary { background: #1d4ed8; }
 html[data-theme="sombre"] .lang-tab.active { background: #1d4ed8; border-color: #1d4ed8; }
 html[data-theme="sombre"] .pub-comm-cancelled-label { color: #fb923c; }
+html[data-theme="sombre"] .speaker-cancelled-label { color: #fb923c; }

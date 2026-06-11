@@ -13,7 +13,10 @@ from apps.submissions.models import Proposal
 
 def build_site_zip(event, request):
     speakers = list(
-        Proposal.objects.filter(event=event, status=Proposal.Status.ACCEPTED)
+        Proposal.objects.filter(
+            event=event,
+            status__in=[Proposal.Status.ACCEPTED, Proposal.Status.CANCELLED],
+        )
         .prefetch_related("authors")
         .order_by("title")
     )

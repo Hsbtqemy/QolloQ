@@ -34,11 +34,12 @@
   {% if speakers %}
   <div class="speaker-list">
     {% for proposal in speakers %}
-    <article class="speaker-card">
+    <article class="speaker-card{% if proposal.status == 'cancelled' %} speaker-card--cancelled{% endif %}">
       <div class="speaker-authors">
         {% for author in proposal.authors.all %}
         <span class="speaker-name">{{ author.full_name }}</span>{% if author.institution %}<span class="speaker-institution"> ({{ author.institution }})</span>{% endif %}{% if not forloop.last %}, {% endif %}
         {% endfor %}
+        {% if proposal.status == 'cancelled' %}<span class="speaker-cancelled-label"> — annulé·e</span>{% endif %}
       </div>
       <h3 class="speaker-title">{{ proposal.title }}</h3>
       {% if proposal.keywords %}
