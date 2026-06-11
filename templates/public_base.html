@@ -8,17 +8,20 @@
   {% block extra_css %}{% endblock %}
   <script>(function(){try{var p=JSON.parse(localStorage.getItem('qolloq-prefs')||'{}'),h=document.documentElement;if(p.theme==='sombre')h.setAttribute('data-theme','sombre');if(p.contrast==='eleve')h.setAttribute('data-contrast','eleve');if(p.zoom==='125'||p.zoom==='150')h.setAttribute('data-zoom',p.zoom);}catch(e){}})();</script>
 </head>
-<body>
+<body x-data>
 <div class="public-layout">
   <header class="public-header">
     <span class="public-brand">QolloQ</span>
     {% block header_event %}{% endblock %}
-    {% if event and event.is_bilingual %}
-    <div class="lang-toggle">
-      <a href="?lang=fr" class="lang-btn {% if lang != 'en' %}active{% endif %}">FR</a>
-      <a href="?lang=en" class="lang-btn {% if lang == 'en' %}active{% endif %}">EN</a>
+    <div class="public-header-right">
+      {% if event and event.is_bilingual %}
+      <div class="lang-toggle">
+        <a href="?lang=fr" class="lang-btn {% if lang != 'en' %}active{% endif %}">FR</a>
+        <a href="?lang=en" class="lang-btn {% if lang == 'en' %}active{% endif %}">EN</a>
+      </div>
+      {% endif %}
+      {% include "partials/_prefs_button.html" %}
     </div>
-    {% endif %}
   </header>
   <main class="public-main" style="{% block main_style %}{% endblock %}">
     {% if messages %}
@@ -31,6 +34,32 @@
     {% block content %}{% endblock %}
   </main>
 </div>
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.store('prefs', {
+      theme: 'clair', contrast: 'normal', zoom: '100',
+      init() {
+        try {
+          var p = JSON.parse(localStorage.getItem('qolloq-prefs') || '{}');
+          if (p.theme)    this.theme    = p.theme;
+          if (p.contrast) this.contrast = p.contrast;
+          if (p.zoom)     this.zoom     = p.zoom;
+        } catch(e) {}
+      },
+      _persist() { localStorage.setItem('qolloq-prefs', JSON.stringify({theme: this.theme, contrast: this.contrast, zoom: this.zoom})); },
+      _apply() {
+        var h = document.documentElement;
+        this.theme === 'sombre' ? h.setAttribute('data-theme', 'sombre') : h.removeAttribute('data-theme');
+        this.contrast === 'eleve' ? h.setAttribute('data-contrast', 'eleve') : h.removeAttribute('data-contrast');
+        (this.zoom === '125' || this.zoom === '150') ? h.setAttribute('data-zoom', this.zoom) : h.removeAttribute('data-zoom');
+      },
+      setTheme(val)    { this.theme    = val; this._persist(); this._apply(); },
+      setContrast(val) { this.contrast = val; this._persist(); this._apply(); },
+      setZoom(val)     { this.zoom     = val; this._persist(); this._apply(); }
+    });
+  });
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

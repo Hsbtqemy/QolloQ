@@ -598,6 +598,11 @@ table.data .actions { white-space: nowrap; text-align: right; }
 }
 .public-event-name { font-size: .9rem; color: var(--ink-muted); }
 .lang-toggle { display: flex; gap: .2rem; margin-left: auto; }
+.public-header-right { margin-left: auto; display: flex; align-items: center; gap: .5rem; }
+.public-header-right .lang-toggle { margin-left: 0; }
+/* prefs-btn hors sidebar — contexte clair, variables ink au lieu de sidebar */
+.public-header .prefs-btn       { color: var(--ink-muted); }
+.public-header .prefs-btn:hover { color: var(--ink); }
 .lang-btn {
   padding: .2rem .55rem; border-radius: 4px;
   font-size: .78rem; font-weight: 600; color: #64748b;
