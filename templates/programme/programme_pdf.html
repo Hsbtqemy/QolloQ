@@ -54,6 +54,8 @@
   .comm-body { flex: 1; }
   .comm-title { font-size: 9.5pt; }
   .comm-speaker { font-size: 8.5pt; color: #555; }
+  .comm-cancelled { color: #888; }
+  .comm-badge-cancelled { font-size: 7.5pt; color: #c2410c; font-style: italic; margin-left: .3rem; }
 
   .annex {
     margin-bottom: .5rem;
@@ -89,11 +91,11 @@
     <div class="session-meta">Modération : {{ s.moderator }}</div>
     {% endif %}
     {% for comm in s.communications.all %}
-    <div class="comm">
+    <div class="comm{% if comm.proposal and comm.proposal.status == 'cancelled' %} comm-cancelled{% endif %}">
       <div class="comm-duration">{{ comm.duration }} min</div>
       <div class="comm-body">
-        {% if comm.speaker_name %}<div class="comm-speaker">{{ comm.speaker_name }}</div>{% endif %}
-        <div class="comm-title">{% if comm.kind != 'talk' %}<em>{{ comm.get_kind_display }}</em> — {% endif %}{{ comm.title }}</div>
+        {% if comm.speaker_name %}<div class="comm-speaker">{{ comm.speaker_name }}{% if comm.proposal and comm.proposal.status == 'cancelled' %}<span class="comm-badge-cancelled"> — annulé·e</span>{% endif %}</div>{% endif %}
+        <div class="comm-title">{% if comm.kind != 'talk' %}<em>{{ comm.get_kind_display }}</em> — {% endif %}{{ comm.title }}{% if not comm.speaker_name and comm.proposal and comm.proposal.status == 'cancelled' %}<span class="comm-badge-cancelled"> — annulé·e</span>{% endif %}</div>
       </div>
     </div>
     {% endfor %}
