@@ -278,3 +278,6 @@ html[data-theme="sombre"] {
 }
 html[data-theme="sombre"] body { background: #0f1117; }
 html[data-theme="sombre"] .lang-tab:hover { background: #22283a; color: var(--gray-800); }
+/* boutons : --blue allégé pour les textes, mais trop clair comme fond avec texte blanc */
+html[data-theme="sombre"] .btn-primary { background: #1d4ed8; }
+html[data-theme="sombre"] .lang-tab.active { background: #1d4ed8; border-color: #1d4ed8; }
