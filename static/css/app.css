@@ -88,6 +88,10 @@ h3 { font-size: 1rem; }
   display: flex;
   flex-direction: column;
   padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 .sidebar-top {
   display: flex;
