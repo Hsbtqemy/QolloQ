@@ -748,6 +748,78 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .attendance--cancelled { color: var(--error); }
 .attendance--pending   { color: var(--ink-muted); }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODE SOMBRE — [data-theme="sombre"]
+   La sidebar (zone inversée) garde ses propres variables --sidebar-*
+   et n'est pas re-déclarée ici.
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-theme="sombre"] {
+  /* Surfaces */
+  --bg:          #0f1117;
+  --bg-raised:   #1a1f2e;
+  --bg-hover:    #22283a;
+  --bg-subtle:   #151921;
+  --bg-subtle-2: #1a1f2e;
+
+  /* Bordures */
+  --line:        #2e3446;
+  --line-soft:   #242938;
+  --line-input:  #3d4663;
+
+  /* Texte */
+  --ink:         #e2e8f0;
+  --ink-label:   #cbd5e1;
+  --ink-muted:   #94a3b8;
+  --ink-faint:   #64748b;
+
+  /* Primaire */
+  --primary:        #60a5fa;
+  --primary-dark:   #93c5fd;
+  --primary-bg:     #1e2d4a;
+  --primary-border: #1d4ed8;
+
+  /* Succès */
+  --success:        #4ade80;
+  --success-dark:   #86efac;
+  --success-bg:     #052e16;
+  --success-border: #15803d;
+
+  /* Erreur */
+  --error:          #f87171;
+  --error-dark:     #fca5a5;
+  --error-darkest:  #fecaca;
+  --error-bg:       #450a0a;
+  --error-border:   #b91c1c;
+
+  /* Avertissement */
+  --warn:        #fbbf24;
+  --warn-dark:   #fcd34d;
+  --warn-bg:     #2d1a00;
+  --warn-border: #b45309;
+}
+
+/* Boutons — bg maintenu sombre pour conserver le contraste avec #fff */
+[data-theme="sombre"] .btn.primary       { background: #2563eb; border-color: #2563eb; }
+[data-theme="sombre"] .btn.primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+[data-theme="sombre"] .btn.success       { background: #16a34a; border-color: #16a34a; }
+[data-theme="sombre"] .btn.success:hover { background: #15803d; border-color: #15803d; }
+[data-theme="sombre"] .btn.danger        { background: #dc2626; border-color: #dc2626; }
+[data-theme="sombre"] .btn.danger:hover  { background: #b91c1c; border-color: #b91c1c; }
+
+/* Focus ring — ajusté au primary clair dark mode */
+[data-theme="sombre"] .field input:focus,
+[data-theme="sombre"] .field select:focus,
+[data-theme="sombre"] .field textarea:focus { box-shadow: 0 0 0 3px rgba(96,165,250,.22); }
+
+/* Hardcoded remnants — overrides directs en mode sombre */
+[data-theme="sombre"] .badge.under-review,
+[data-theme="sombre"] .badge.pending  { background: var(--warn-bg); }
+[data-theme="sombre"] .badge.warn     { background: var(--warn-bg); }
+[data-theme="sombre"] .badge.choice   { background: var(--warn-bg); }
+[data-theme="sombre"] .badge.open     { background: var(--success-bg); color: var(--success); }
+[data-theme="sombre"] .callout-open   { border-color: var(--success-border); }
+[data-theme="sombre"] .cal-event      { background: var(--primary-bg); }
+
 /* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
 .mobile-topbar { display: none; }
 .sidebar-overlay { display: none; }
