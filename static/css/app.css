@@ -216,9 +216,11 @@ h3 { font-size: 1rem; }
 .page-content {
   flex: 1;
   padding: 1.5rem;
-  max-width: 960px;
+  max-width: 1080px;
+  margin-inline: auto;
+  width: 100%;
 }
-.page-content.wide { max-width: 1280px; }
+.page-content.wide { max-width: 1440px; }
 
 /* ─── Buttons ────────────────────────────────────────────────────────────── */
 .btn {
@@ -989,6 +991,11 @@ table.data .actions { white-space: nowrap; text-align: right; }
 [data-zoom="150"] { font-size: 24px; }
 [data-zoom="150"] .app-sidebar { width: 280px; }
 [data-zoom="150"] .grid-prog   { grid-template-columns: minmax(0, 1fr) 400px; }
+
+/* ─── Grand écran ────────────────────────────────────────────────────────── */
+@media (min-width: 1280px) {
+  .page-content { padding: 2rem 2.5rem; }
+}
 
 /* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
 .mobile-topbar { display: none; }
