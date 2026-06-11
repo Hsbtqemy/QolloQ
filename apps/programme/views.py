@@ -56,10 +56,8 @@ def _build_programme_context(event, sort_by_order=False):
             {"kind": "annex", "obj": a, "start": a.start_time, "end": a.end_time}
             for a in annex_by_day[day]
         ]
-        if sort_by_order:
-            items = session_items + annex_items
-        else:
-            items = session_items + annex_items
+        items = session_items + annex_items
+        if not sort_by_order:
             items.sort(key=lambda x: x["start"] or dtime(0, 0))
         programme.append({
             "date": day,
@@ -281,6 +279,10 @@ class AnnexReorderView(OrganizerRequiredMixin, View):
             order_map = {int(item["id"]): int(item["order"]) for item in data}
         except (KeyError, ValueError, TypeError):
             return JsonResponse({"error": "Format invalide."}, status=400)
+
+        orders = list(order_map.values())
+        if len(set(orders)) != len(orders) or any(v <= 0 for v in orders):
+            return JsonResponse({"error": "Ordres invalides."}, status=400)
 
         annexes = list(AnnexEvent.objects.filter(event=self.event, pk__in=order_map.keys()))
         if set(a.pk for a in annexes) != set(order_map.keys()):
