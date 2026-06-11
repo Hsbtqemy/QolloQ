@@ -853,6 +853,11 @@ table.data .actions { white-space: nowrap; text-align: right; }
 [data-theme="sombre"] .modal-backdrop { background: rgba(0,0,0,.65); }
 [data-theme="sombre"] .modal { box-shadow: 0 20px 60px rgba(0,0,0,.6); border: 1px solid var(--line); }
 
+/* lang-btn (public_base.html) — couleurs hardcodées à adapter */
+[data-theme="sombre"] .lang-btn               { color: var(--ink-muted); }
+[data-theme="sombre"] .lang-btn:hover         { color: var(--ink); background: var(--bg-hover); }
+[data-theme="sombre"] .lang-btn.active        { background: var(--primary-bg); color: var(--primary); }
+
 /* Hardcoded remnants — overrides directs en mode sombre */
 [data-theme="sombre"] .badge.under-review,
 [data-theme="sombre"] .badge.pending  { background: var(--warn-bg); }
