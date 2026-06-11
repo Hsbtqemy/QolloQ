@@ -2,12 +2,7 @@
 <div x-data="{ open: false, pos: { bottom: '0', left: '0' } }">
 
   <button type="button" class="prefs-btn" x-ref="toggle"
-          @click="
-            var r = $el.getBoundingClientRect();
-            pos = { bottom: (window.innerHeight - r.top + 10) + 'px',
-                    left:   (r.left) + 'px' };
-            open = !open
-          "
+          @click="pos = { bottom: (window.innerHeight - $el.getBoundingClientRect().top + 10) + 'px', left: $el.getBoundingClientRect().left + 'px' }, open = !open"
           :aria-expanded="open.toString()"
           aria-label="Préférences d'affichage">
     <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
