@@ -49,13 +49,12 @@ class SessionForm(forms.ModelForm):
 class CommunicationForm(forms.ModelForm):
     class Meta:
         model = Communication
-        fields = ["kind", "title", "speaker_name", "duration", "proposal"]
-        widgets = {
-            "proposal": forms.HiddenInput(),
-        }
+        fields = ["proposal", "kind", "title", "speaker_name", "duration"]
 
     def __init__(self, *args, event=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["proposal"].required = False
+        self.fields["proposal"].empty_label = "— aucune —"
         if event:
             already_used = (
                 Communication.objects.filter(session__event=event, proposal__isnull=False)
@@ -66,6 +65,8 @@ class CommunicationForm(forms.ModelForm):
                 event=event,
                 status=Proposal.Status.ACCEPTED,
             ).exclude(pk__in=already_used)
+        else:
+            self.fields["proposal"].queryset = Proposal.objects.none()
 
 
 class AnnexEventForm(forms.ModelForm):

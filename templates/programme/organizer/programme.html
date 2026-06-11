@@ -211,6 +211,21 @@
       </form>
     </div>
 
+    {% if unscheduled_proposals %}
+    <div class="card">
+      <h3>Propositions acceptées <span class="badge">{{ unscheduled_proposals|length }}</span></h3>
+      <p class="text-muted text-sm" style="margin:.25rem 0 .75rem">Non encore placées dans le programme. Utilisez « + Communication » dans une session pour les ajouter.</p>
+      <ul style="margin:0;padding:0 0 0 1rem;font-size:.88rem">
+        {% for p in unscheduled_proposals %}
+        <li style="margin-bottom:.4rem">
+          <span>{{ p.title }}</span>
+          {% if p.authors.all %}<span class="text-muted"> — {% for a in p.authors.all %}{{ a.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
     <div class="card">
       <h3>Événement annexe</h3>
       <form method="post" action="{% url 'programme:annex_create' event_slug=event.slug %}">
@@ -232,6 +247,7 @@
 </div>
 {% endblock %}
 
+{{ proposals_data|json_script:"proposals-data" }}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
@@ -253,6 +269,20 @@ document.querySelectorAll(".prog-day").forEach(day => {
       });
     }
   });
+});
+
+const PROPOSALS = JSON.parse(document.getElementById('proposals-data').textContent);
+document.addEventListener('change', function (e) {
+  if (e.target.name !== 'proposal') return;
+  const p = PROPOSALS[e.target.value];
+  const form = e.target.closest('form');
+  if (!form) return;
+  const titleInput   = form.querySelector('[name="title"]');
+  const speakerInput = form.querySelector('[name="speaker_name"]');
+  if (p) {
+    if (titleInput   && !titleInput.value)   titleInput.value   = p.title;
+    if (speakerInput && !speakerInput.value) speakerInput.value = p.speaker;
+  }
 });
 
 document.querySelectorAll("[id^='comms-']").forEach(el => {

@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.views import View
 
 from apps.core.mixins import CommitteeRequiredMixin, OrganizerRequiredMixin
+from apps.submissions.models import Proposal
 
 from .forms import AnnexEventForm, CommunicationForm, SessionForm
 from .models import AnnexEvent, Communication, Session
@@ -76,12 +77,28 @@ def _build_programme_context(event, sort_by_order=False):
 class ProgrammeView(OrganizerRequiredMixin, View):
     def get(self, request, event_slug):
         ctx = _build_programme_context(self.event, sort_by_order=True)
+        unscheduled = list(
+            Proposal.objects.filter(
+                event=self.event,
+                status=Proposal.Status.ACCEPTED,
+                communication__isnull=True,
+            ).prefetch_related("authors")
+        )
+        proposals_data = {
+            str(p.pk): {
+                "title": p.title,
+                "speaker": ", ".join(a.full_name for a in p.authors.all()),
+            }
+            for p in unscheduled
+        }
         return render(request, "programme/organizer/programme.html", {
             "event": self.event,
             "membership": self.membership,
             "session_form": SessionForm(event=self.event),
             "annex_form": AnnexEventForm(event=self.event),
             "comm_form": CommunicationForm(event=self.event),
+            "unscheduled_proposals": unscheduled,
+            "proposals_data": proposals_data,
             **ctx,
         })
 
