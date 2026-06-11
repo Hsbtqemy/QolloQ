@@ -12,6 +12,7 @@ class Proposal(BaseModel):
         UNDER_REVIEW = "under_review", "En cours d'évaluation"
         ACCEPTED = "accepted", "Accepté"
         REJECTED = "rejected", "Refusé"
+        CANCELLED = "cancelled", "Annulé·e"
 
     event = models.ForeignKey(
         Event,

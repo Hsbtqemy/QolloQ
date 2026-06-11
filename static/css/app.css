@@ -442,10 +442,11 @@ table.data .actions { white-space: nowrap; text-align: right; }
   letter-spacing: .02em;
   white-space: nowrap;
 }
-.badge.submitted   { background: var(--primary-bg); color: var(--primary-dark); }
-.badge.under-review { background: #fef9c3; color: var(--warn); }
-.badge.accepted    { background: var(--success-bg); color: var(--success); }
-.badge.rejected    { background: var(--error-bg); color: var(--error-dark); }
+.badge.submitted    { background: var(--primary-bg); color: var(--primary-dark); }
+.badge.under_review { background: #fef9c3; color: var(--warn); }
+.badge.accepted     { background: var(--success-bg); color: var(--success); }
+.badge.rejected     { background: var(--error-bg); color: var(--error-dark); }
+.badge.cancelled    { background: #fff7ed; color: #c2410c; }
 .badge.sent        { background: var(--success-bg); color: var(--success); }
 .badge.draft       { background: var(--line-soft); color: var(--ink-muted); }
 .badge.open        { background: #ecfdf5; color: #065f46; }
@@ -539,6 +540,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .prog-comm-handle { color: var(--line-input); cursor: grab; }
 .prog-comm-name { flex: 1; }
 .prog-comm-duration { font-size: .78rem; color: var(--ink-faint); white-space: nowrap; }
+.prog-comm-cancelled { opacity: .55; text-decoration: line-through; }
 .prog-annex {
   background: var(--bg-hover); border: 1px solid var(--line); border-radius: 8px;
   padding: .5rem .85rem; margin-bottom: .5rem;
@@ -870,8 +872,9 @@ table.data .actions { white-space: nowrap; text-align: right; }
 [data-theme="sombre"] .lang-btn.active        { background: var(--primary-bg); color: var(--primary); }
 
 /* Hardcoded remnants — overrides directs en mode sombre */
-[data-theme="sombre"] .badge.under-review,
-[data-theme="sombre"] .badge.pending  { background: var(--warn-bg); }
+[data-theme="sombre"] .badge.under_review,
+[data-theme="sombre"] .badge.pending   { background: var(--warn-bg); }
+[data-theme="sombre"] .badge.cancelled { background: var(--warn-bg); color: #fb923c; }
 [data-theme="sombre"] .badge.warn     { background: var(--warn-bg); }
 [data-theme="sombre"] .badge.choice   { background: var(--warn-bg); }
 [data-theme="sombre"] .badge.open     { background: var(--success-bg); color: var(--success); }

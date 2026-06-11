@@ -46,8 +46,8 @@
         </div>
         {% if s.moderator %}<div class="pub-moderator">Modération : {{ s.moderator }}</div>{% endif %}
         {% for comm in s.communications.all %}
-        <div class="pub-comm">
-          {% if comm.speaker_name %}<div class="pub-comm-speaker">{{ comm.speaker_name }}</div>{% endif %}
+        <div class="pub-comm{% if comm.proposal and comm.proposal.status == 'cancelled' %} pub-comm--cancelled{% endif %}">
+          {% if comm.speaker_name %}<div class="pub-comm-speaker">{{ comm.speaker_name }}{% if comm.proposal and comm.proposal.status == 'cancelled' %} <span class="pub-comm-cancelled-label">— annulé·e</span>{% endif %}</div>{% endif %}
           <div class="pub-comm-title">{{ comm.title }}</div>
           <div class="pub-comm-duration">{{ comm.duration }} min</div>
         </div>
