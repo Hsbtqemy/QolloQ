@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% if active_version %}Appel à communications — {% endif %}{{ event.name }}</title>
 <link rel="stylesheet" href="{% static 'css/site_public.css' %}">
-{% if event.primary_color %}<style>:root{--blue:{{ event.primary_color }}}</style>{% endif %}
+{% if event.primary_color %}<style>:root{--blue:{{ event.primary_color }};--blue-header:{{ event.primary_color }}}</style>{% endif %}
+<script>(function(){try{var p=JSON.parse(localStorage.getItem('qolloq-prefs')||'{}'),h=document.documentElement;if(p.theme==='sombre')h.setAttribute('data-theme','sombre');if(p.contrast==='eleve')h.setAttribute('data-contrast','eleve');if(p.zoom==='125'||p.zoom==='150')h.setAttribute('data-zoom',p.zoom);}catch(e){}})();</script>
 </head>
 <body>
 <header class="site-header">

@@ -1,8 +1,9 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 :root {
-  --blue: #1e3a5f;
-  --blue-light: #e8f0fb;
+  --blue:        #1e3a5f;
+  --blue-header: #1e3a5f;   /* séparé de --blue pour garder la couleur event en dark mode */
+  --blue-light:  #e8f0fb;
   --border-accent: #c3d6f7;
   --gray-100: #f8f9fa;
   --gray-200: #e9ecef;
@@ -29,7 +30,7 @@ body {
 
 /* Header */
 .site-header {
-  background: var(--blue);
+  background: var(--blue-header);
   color: #fff;
   padding: 2rem 0 1.5rem;
 }
@@ -46,7 +47,7 @@ body {
 
 /* Nav */
 .site-nav {
-  background: var(--blue);
+  background: var(--blue-header);
   border-top: 1px solid rgba(255,255,255,.15);
   padding: 0;
 }
@@ -258,3 +259,22 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
   color: var(--gray-500);
   text-align: center;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODE SOMBRE — html[data-theme="sombre"]
+   Spécificité [0,1,1] > :root [0,1,0] → bat le <style>:root{--blue} inline.
+   --blue-header non overridé : garde la couleur event sur l'en-tête.
+   ═══════════════════════════════════════════════════════════════════════════ */
+html[data-theme="sombre"] {
+  color-scheme: dark;
+  --blue:          #60a5fa;
+  --blue-light:    #1e2d4a;
+  --border-accent: #1d4ed8;
+  --gray-100:      #1a1f2e;
+  --gray-200:      #2e3446;
+  --gray-500:      #94a3b8;
+  --gray-800:      #e2e8f0;
+  --border:        #374151;
+}
+html[data-theme="sombre"] body { background: #0f1117; }
+html[data-theme="sombre"] .lang-tab:hover { background: #22283a; color: var(--gray-800); }
