@@ -88,7 +88,7 @@
 
           <div class="prog-comms" id="comms-{{ s.pk }}" data-session="{{ s.pk }}">
             {% for comm in s.communications.all %}
-            <div class="prog-comm" data-id="{{ comm.pk }}">
+            <div class="prog-comm" data-id="{{ comm.pk }}" x-data="{ editOpen: false }">
               <span class="prog-comm-handle">⠿</span>
               <span class="prog-comm-name">
                 {% if comm.kind != 'talk' %}<span class="badge" style="font-size:.7rem">{{ comm.get_kind_display }}</span> {% endif %}
@@ -96,10 +96,53 @@
                 {% if comm.proposal %}<span class="badge accepted" style="font-size:.7rem">lié</span>{% endif %}
               </span>
               <span class="prog-comm-duration">{{ comm.duration }} min</span>
+              <button type="button" class="btn ghost sm" @click="editOpen = true">✎</button>
               <form method="post" action="{% url 'programme:comm_delete' event_slug=event.slug comm_id=comm.pk %}" class="inline-form">
                 {% csrf_token %}
                 <button type="submit" class="btn ghost sm text-danger" onclick="return confirm('Supprimer ?')">✕</button>
               </form>
+              <template x-teleport="body">
+                <div x-show="editOpen" class="modal-backdrop"
+                     @click.self="editOpen = false"
+                     @keydown.escape.window="editOpen = false"
+                     x-transition.opacity>
+                  <div class="modal wide">
+                    <div class="modal-head"><h3>Modifier la communication</h3></div>
+                    <form method="post" action="{% url 'programme:comm_update' event_slug=event.slug comm_id=comm.pk %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="proposal" value="{{ comm.proposal_id|default:'' }}">
+                      <div class="modal-body">
+                        <div class="field">
+                          <label>Titre <span class="req">*</span></label>
+                          <input type="text" name="title" value="{{ comm.title }}" required>
+                        </div>
+                        <div class="field-row">
+                          <div class="field">
+                            <label>Type</label>
+                            <select name="kind">
+                              {% for val, lbl in comm_form.fields.kind.choices %}
+                              <option value="{{ val }}" {% if comm.kind == val %}selected{% endif %}>{{ lbl }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="field">
+                            <label>Durée (min)</label>
+                            <input type="number" name="duration" value="{{ comm.duration }}" min="1" required>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <label>Intervenant·e</label>
+                          <input type="text" name="speaker_name" value="{{ comm.speaker_name }}">
+                        </div>
+                      </div>
+                      <div class="modal-foot">
+                        <button type="button" class="btn ghost" @click="editOpen = false">Annuler</button>
+                        <button type="submit" class="btn primary">Enregistrer</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </template>
             </div>
             {% endfor %}
           </div>
