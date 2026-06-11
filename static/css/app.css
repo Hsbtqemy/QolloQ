@@ -827,6 +827,92 @@ table.data .actions { white-space: nowrap; text-align: right; }
 [data-theme="sombre"] .callout-open   { border-color: var(--success-border); }
 [data-theme="sombre"] .cal-event      { background: var(--primary-bg); }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTRASTE ÉLEVÉ — [data-contrast="eleve"]
+   Vise WCAG AAA (≥7:1) pour tout texte lisible.
+   Deux blocs : mode clair seul, puis combinaison sombre+élevé.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Mode clair + contraste élevé ──────────────────────────────────────── */
+[data-contrast="eleve"] {
+  /* Fond blanc pur — contraste maximal */
+  --bg:          #ffffff;
+  --bg-raised:   #ffffff;
+  --bg-hover:    #f5f5f5;
+  --bg-subtle:   #f5f5f5;
+  --bg-subtle-2: #f5f5f5;
+
+  /* Bordures très marquées */
+  --line:        #6b7280;
+  --line-soft:   #d1d5db;
+  --line-input:  #374151;
+
+  /* Texte — ink-muted et ink-faint renforcés pour ≥7:1 sur blanc */
+  --ink-muted:   #374151;
+  --ink-faint:   #6b7280;
+
+  /* Primary — #1d4ed8 ≈7:1 sur blanc (AAA) */
+  --primary:      #1d4ed8;
+  --primary-dark: #1e40af;
+
+  /* Sémantiques — teintes sombres pour texte lisible sur bg clair */
+  --success:       #14532d;
+  --success-dark:  #052e16;
+  --success-border: #15803d;
+  --error:         #991b1b;
+  --error-dark:    #7f1d1d;
+  --error-border:  #b91c1c;
+  --warn:          #78350f;
+  --warn-dark:     #451a03;
+  --warn-border:   #92400e;
+}
+
+/* ── Mode sombre + contraste élevé ────────────────────────────────────── */
+[data-theme="sombre"][data-contrast="eleve"] {
+  /* Fond noir pur */
+  --bg:          #000000;
+  --bg-raised:   #0d1117;
+  --bg-hover:    #161b22;
+  --bg-subtle:   #0d1117;
+  --bg-subtle-2: #0d1117;
+
+  /* Bordures plus claires et visibles sur noir */
+  --line:        #8b949e;
+  --line-soft:   #484f58;
+  --line-input:  #8b949e;
+
+  /* Texte — tout relevé vers blanc */
+  --ink:         #ffffff;
+  --ink-label:   #f0f6fc;
+  --ink-muted:   #c9d1d9;
+  --ink-faint:   #94a3b8;
+
+  /* Primaire plus lumineux */
+  --primary:        #79c0ff;
+  --primary-dark:   #a5d6ff;
+  --primary-bg:     #0d2340;
+  --primary-border: #388bfd;
+
+  /* Succès */
+  --success:        #56d364;
+  --success-dark:   #85e89d;
+  --success-bg:     #0a1f0e;
+  --success-border: #2ea043;
+
+  /* Erreur */
+  --error:          #ff7b72;
+  --error-dark:     #ffa198;
+  --error-darkest:  #ffb8b0;
+  --error-bg:       #1e0505;
+  --error-border:   #da3633;
+
+  /* Avertissement */
+  --warn:        #e3b341;
+  --warn-dark:   #f2cc60;
+  --warn-bg:     #1c1000;
+  --warn-border: #9e6a03;
+}
+
 /* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
 .mobile-topbar { display: none; }
 .sidebar-overlay { display: none; }
