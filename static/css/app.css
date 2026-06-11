@@ -849,11 +849,12 @@ table.data .actions { white-space: nowrap; text-align: right; }
 
   /* Texte — ink-muted et ink-faint renforcés pour ≥7:1 sur blanc */
   --ink-muted:   #374151;
-  --ink-faint:   #6b7280;
+  --ink-faint:   #4b5563;
 
   /* Primary — #1d4ed8 ≈7:1 sur blanc (AAA) */
-  --primary:      #1d4ed8;
-  --primary-dark: #1e40af;
+  --primary:        #1d4ed8;
+  --primary-dark:   #1e40af;
+  --primary-border: #1d4ed8;
 
   /* Sémantiques — teintes sombres pour texte lisible sur bg clair */
   --success:       #14532d;
@@ -866,6 +867,11 @@ table.data .actions { white-space: nowrap; text-align: right; }
   --warn-dark:     #451a03;
   --warn-border:   #92400e;
 }
+
+/* Focus ring clair+élevé — renforcé pour #1d4ed8 */
+[data-contrast="eleve"] .field input:focus,
+[data-contrast="eleve"] .field select:focus,
+[data-contrast="eleve"] .field textarea:focus { box-shadow: 0 0 0 3px rgba(29,78,216,.25); }
 
 /* ── Mode sombre + contraste élevé ────────────────────────────────────── */
 [data-theme="sombre"][data-contrast="eleve"] {
@@ -910,7 +916,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
   --warn:        #e3b341;
   --warn-dark:   #f2cc60;
   --warn-bg:     #1c1000;
-  --warn-border: #9e6a03;
+  --warn-border: #d97706;
 }
 
 /* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
