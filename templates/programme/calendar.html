@@ -37,7 +37,7 @@
           <strong>{{ item.obj.title }}</strong>
           {% if item.obj.moderator %}<div class="text-muted text-sm">Modération : {{ item.obj.moderator }}</div>{% endif %}
           {% for comm in item.obj.communications.all %}
-          <div class="text-sm" style="padding:.1rem 0 .1rem .5rem; border-left:2px solid #e5e7eb; margin:.2rem 0">
+          <div class="text-sm cal-entry-indent">
             {{ comm.speaker_name }} — {{ comm.title }} ({{ comm.duration }} min)
           </div>
           {% endfor %}

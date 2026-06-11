@@ -24,7 +24,7 @@
 {% if membership.is_organizer %}
 <div class="grid-3col" style="margin-bottom:1.25rem">
   <div class="card" style="text-align:center; padding:1rem">
-    <div style="font-size:1.6rem; font-weight:700; color:#2563eb">{{ stats.total }}</div>
+    <div style="font-size:1.6rem; font-weight:700; color:var(--primary)">{{ stats.total }}</div>
     <div class="text-muted text-sm">Soumission{{ stats.total|pluralize }}</div>
   </div>
   <div class="card" style="text-align:center; padding:1rem">
@@ -32,7 +32,7 @@
     <div class="text-muted text-sm">Acceptée{{ stats.accepted|pluralize }}</div>
   </div>
   <div class="card" style="text-align:center; padding:1rem">
-    <div style="font-size:1.6rem; font-weight:700; {% if stats.accepted and not stats.confirmed %}color:#d97706{% else %}color:#2563eb{% endif %}">{{ stats.confirmed }}</div>
+    <div style="font-size:1.6rem; font-weight:700; {% if stats.accepted and not stats.confirmed %}color:#d97706{% else %}color:var(--primary){% endif %}">{{ stats.confirmed }}</div>
     <div class="text-muted text-sm">Confirmée{{ stats.confirmed|pluralize }}</div>
   </div>
 </div>
@@ -128,9 +128,9 @@
               class="panel-add-row" style="padding:.5rem 1rem 0">
           {% csrf_token %}
           <input type="text" name="label" placeholder="Intitulé" required
-                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+                 style="padding:.3rem .5rem; border:1px solid var(--line-input); border-radius:5px; font-size:.82rem; font-family:inherit">
           <input type="date" name="date" required
-                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+                 style="padding:.3rem .5rem; border:1px solid var(--line-input); border-radius:5px; font-size:.82rem; font-family:inherit">
           <button type="submit" class="btn ghost sm">+</button>
         </form>
       </div>
@@ -157,7 +157,7 @@
                          headers: {'X-CSRFToken': '{{ csrf_token }}'}
                        }).then(r => r.json()).then(d => done = d.done)
                      "
-                     style="margin-top:.2rem; flex-shrink:0; accent-color:#2563eb">
+                     style="margin-top:.2rem; flex-shrink:0; accent-color:var(--primary)">
               <span>
                 <span class="task-title" :class="done ? 'task-done-text' : ''">{{ task.title }}</span>
                 {% if task.due_date %}
@@ -182,9 +182,9 @@
               class="panel-add-row" style="padding:.75rem 1rem 0">
           {% csrf_token %}
           <input type="text" name="title" placeholder="Nouvelle tâche…" required
-                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+                 style="padding:.3rem .5rem; border:1px solid var(--line-input); border-radius:5px; font-size:.82rem; font-family:inherit">
           <input type="date" name="due_date"
-                 style="padding:.3rem .5rem; border:1px solid #d1d5db; border-radius:5px; font-size:.82rem; font-family:inherit">
+                 style="padding:.3rem .5rem; border:1px solid var(--line-input); border-radius:5px; font-size:.82rem; font-family:inherit">
           <button type="submit" class="btn ghost sm">+</button>
         </form>
       </div>

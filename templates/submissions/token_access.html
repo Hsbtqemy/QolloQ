@@ -43,7 +43,7 @@
 
   {% if editable %}
   {% if proposal.event.submission_instructions %}
-  <div class="prose" style="margin-bottom:1.25rem;font-size:.9rem;color:#374151">{{ proposal.event.submission_instructions|linebreaks }}</div>
+  <div class="prose" style="margin-bottom:1.25rem;font-size:.9rem;color:var(--ink-label)">{{ proposal.event.submission_instructions|linebreaks }}</div>
   {% endif %}
   <form method="post">
     {% csrf_token %}

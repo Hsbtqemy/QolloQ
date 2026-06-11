@@ -3,6 +3,7 @@
 :root {
   --blue: #1e3a5f;
   --blue-light: #e8f0fb;
+  --border-accent: #c3d6f7;
   --gray-100: #f8f9fa;
   --gray-200: #e9ecef;
   --gray-500: #6c757d;
@@ -89,7 +90,7 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
 /* Callout */
 .callout {
   background: var(--blue-light);
-  border: 1px solid #c3d6f7;
+  border: 1px solid var(--border-accent);
   border-radius: var(--radius);
   padding: 1.25rem 1.5rem;
 }
@@ -118,7 +119,7 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
   font-weight: 500;
   transition: background .15s;
 }
-.btn-outline:hover { background: #eff6ff; }
+.btn-outline:hover { background: var(--blue-light); }
 
 .lang-tab {
   display: inline-block;
@@ -131,7 +132,7 @@ h2 { font-size: 1.25rem; color: var(--blue); margin: 0 0 .75rem; }
   text-decoration: none;
   transition: background .15s, color .15s;
 }
-.lang-tab:hover { background: #f3f4f6; color: var(--gray-900); }
+.lang-tab:hover { background: #f3f4f6; color: var(--gray-800); }
 .lang-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
 
 /* Programme */

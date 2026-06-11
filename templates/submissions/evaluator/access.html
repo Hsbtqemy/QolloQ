@@ -31,7 +31,7 @@
     {% if own_eval %}
     <span class="badge eval-verdict {{ own_eval.verdict }}" style="white-space:nowrap">{{ own_eval.get_verdict_display }}</span>
     {% else %}
-    <span class="badge" style="background:#f3f4f6;color:#6b7280;white-space:nowrap">Non évalué</span>
+    <span class="badge neutral">Non évalué</span>
     {% endif %}
   </div>
 
@@ -39,7 +39,7 @@
     <p>{{ proposal.abstract }}</p>
   </div>
   {% if proposal.bio %}
-  <div style="font-size:.88rem;color:#4b5563;margin-bottom:.75rem">
+  <div class="text-secondary" style="margin-bottom:.75rem">
     <strong>Bio-bibliographie :</strong> {{ proposal.bio|truncatewords:60 }}
   </div>
   {% endif %}

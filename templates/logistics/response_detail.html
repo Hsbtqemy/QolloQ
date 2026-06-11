@@ -32,7 +32,7 @@
     <tbody>
       {% for fr in response.field_responses.all %}
       <tr>
-        <td style="width:40%; color:#374151; font-weight:500">{{ fr.field.label }}</td>
+        <td style="width:40%; color:var(--ink-label); font-weight:500">{{ fr.field.label }}</td>
         <td>{{ fr.display_value }}</td>
       </tr>
       {% endfor %}

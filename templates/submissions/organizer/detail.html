@@ -84,7 +84,7 @@
 
       {% if evaluations %}
       {% for eval in evaluations %}
-      <div style="border-bottom: 1px solid #f3f4f6; padding: .6rem 0;">
+      <div class="sep-soft">
         {% if not event.eval_anonymous or membership.is_organizer %}
         <div class="text-sm" style="font-weight:500">{{ eval.evaluator.display_name }}</div>
         {% else %}
