@@ -805,7 +805,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
   --ink:         #e2e8f0;
   --ink-label:   #cbd5e1;
   --ink-muted:   #94a3b8;
-  --ink-faint:   #64748b;
+  --ink-faint:   #7b8ba4;  /* relevé : #64748b → 3.6:1 sur fond sombre, insuffisant pour textes info */
 
   /* Primaire */
   --primary:        #60a5fa;
@@ -912,6 +912,14 @@ table.data .actions { white-space: nowrap; text-align: right; }
 [data-contrast="eleve"] .field input:focus,
 [data-contrast="eleve"] .field select:focus,
 [data-contrast="eleve"] .field textarea:focus { box-shadow: 0 0 0 3px rgba(29,78,216,.25); }
+
+/* lang-btn HC clair : #64748b → 5.5:1 (en-dessous de l'objectif AAA 7:1) */
+[data-contrast="eleve"] .lang-btn { color: var(--ink-muted); }
+
+/* Focus ring sombre+élevé — 50% opacité sur --primary: #79c0ff */
+[data-theme="sombre"][data-contrast="eleve"] .field input:focus,
+[data-theme="sombre"][data-contrast="eleve"] .field select:focus,
+[data-theme="sombre"][data-contrast="eleve"] .field textarea:focus { box-shadow: 0 0 0 3px rgba(121,192,255,.5); }
 
 /* ── Mode sombre + contraste élevé ────────────────────────────────────── */
 [data-theme="sombre"][data-contrast="eleve"] {
