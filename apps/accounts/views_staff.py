@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import SetPasswordForm
+from django.db import models as db_models
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -94,6 +95,21 @@ class StaffUserEditView(SuperuserRequiredMixin, View):
             "target_user": target,
             "password_form": SetPasswordForm(target),
         })
+
+
+class StaffUserDeleteView(SuperuserRequiredMixin, View):
+    def post(self, request, pk):
+        target = get_object_or_404(User, pk=pk)
+        if target == request.user:
+            messages.error(request, "Vous ne pouvez pas supprimer votre propre compte.")
+            return redirect("staff:user_edit", pk=pk)
+        try:
+            email = target.email
+            target.delete()
+            messages.success(request, f"Compte {email} supprimé.")
+        except db_models.ProtectedError:
+            messages.error(request, "Ce compte ne peut pas être supprimé car il est lié à des événements.")
+        return redirect("staff:users")
 
 
 class StaffEmailTemplateListView(SuperuserRequiredMixin, View):

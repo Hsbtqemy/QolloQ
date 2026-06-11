@@ -35,7 +35,7 @@
   </div>
 
   {% if target_user %}
-  <div class="card">
+  <div class="card" x-data="{ confirmDelete: false }">
     <h3>Réinitialiser le mot de passe</h3>
     <p class="text-muted text-sm" style="margin-bottom:.75rem">
       L'utilisateur·ice devra changer son mot de passe à la prochaine connexion.
@@ -54,6 +54,24 @@
         <button type="submit" class="btn ghost sm">Réinitialiser</button>
       </div>
     </form>
+
+    <hr style="margin:1.25rem 0;border:none;border-top:1px solid var(--border)">
+    <h3 style="color:var(--red,#dc2626)">Zone de danger</h3>
+    <p class="text-muted text-sm" style="margin-bottom:.75rem">
+      La suppression est irréversible. Si ce compte a créé des événements, la suppression sera bloquée.
+    </p>
+    <div x-show="!confirmDelete">
+      <button type="button" class="btn ghost sm" style="color:var(--red,#dc2626);border-color:var(--red,#dc2626)"
+              @click="confirmDelete = true">Supprimer ce compte</button>
+    </div>
+    <div x-show="confirmDelete" x-cloak>
+      <p class="text-sm" style="margin-bottom:.5rem;font-weight:600">Confirmer la suppression de {{ target_user.email }} ?</p>
+      <form method="post" action="{% url 'staff:user_delete' pk=target_user.pk %}" style="display:inline">
+        {% csrf_token %}
+        <button type="submit" class="btn sm" style="background:var(--red,#dc2626);color:#fff;border-color:var(--red,#dc2626)">Confirmer</button>
+      </form>
+      <button type="button" class="btn ghost sm" style="margin-left:.5rem" @click="confirmDelete = false">Annuler</button>
+    </div>
   </div>
   {% endif %}
 

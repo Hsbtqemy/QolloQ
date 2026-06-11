@@ -9,6 +9,7 @@ urlpatterns = [
     path("staff/utilisateurs/", views_staff.StaffUserListView.as_view(), name="users"),
     path("staff/utilisateurs/creer/", views_staff.StaffUserCreateView.as_view(), name="user_create"),
     path("staff/utilisateurs/<int:pk>/modifier/", views_staff.StaffUserEditView.as_view(), name="user_edit"),
+    path("staff/utilisateurs/<int:pk>/supprimer/", views_staff.StaffUserDeleteView.as_view(), name="user_delete"),
     path("staff/email-templates/", views_staff.StaffEmailTemplateListView.as_view(), name="email_templates"),
     path("staff/email-templates/<str:key>/", views_staff.StaffEmailTemplateEditView.as_view(), name="email_template_edit"),
 ]
