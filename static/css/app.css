@@ -206,12 +206,12 @@ h3 { font-size: 1rem; }
 .btn.primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
 .btn.ghost { background: transparent; border-color: var(--line-input); color: var(--ink-label); }
 .btn.ghost:hover { background: var(--line-soft); }
-.btn.danger { background: #dc2626; color: #fff; border-color: #dc2626; }
-.btn.danger:hover { background: #b91c1c; }
-.btn.danger-ghost { background: transparent; border-color: #dc2626; color: #dc2626; }
-.btn.danger-ghost:hover { background: #fef2f2; }
-.btn.success { background: #16a34a; color: #fff; border-color: #16a34a; }
-.btn.success:hover { background: #15803d; }
+.btn.danger { background: var(--error); color: #fff; border-color: var(--error); }
+.btn.danger:hover { background: var(--error-dark); }
+.btn.danger-ghost { background: transparent; border-color: var(--error); color: var(--error); }
+.btn.danger-ghost:hover { background: var(--error-bg); }
+.btn.success { background: var(--success); color: #fff; border-color: var(--success); }
+.btn.success:hover { background: var(--success-dark); }
 
 .btn-group { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
 
@@ -224,7 +224,7 @@ h3 { font-size: 1rem; }
   margin-bottom: .3rem;
   color: var(--ink-label);
 }
-.field .req { color: #dc2626; margin-left: 2px; }
+.field .req { color: var(--error); margin-left: 2px; }
 .field input[type="text"],
 .field input[type="email"],
 .field input[type="date"],
@@ -255,7 +255,7 @@ h3 { font-size: 1rem; }
 }
 .field .helptext { font-size: .78rem; color: var(--ink-muted); margin-top: .25rem; }
 .field .errorlist { margin: .3rem 0 0; padding: 0; list-style: none; }
-.field .errorlist li { font-size: .82rem; color: #dc2626; }
+.field .errorlist li { font-size: .82rem; color: var(--error); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
 .field-row.three { grid-template-columns: 1fr 1fr 1fr; }
 
@@ -278,7 +278,7 @@ h3 { font-size: 1rem; }
 .drop-label { font-size: .9rem; color: var(--ink-label); }
 .drop-hint { font-size: .78rem; color: var(--ink-faint); margin-top: .25rem; }
 .drop-filename { font-size: .9rem; font-weight: 500; color: var(--ink); }
-.drop-clear { background: none; border: none; color: #dc2626; cursor: pointer; font-size: .8rem; margin-top: .3rem; }
+.drop-clear { background: none; border: none; color: var(--error); cursor: pointer; font-size: .8rem; margin-top: .3rem; }
 
 /* checkbox / radio */
 .field-checkbox { display: flex; align-items: center; gap: .5rem; }
@@ -322,10 +322,10 @@ h3 { font-size: 1rem; }
   margin-bottom: .5rem;
   display: flex; align-items: flex-start; gap: .5rem;
 }
-.message.success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
-.message.error   { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
-.message.warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
-.message.info    { background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; }
+.message.success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-dark); }
+.message.error   { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error-darkest); }
+.message.warning { background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-dark); }
+.message.info    { background: var(--primary-bg); border: 1px solid var(--primary-border); color: var(--primary-dark); }
 
 /* ─── Cards / panels ──────────────────────────────────────────────────────── */
 .card {
@@ -401,19 +401,19 @@ table.data .actions { white-space: nowrap; text-align: right; }
   letter-spacing: .02em;
   white-space: nowrap;
 }
-.badge.submitted   { background: #eff6ff; color: #1d4ed8; }
-.badge.under-review { background: #fef9c3; color: #a16207; }
-.badge.accepted    { background: #f0fdf4; color: #15803d; }
-.badge.rejected    { background: #fef2f2; color: #b91c1c; }
-.badge.sent        { background: #f0fdf4; color: #15803d; }
-.badge.draft       { background: #f3f4f6; color: #4b5563; }
+.badge.submitted   { background: var(--primary-bg); color: var(--primary-dark); }
+.badge.under-review { background: #fef9c3; color: var(--warn); }
+.badge.accepted    { background: var(--success-bg); color: var(--success); }
+.badge.rejected    { background: var(--error-bg); color: var(--error-dark); }
+.badge.sent        { background: var(--success-bg); color: var(--success); }
+.badge.draft       { background: var(--line-soft); color: var(--ink-muted); }
 .badge.open        { background: #ecfdf5; color: #065f46; }
-.badge.closed      { background: #f3f4f6; color: #6b7280; }
-.badge.complete    { background: #f0fdf4; color: #15803d; }
-.badge.pending     { background: #fef9c3; color: #a16207; }
-.badge.received    { background: #f0fdf4; color: #15803d; }
+.badge.closed      { background: var(--line-soft); color: var(--ink-muted); }
+.badge.complete    { background: var(--success-bg); color: var(--success); }
+.badge.pending     { background: #fef9c3; color: var(--warn); }
+.badge.received    { background: var(--success-bg); color: var(--success); }
 .badge.neutral     { background: var(--line-soft); color: var(--ink-muted); white-space: nowrap; }
-.badge.warn        { background: #fef3c7; color: #92400e; }
+.badge.warn        { background: #fef3c7; color: var(--warn-dark); }
 
 /* ─── Page header ─────────────────────────────────────────────────────────── */
 .page-header {
@@ -466,9 +466,9 @@ table.data .actions { white-space: nowrap; text-align: right; }
 
 /* ─── Evaluations ─────────────────────────────────────────────────────────── */
 .eval-verdict { display: inline-flex; align-items: center; gap: .35rem; font-weight: 500; }
-.eval-verdict.for     { color: #15803d; }
-.eval-verdict.against { color: #b91c1c; }
-.eval-verdict.hesitant{ color: #a16207; }
+.eval-verdict.for     { color: var(--success); }
+.eval-verdict.against { color: var(--error-dark); }
+.eval-verdict.hesitant{ color: var(--warn); }
 
 /* ─── Programme ───────────────────────────────────────────────────────────── */
 .prog-day { margin-bottom: 1.5rem; }
@@ -527,10 +527,10 @@ table.data .actions { white-space: nowrap; text-align: right; }
 }
 .cal-event {
   position: absolute; left: 2px; right: 2px;
-  background: #dbeafe; border: 1px solid #93c5fd; border-radius: 4px;
+  background: #dbeafe; border: 1px solid var(--primary-border); border-radius: 4px;
   padding: .15rem .35rem; font-size: .75rem; overflow: hidden;
 }
-.cal-event.annex { background: #f3f4f6; border-color: #d1d5db; }
+.cal-event.annex { background: var(--line-soft); border-color: var(--line-input); }
 .cal-entry-indent {
   border-left: 2px solid var(--line);
   padding: .1rem 0 .1rem .5rem;
@@ -547,7 +547,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .logistics-field-handle { color: var(--line-input); cursor: grab; }
 .logistics-field-label { flex: 1; font-weight: 500; font-size: .875rem; }
 .logistics-field-kind { font-size: .78rem; color: var(--ink-muted); }
-.logistics-field-required { font-size: .75rem; color: #dc2626; }
+.logistics-field-required { font-size: .75rem; color: var(--error); }
 
 /* ─── Public pages (minimal chrome) ─────────────────────────────────────── */
 .public-layout {
@@ -602,8 +602,8 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .text-faint   { color: var(--ink-faint); }
 .text-secondary { color: var(--ink-label); font-size: .88rem; }
 .text-sm      { font-size: .85rem; }
-.text-danger  { color: #dc2626; }
-.text-success { color: #15803d; }
+.text-danger  { color: var(--error); }
+.text-success { color: var(--success); }
 .sep     { border: none; border-top: 1px solid var(--line); margin: 1.25rem 0; }
 .sep-soft{ border: none; border-bottom: 1px solid var(--line-soft); padding: .6rem 0; }
 .inline-form { display: inline; }
@@ -625,8 +625,8 @@ table.data .actions { white-space: nowrap; text-align: right; }
   margin-bottom: 1rem;
   font-size: .9rem;
 }
-.callout-open  { background: #f0fdf4; border: 1px solid #bbf7d0; }
-.callout-closed { background: #f9fafb; border: 1px solid #e5e7eb; color: #6b7280; }
+.callout-open  { background: var(--success-bg); border: 1px solid #bbf7d0; }
+.callout-closed { background: var(--bg-subtle); border: 1px solid var(--line); color: var(--ink-muted); }
 .submit-url-row { display: flex; align-items: center; gap: .5rem; margin-top: .5rem; }
 .submit-url-input {
   flex: 1;
@@ -651,9 +651,9 @@ table.data .actions { white-space: nowrap; text-align: right; }
 .field-list-item:last-child { border-bottom: none; }
 .field-list-handle { cursor: grab; color: var(--ink-faint); font-size: 1rem; flex-shrink: 0; }
 .field-list-label { font-weight: 500; }
-.badge.text    { background: #eff6ff; color: #1d4ed8; }
-.badge.textarea { background: #f0fdf4; color: #15803d; }
-.badge.choice  { background: #fef9c3; color: #854d0e; }
+.badge.text    { background: var(--primary-bg); color: var(--primary-dark); }
+.badge.textarea { background: var(--success-bg); color: var(--success); }
+.badge.choice  { background: #fef9c3; color: var(--warn-dark); }
 /* ── Form builder ──────────────────────────────────────────────────────────── */
 .builder-section-title {
   padding: .35rem 1.25rem .3rem;
@@ -710,7 +710,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
   font-size: 1rem; line-height: 1; padding: 0 .15rem;
   flex-shrink: 0;
 }
-.keydate-del:hover { color: #dc2626; }
+.keydate-del:hover { color: var(--error); }
 .keydate-row--system .keydate-label { color: var(--ink-muted); font-style: italic; }
 .panel-add-row {
   display: grid;
@@ -741,12 +741,12 @@ table.data .actions { white-space: nowrap; text-align: right; }
   color: var(--ink-faint);
   margin-top: .1rem;
 }
-.task-due--overdue { color: #dc2626; font-weight: 500; }
+.task-due--overdue { color: var(--error); font-weight: 500; }
 
 /* Attendance select */
-.attendance--confirmed { color: #15803d; }
-.attendance--cancelled { color: #dc2626; }
-.attendance--pending   { color: #6b7280; }
+.attendance--confirmed { color: var(--success); }
+.attendance--cancelled { color: var(--error); }
+.attendance--pending   { color: var(--ink-muted); }
 
 /* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
 .mobile-topbar { display: none; }

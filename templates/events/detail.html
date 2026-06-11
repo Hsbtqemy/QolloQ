@@ -28,11 +28,11 @@
     <div class="text-muted text-sm">Soumission{{ stats.total|pluralize }}</div>
   </div>
   <div class="card" style="text-align:center; padding:1rem">
-    <div style="font-size:1.6rem; font-weight:700; color:#16a34a">{{ stats.accepted }}</div>
+    <div style="font-size:1.6rem; font-weight:700; color:var(--success)">{{ stats.accepted }}</div>
     <div class="text-muted text-sm">Acceptée{{ stats.accepted|pluralize }}</div>
   </div>
   <div class="card" style="text-align:center; padding:1rem">
-    <div style="font-size:1.6rem; font-weight:700; {% if stats.accepted and not stats.confirmed %}color:#d97706{% else %}color:var(--primary){% endif %}">{{ stats.confirmed }}</div>
+    <div style="font-size:1.6rem; font-weight:700; {% if stats.accepted and not stats.confirmed %}color:var(--warn){% else %}color:var(--primary){% endif %}">{{ stats.confirmed }}</div>
     <div class="text-muted text-sm">Confirmée{{ stats.confirmed|pluralize }}</div>
   </div>
 </div>

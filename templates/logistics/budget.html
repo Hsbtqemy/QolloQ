@@ -296,7 +296,7 @@
         {% if envelope is not None %}
         <div style="display:flex; justify-content:space-between; padding:.4rem 0; margin-top:.2rem">
           <span style="font-weight:600">Restant (enveloppe − prévu)</span>
-          <strong style="{% if remaining < 0 %}color:#dc2626{% endif %}">{{ remaining }} €</strong>
+          <strong style="{% if remaining < 0 %}color:var(--error){% endif %}">{{ remaining }} €</strong>
         </div>
         {% endif %}
       </div>
