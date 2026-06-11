@@ -301,6 +301,7 @@
 <script>
 document.addEventListener('change', function(e) {
   if (e.target.name !== 'start_time') return;
+  if (!e.target.value) return;
   const form = e.target.closest('form');
   if (!form) return;
   const endInput = form.querySelector('[name="end_time"]');
@@ -313,7 +314,7 @@ document.addEventListener('change', function(e) {
     const endMins = eh * 60 + em;
     if (endMins > startMins) gap = endMins - startMins;
   }
-  const t = startMins + gap;
+  const t = Math.round((startMins + gap) / 5) * 5;
   endInput.value = String(Math.floor(t / 60) % 24).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
 });
 
