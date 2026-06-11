@@ -919,6 +919,20 @@ table.data .actions { white-space: nowrap; text-align: right; }
   --warn-border: #d97706;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZOOM — [data-zoom="125"] / [data-zoom="150"]
+   Scaler html font-size suffit : tout ce qui est en rem/em suit.
+   Les colonnes px fixes (sidebar, grid-prog) sont ajustées manuellement.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-zoom="125"] { font-size: 20px; }
+[data-zoom="125"] .app-sidebar { width: 250px; }
+[data-zoom="125"] .grid-prog   { grid-template-columns: minmax(0, 1fr) 360px; }
+
+[data-zoom="150"] { font-size: 24px; }
+[data-zoom="150"] .app-sidebar { width: 280px; }
+[data-zoom="150"] .grid-prog   { grid-template-columns: minmax(0, 1fr) 400px; }
+
 /* ─── Mobile topbar (caché sur desktop) ──────────────────────────────────── */
 .mobile-topbar { display: none; }
 .sidebar-overlay { display: none; }
