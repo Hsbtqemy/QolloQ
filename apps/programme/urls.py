@@ -72,6 +72,11 @@ urlpatterns = [
         name="annex_create",
     ),
     path(
+        "evenements/<slug:event_slug>/programme/annexes/reorder/",
+        views.AnnexReorderView.as_view(),
+        name="annex_reorder",
+    ),
+    path(
         "evenements/<slug:event_slug>/programme/annexes/<int:annex_id>/",
         views.AnnexEventUpdateView.as_view(),
         name="annex_update",

@@ -546,6 +546,7 @@ table.data .actions { white-space: nowrap; text-align: right; }
   padding: .5rem .85rem; margin-bottom: .5rem;
   display: flex; align-items: center; gap: .75rem;
 }
+.prog-annex-handle { color: var(--line-input); cursor: grab; }
 .prog-annex-time { font-size: .8rem; color: var(--ink-muted); white-space: nowrap; }
 .prog-annex-label { font-size: .875rem; color: var(--ink-label); }
 .prog-annex-kind { font-size: .75rem; color: var(--ink-faint); }

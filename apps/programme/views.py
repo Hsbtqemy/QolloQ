@@ -41,8 +41,9 @@ def _build_programme_context(event, sort_by_order=False):
     ):
         sessions_by_day[session.date].append(session)
 
+    annex_order = ("date", "order", "start_time") if sort_by_order else ("date", "start_time")
     annex_by_day = defaultdict(list)
-    for item in AnnexEvent.objects.filter(event=event).order_by("date", "start_time"):
+    for item in AnnexEvent.objects.filter(event=event).order_by(*annex_order):
         annex_by_day[item.date].append(item)
 
     programme = []
@@ -56,17 +57,16 @@ def _build_programme_context(event, sort_by_order=False):
             for a in annex_by_day[day]
         ]
         if sort_by_order:
-            # Sessions sans heure : ordre D&D en tête.
-            # Sessions avec heure + annexes (toujours horées) : mélangées chronologiquement.
-            untimed = [i for i in session_items if not i["start"]]
-            timed = [i for i in session_items if i["start"]] + annex_items
-            timed.sort(key=lambda x: x["start"])
-            items = untimed + timed
+            items = session_items + annex_items
         else:
-            # Tri chronologique — sessions sans heure placées en tête (heure nulle)
             items = session_items + annex_items
             items.sort(key=lambda x: x["start"] or dtime(0, 0))
-        programme.append({"date": day, "items": items})
+        programme.append({
+            "date": day,
+            "items": items,
+            "sessions": sessions_by_day[day],
+            "annexes": annex_by_day[day],
+        })
 
     return {
         "days": days,
@@ -267,12 +267,46 @@ class CommunicationReorderView(OrganizerRequiredMixin, View):
         return JsonResponse({"ok": True})
 
 
+class AnnexReorderView(OrganizerRequiredMixin, View):
+    """POST JSON [{id, order}] — réordonne les annexes d'un même jour."""
+
+    def post(self, request, event_slug):
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse({"error": "JSON invalide."}, status=400)
+        if not isinstance(data, list) or not data:
+            return JsonResponse({"error": "Format invalide."}, status=400)
+        try:
+            order_map = {int(item["id"]): int(item["order"]) for item in data}
+        except (KeyError, ValueError, TypeError):
+            return JsonResponse({"error": "Format invalide."}, status=400)
+
+        annexes = list(AnnexEvent.objects.filter(event=self.event, pk__in=order_map.keys()))
+        if set(a.pk for a in annexes) != set(order_map.keys()):
+            return JsonResponse({"error": "Annexes introuvables."}, status=400)
+
+        now = timezone.now()
+        for annex in annexes:
+            annex.order = order_map[annex.pk]
+            annex.updated_at = now
+        AnnexEvent.objects.bulk_update(annexes, ["order", "updated_at"])
+        return JsonResponse({"ok": True})
+
+
 class AnnexEventCreateView(OrganizerRequiredMixin, View):
     def post(self, request, event_slug):
         form = AnnexEventForm(request.POST, event=self.event)
         if form.is_valid():
             annex = form.save(commit=False)
             annex.event = self.event
+            last = (
+                AnnexEvent.objects.filter(event=self.event, date=annex.date)
+                .order_by("-order")
+                .values_list("order", flat=True)
+                .first()
+            )
+            annex.order = (last or 0) + 1
             annex.save()
             messages.success(request, "Événement annexe ajouté.")
         else:

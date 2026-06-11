@@ -104,11 +104,12 @@ class AnnexEvent(BaseModel):
         default=Kind.OTHER,
         verbose_name="Type",
     )
+    order = models.PositiveSmallIntegerField(default=0, verbose_name="Ordre")
 
     class Meta:
         verbose_name = "Événement annexe"
         verbose_name_plural = "Événements annexes"
-        ordering = ["date", "start_time"]
+        ordering = ["date", "order", "start_time"]
 
     @property
     def duration_minutes(self):

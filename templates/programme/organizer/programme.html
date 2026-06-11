@@ -19,9 +19,7 @@
     <div class="prog-day">
       <div class="prog-day-header">{{ day_data.date|date:"l j F Y" }}</div>
 
-      {% for item in day_data.items %}
-
-        {% if item.kind == 'session' %}{% with s=item.obj %}
+      {% for s in day_data.sessions %}
         <div class="prog-session" data-id="{{ s.pk }}">
           <div class="prog-session-head">
             <div>
@@ -182,10 +180,14 @@
             </template>
           </div>
         </div>
-        {% endwith %}{% endif %}
+      {% empty %}
+      <p class="text-muted text-sm" style="padding:.5rem 0">Aucune session pour ce jour.</p>
+      {% endfor %}
 
-        {% if item.kind == 'annex' %}{% with a=item.obj %}
-        <div class="prog-annex" x-data="{ editOpen: false }">
+      <div class="prog-annexes" id="annexes-{{ day_data.date|date:'Y-m-d' }}">
+      {% for a in day_data.annexes %}
+        <div class="prog-annex" data-id="{{ a.pk }}" x-data="{ editOpen: false }">
+          <span class="prog-annex-handle">⠿</span>
           <span class="prog-annex-time">{{ a.start_time|time:"H:i" }} – {{ a.end_time|time:"H:i" }}</span>
           <span class="prog-annex-label">{{ a.label }}</span>
           <span class="prog-annex-kind">{{ a.get_kind_display }}</span>
@@ -230,11 +232,8 @@
             </div>
           </template>
         </div>
-        {% endwith %}{% endif %}
-
-      {% empty %}
-      <p class="text-muted text-sm" style="padding:.5rem 0">Aucun item pour ce jour.</p>
       {% endfor %}
+      </div>
     </div>
     {% empty %}
     <div class="empty-state">Les dates de l'événement ne couvrent aucun jour.</div>
@@ -319,6 +318,7 @@ document.addEventListener('change', function(e) {
 });
 
 const URL_SESSION_REORDER = "{% url 'programme:session_reorder' event_slug=event.slug %}";
+const URL_ANNEX_REORDER   = "{% url 'programme:annex_reorder'   event_slug=event.slug %}";
 const URL_COMM_REORDER    = "{% url 'programme:comm_reorder'    event_slug=event.slug %}";
 document.querySelectorAll(".prog-day").forEach(day => {
   Sortable.create(day, {
@@ -350,6 +350,24 @@ document.addEventListener('change', function (e) {
     if (titleInput)   titleInput.value   = p.title;
     if (speakerInput) speakerInput.value = p.speaker;
   }
+});
+
+document.querySelectorAll("[id^='annexes-']").forEach(el => {
+  Sortable.create(el, {
+    animation: 150,
+    handle: ".prog-annex-handle",
+    draggable: ".prog-annex",
+    onEnd() {
+      const items = [...el.querySelectorAll(".prog-annex")].map((r, i) => ({
+        id: parseInt(r.dataset.id), order: i + 1
+      }));
+      fetch(URL_ANNEX_REORDER, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify(items)
+      });
+    }
+  });
 });
 
 document.querySelectorAll("[id^='comms-']").forEach(el => {
