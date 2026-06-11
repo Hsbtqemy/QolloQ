@@ -56,9 +56,12 @@ def _build_programme_context(event, sort_by_order=False):
             for a in annex_by_day[day]
         ]
         if sort_by_order:
-            # Sessions dans l'ordre D&D, annexes ajoutées à la suite triées par heure
-            annex_items.sort(key=lambda x: x["start"])
-            items = session_items + annex_items
+            # Sessions sans heure : ordre D&D en tête.
+            # Sessions avec heure + annexes (toujours horées) : mélangées chronologiquement.
+            untimed = [i for i in session_items if not i["start"]]
+            timed = [i for i in session_items if i["start"]] + annex_items
+            timed.sort(key=lambda x: x["start"])
+            items = untimed + timed
         else:
             # Tri chronologique — sessions sans heure placées en tête (heure nulle)
             items = session_items + annex_items
