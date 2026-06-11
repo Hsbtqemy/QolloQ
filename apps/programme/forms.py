@@ -11,8 +11,8 @@ class SessionForm(forms.ModelForm):
         fields = ["date", "start_time", "end_time", "location", "title", "moderator"]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "start_time": forms.TimeInput(attrs={"type": "time"}),
-            "end_time": forms.TimeInput(attrs={"type": "time"}),
+            "start_time": forms.TimeInput(attrs={"type": "time", "step": "300"}),
+            "end_time": forms.TimeInput(attrs={"type": "time", "step": "300"}),
         }
 
     def __init__(self, *args, event=None, **kwargs):
@@ -75,8 +75,8 @@ class AnnexEventForm(forms.ModelForm):
         fields = ["date", "start_time", "end_time", "label", "kind", "description"]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "start_time": forms.TimeInput(attrs={"type": "time"}),
-            "end_time": forms.TimeInput(attrs={"type": "time"}),
+            "start_time": forms.TimeInput(attrs={"type": "time", "step": "300"}),
+            "end_time": forms.TimeInput(attrs={"type": "time", "step": "300"}),
             "description": forms.Textarea(attrs={"rows": 3}),
         }
 

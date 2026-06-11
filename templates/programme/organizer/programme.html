@@ -63,11 +63,11 @@
                         <div class="field-row">
                           <div class="field">
                             <label>Début</label>
-                            <input type="time" name="start_time" value="{{ s.start_time|time:'H:i' }}">
+                            <input type="time" name="start_time" value="{{ s.start_time|time:'H:i' }}" step="300">
                           </div>
                           <div class="field">
                             <label>Fin</label>
-                            <input type="time" name="end_time" value="{{ s.end_time|time:'H:i' }}">
+                            <input type="time" name="end_time" value="{{ s.end_time|time:'H:i' }}" step="300">
                           </div>
                         </div>
                         <div class="field">
@@ -209,8 +209,8 @@
                     <div class="field"><label>Date</label><input type="date" name="date" value="{{ a.date|date:'Y-m-d' }}" required></div>
                     <div class="field"><label>Intitulé</label><input type="text" name="label" value="{{ a.label }}" required></div>
                     <div class="field-row">
-                      <div class="field"><label>Début</label><input type="time" name="start_time" value="{{ a.start_time|time:'H:i' }}" required></div>
-                      <div class="field"><label>Fin</label><input type="time" name="end_time" value="{{ a.end_time|time:'H:i' }}" required></div>
+                      <div class="field"><label>Début</label><input type="time" name="start_time" value="{{ a.start_time|time:'H:i' }}" step="300" required></div>
+                      <div class="field"><label>Fin</label><input type="time" name="end_time" value="{{ a.end_time|time:'H:i' }}" step="300" required></div>
                     </div>
                     <div class="field"><label>Type</label>
                       <select name="kind">
@@ -299,6 +299,24 @@
 {{ proposals_data|json_script:"proposals-data" }}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
+document.addEventListener('change', function(e) {
+  if (e.target.name !== 'start_time') return;
+  const form = e.target.closest('form');
+  if (!form) return;
+  const endInput = form.querySelector('[name="end_time"]');
+  if (!endInput) return;
+  const [sh, sm] = e.target.value.split(':').map(Number);
+  const startMins = sh * 60 + sm;
+  let gap = 90;
+  if (endInput.value) {
+    const [eh, em] = endInput.value.split(':').map(Number);
+    const endMins = eh * 60 + em;
+    if (endMins > startMins) gap = endMins - startMins;
+  }
+  const t = startMins + gap;
+  endInput.value = String(Math.floor(t / 60) % 24).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+});
+
 const URL_SESSION_REORDER = "{% url 'programme:session_reorder' event_slug=event.slug %}";
 const URL_COMM_REORDER    = "{% url 'programme:comm_reorder'    event_slug=event.slug %}";
 document.querySelectorAll(".prog-day").forEach(day => {
