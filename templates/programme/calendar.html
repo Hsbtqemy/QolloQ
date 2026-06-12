@@ -38,7 +38,7 @@
           {% if item.obj.moderator %}<div class="text-muted text-sm">Modération : {{ item.obj.moderator }}</div>{% endif %}
           {% for comm in item.obj.communications.all %}
           <div class="text-sm cal-entry-indent">
-            {% if comm.speaker_name %}{{ comm.speaker_name }} — {% endif %}{{ comm.title }} ({{ comm.duration }} min)
+            {% if comm.speaker_name %}{{ comm.speaker_name }} — {% endif %}{% if comm.kind != 'talk' %}<em>{{ comm.get_kind_display }}</em> — {% endif %}{{ comm.title }} ({{ comm.duration }} min)
             {% if comm.proposal and comm.proposal.status == 'cancelled' %}<span class="badge cancelled" style="font-size:.7rem">annulé·e</span>
             {% elif comm.proposal and comm.proposal.status != 'accepted' %}<span class="badge warn" style="font-size:.7rem" title="Statut : {{ comm.proposal.get_status_display }}">⚠</span>{% endif %}
           </div>

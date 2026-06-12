@@ -90,7 +90,7 @@
               <span class="prog-comm-handle">⠿</span>
               <span class="prog-comm-name">
                 {% if comm.kind != 'talk' %}<span class="badge" style="font-size:.7rem">{{ comm.get_kind_display }}</span> {% endif %}
-                {% if comm.proposal and comm.proposal.status == 'cancelled' %}<span class="prog-comm-cancelled">{{ comm.speaker_name|default:comm.title }}</span>{% else %}{% if comm.speaker_name %}<strong>{{ comm.speaker_name }}</strong> — {% endif %}{{ comm.title }}{% endif %}
+                {% if comm.proposal and comm.proposal.status == 'cancelled' %}<span class="prog-comm-cancelled">{% if comm.speaker_name %}{{ comm.speaker_name }} — {% endif %}{{ comm.title }}</span>{% else %}{% if comm.speaker_name %}<strong>{{ comm.speaker_name }}</strong> — {% endif %}{{ comm.title }}{% endif %}
                 {% if comm.proposal %}
                   {% if comm.proposal.status == 'cancelled' %}<span class="badge cancelled" style="font-size:.7rem">annulé·e</span>
                   {% elif comm.proposal.status != 'accepted' %}<span class="badge warn" style="font-size:.7rem" title="Statut de la proposition : {{ comm.proposal.get_status_display }}">⚠ statut modifié</span>
