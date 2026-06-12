@@ -399,14 +399,15 @@ class BudgetChargeExportView(OrganizerRequiredMixin, View):
             f'attachment; filename="prises-en-charge-{self.event.slug}.csv"'
         )
         http_response.write("﻿")
-        writer = csv.writer(http_response)
+        writer = csv.writer(http_response, delimiter=";")
         writer.writerow(["Poste", "Catégorie", "Nom", "Email", "Description", "Montant (€)", "Statut", "Notes"])
         for c in charges:
             writer.writerow([
                 c.budget_line.label,
                 c.budget_line.get_category_display(),
                 c.person_name, c.person_email, c.description,
-                c.amount, c.get_status_display(), c.notes,
+                f"{c.amount:.2f}".replace(".", ","),
+                c.get_status_display(), c.notes,
             ])
         return http_response
 
