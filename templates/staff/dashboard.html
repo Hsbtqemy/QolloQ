@@ -26,12 +26,19 @@
   </div>
 </div>
 
+<form method="get" style="margin-bottom:1rem; display:flex; gap:.5rem; max-width:28rem">
+  <input type="search" name="q" value="{{ q }}" placeholder="Rechercher par nom, lieu ou membre…" class="input" style="flex:1">
+  <button type="submit" class="btn ghost sm">Chercher</button>
+  {% if q %}<a href="{% url 'staff:dashboard' %}" class="btn ghost sm">✕</a>{% endif %}
+</form>
+
 {% if events %}
 <div class="card" style="padding:0; overflow:hidden">
   <table class="data">
     <thead>
       <tr>
         <th>Événement</th>
+        <th>Organisateur·ice·s</th>
         <th>Dates</th>
         <th>Membres</th>
         <th>Soumissions</th>
@@ -44,6 +51,11 @@
         <td>
           <strong>{{ ev.name }}</strong>
           {% if ev.location %}<div class="text-muted text-sm">{{ ev.location }}</div>{% endif %}
+        </td>
+        <td class="text-muted text-sm">
+          {% for m in ev.organizers %}
+            {{ m.user.get_full_name|default:m.user.email }}{% if not forloop.last %}<br>{% endif %}
+          {% empty %}—{% endfor %}
         </td>
         <td class="text-muted" style="white-space:nowrap">
           {% if ev.start_date %}{{ ev.start_date|date:"d/m/Y" }}{% endif %}
@@ -63,6 +75,8 @@
     </tbody>
   </table>
 </div>
+{% elif q %}
+<div class="empty-state">Aucun événement pour « {{ q }} ».</div>
 {% else %}
 <div class="empty-state">Aucun événement sur la plateforme.</div>
 {% endif %}

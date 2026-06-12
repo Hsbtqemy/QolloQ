@@ -3,13 +3,13 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import SetPasswordForm
 from django.db import models as db_models
-from django.db.models import Count
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
 from apps.core.mixins import SuperuserRequiredMixin
 from apps.emails.models import EmailTemplate
-from apps.events.models import Event
+from apps.events.models import Event, Membership
 from apps.submissions.models import Proposal
 
 from .forms_staff import StaffUserCreateForm, StaffUserEditForm
@@ -31,14 +31,33 @@ class EmailTemplateForm(forms.ModelForm):
 
 class StaffDashboardView(SuperuserRequiredMixin, View):
     def get(self, request):
+        q = request.GET.get("q", "").strip()
         events = Event.objects.annotate(
             member_count=Count("memberships", distinct=True),
             submission_count=Count("proposals", distinct=True),
+        )
+        if q:
+            events = events.filter(
+                Q(name__icontains=q)
+                | Q(location__icontains=q)
+                | Q(memberships__user__first_name__icontains=q)
+                | Q(memberships__user__last_name__icontains=q)
+                | Q(memberships__user__email__icontains=q)
+            ).distinct()
+        events = events.prefetch_related(
+            Prefetch(
+                "memberships",
+                queryset=Membership.objects.filter(
+                    role=Membership.Role.ORGANIZER
+                ).select_related("user"),
+                to_attr="organizers",
+            )
         ).order_by("-created_at")
         return render(request, "staff/dashboard.html", {
             "events": events,
+            "q": q,
             "total_users": User.objects.filter(is_active=True).count(),
-            "total_events": events.count(),
+            "total_events": Event.objects.count(),
             "total_submissions": Proposal.objects.count(),
         })
 
