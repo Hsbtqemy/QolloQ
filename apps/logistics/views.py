@@ -424,7 +424,6 @@ class BudgetExportView(OrganizerRequiredMixin, View):
         return resp
 
     def _write_lignes(self, writer, with_charges_total=False):
-        from django.db.models import Sum
         lines = (
             self.event.budget_lines
             .prefetch_related("charges")
