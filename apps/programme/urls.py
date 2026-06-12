@@ -86,4 +86,11 @@ urlpatterns = [
         views.AnnexEventDeleteView.as_view(),
         name="annex_delete",
     ),
+
+    # Export texte / Word
+    path(
+        "evenements/<slug:event_slug>/programme/export/",
+        views.ProgrammeTextExportView.as_view(),
+        name="export",
+    ),
 ]

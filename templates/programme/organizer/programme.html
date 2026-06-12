@@ -9,6 +9,13 @@
   <div class="actions">
     <a href="{% url 'programme:calendar' event_slug=event.slug %}" class="btn ghost sm">Vue calendrier</a>
     <a href="{% url 'programme:pdf' event_slug=event.slug %}" class="btn ghost sm">↓ PDF</a>
+    <div class="dropdown" x-data="{ open: false }" @keydown.escape.window="open = false">
+      <button type="button" class="btn ghost sm" @click="open = !open" :aria-expanded="open.toString()">↓ Exporter ▾</button>
+      <ul class="dropdown-menu" x-show="open" @click.outside="open = false" x-transition.opacity>
+        <li><a href="{% url 'programme:export' event_slug=event.slug %}?format=txt" @click="open = false">Texte (.txt)</a></li>
+        <li><a href="{% url 'programme:export' event_slug=event.slug %}?format=docx" @click="open = false">Word (.docx)</a></li>
+      </ul>
+    </div>
   </div>
 </div>
 

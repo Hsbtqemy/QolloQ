@@ -334,6 +334,161 @@ class AnnexEventDeleteView(OrganizerRequiredMixin, View):
         return redirect("programme:programme", event_slug=event_slug)
 
 
+# ── Export texte / Word ───────────────────────────────────────────────────────
+
+def _fmt_date(d):
+    """Formate une date sans zéro initial cross-platform (%-d non portable sur macOS/BSD)."""
+    return f"{d.day} {d.strftime('%B %Y')}"
+
+
+def _event_header_str(event):
+    date_str = _fmt_date(event.start_date)
+    if event.end_date != event.start_date:
+        date_str += f" – {_fmt_date(event.end_date)}"
+    if event.location:
+        date_str += f" · {event.location}"
+    return date_str
+
+
+class ProgrammeTextExportView(OrganizerRequiredMixin, View):
+    """Export du programme en .txt (universel) ou .docx (Word). ?format=txt|docx"""
+
+    def get(self, request, event_slug):
+        fmt = request.GET.get("format", "txt")
+        ctx = _build_programme_context(self.event)
+
+        if fmt == "docx":
+            return self._docx(ctx)
+        return self._txt(ctx)
+
+    def _txt(self, ctx):
+        lines = []
+        event = self.event
+        lines.append(event.name.upper())
+        lines.append(_event_header_str(event))
+        lines.append("")
+
+        for day_data in ctx["programme"]:
+            day_label = f"{day_data['date'].strftime('%A')} {_fmt_date(day_data['date'])}".capitalize()
+            sep = "=" * len(day_label)
+            lines.append(sep)
+            lines.append(day_label)
+            lines.append(sep)
+            lines.append("")
+
+            for item in day_data["items"]:
+                if item["kind"] == "session":
+                    s = item["obj"]
+                    time_str = ""
+                    if s.start_time:
+                        time_str = f"{s.start_time.strftime('%H:%M')} – {s.end_time.strftime('%H:%M')}  "
+                    loc_str = f"  [{s.location}]" if s.location else ""
+                    lines.append(f"{time_str}{s.title or 'Session'}{loc_str}")
+                    if s.moderator:
+                        lines.append(f"  Modération : {s.moderator}")
+                    for comm in s.communications.all():
+                        cancelled = comm.proposal and comm.proposal.status == "cancelled"
+                        kind_str = f"[{comm.get_kind_display()}] " if comm.kind != "talk" else ""
+                        name_str = f"{comm.speaker_name} — " if comm.speaker_name else ""
+                        annul = "  [ANNULÉ]" if cancelled else ""
+                        lines.append(f"  • {kind_str}{name_str}{comm.title} ({comm.duration} min){annul}")
+                    lines.append("")
+                else:
+                    a = item["obj"]
+                    lines.append(f"{a.start_time.strftime('%H:%M')} – {a.end_time.strftime('%H:%M')}  {a.label}  ({a.get_kind_display()})")
+                    lines.append("")
+
+        content = "\n".join(lines)
+        resp = HttpResponse(content, content_type="text/plain; charset=utf-8")
+        resp["Content-Disposition"] = (
+            f'attachment; filename="programme-{self.event.slug}.txt"'
+        )
+        return resp
+
+    def _docx(self, ctx):
+        from io import BytesIO
+        from docx import Document
+        from docx.shared import Pt, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+        doc = Document()
+
+        # Titre événement
+        title_p = doc.add_heading(self.event.name, level=0)
+        title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Date / lieu
+        event = self.event
+        meta = doc.add_paragraph(_event_header_str(event))
+        meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        meta.runs[0].font.size = Pt(11)
+        doc.add_paragraph("")
+
+        for day_data in ctx["programme"]:
+            day_label = f"{day_data['date'].strftime('%A')} {_fmt_date(day_data['date'])}".capitalize()
+            doc.add_heading(day_label, level=1)
+
+            for item in day_data["items"]:
+                if item["kind"] == "session":
+                    s = item["obj"]
+                    # En-tête session
+                    p = doc.add_paragraph(style="Heading 2")
+                    if s.start_time:
+                        run = p.add_run(f"{s.start_time.strftime('%H:%M')} – {s.end_time.strftime('%H:%M')}  ")
+                        run.font.color.rgb = RGBColor(0x6C, 0x75, 0x7D)
+                    p.add_run(s.title or "Session")
+                    if s.location:
+                        run = p.add_run(f"  · {s.location}")
+                        run.font.color.rgb = RGBColor(0x6C, 0x75, 0x7D)
+                    if s.moderator:
+                        mod = doc.add_paragraph(f"Modération : {s.moderator}")
+                        mod.runs[0].font.italic = True
+                        mod.runs[0].font.size = Pt(10)
+                    # Communications
+                    for comm in s.communications.all():
+                        cancelled = comm.proposal and comm.proposal.status == "cancelled"
+                        p = doc.add_paragraph(style="List Bullet")
+                        if comm.kind != "talk":
+                            run = p.add_run(f"[{comm.get_kind_display()}] ")
+                            run.font.italic = True
+                        if comm.speaker_name:
+                            run = p.add_run(f"{comm.speaker_name}")
+                            run.bold = True
+                            if cancelled:
+                                run.font.strike = True
+                            p.add_run(" — ")
+                        run = p.add_run(comm.title)
+                        if cancelled:
+                            run.font.strike = True
+                        dur = p.add_run(f"  ({comm.duration} min)")
+                        dur.font.color.rgb = RGBColor(0x6C, 0x75, 0x7D)
+                        if cancelled:
+                            annul = p.add_run("  [ANNULÉ]")
+                            annul.font.color.rgb = RGBColor(0xC2, 0x41, 0x0C)
+                else:
+                    a = item["obj"]
+                    p = doc.add_paragraph()
+                    run = p.add_run(f"{a.start_time.strftime('%H:%M')} – {a.end_time.strftime('%H:%M')}  ")
+                    run.font.color.rgb = RGBColor(0x6C, 0x75, 0x7D)
+                    run = p.add_run(f"{a.label}")
+                    run.bold = True
+                    p.add_run(f"  ({a.get_kind_display()})")
+
+            doc.add_paragraph("")
+
+        buf = BytesIO()
+        doc.save(buf)
+        buf.seek(0)
+        resp = HttpResponse(
+            buf.read(),
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        resp["Content-Disposition"] = (
+            f'attachment; filename="programme-{self.event.slug}.docx"'
+        )
+        return resp
+
+
 # ── Export PDF ───────────────────────────────────────────────────────────────
 
 class ProgrammePdfView(CommitteeRequiredMixin, View):
