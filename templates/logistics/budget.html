@@ -6,9 +6,14 @@
 <div class="page-header">
   <h1>Budget</h1>
   <div class="actions">
-    <a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=lignes" class="btn ghost sm">↓ Postes</a>
-    <a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=charges" class="btn ghost sm">↓ Prises en charge</a>
-    <a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=complet" class="btn ghost sm">↓ Complet</a>
+    <div class="dropdown" x-data="{ open: false }" @keydown.escape.window="open = false">
+      <button type="button" class="btn ghost sm" @click="open = !open" :aria-expanded="open.toString()">↓ Exporter ▾</button>
+      <ul class="dropdown-menu" x-show="open" @click.outside="open = false" x-transition.opacity>
+        <li><a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=lignes" @click="open = false">Postes budgétaires</a></li>
+        <li><a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=charges" @click="open = false">Prises en charge</a></li>
+        <li><a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=complet" @click="open = false">Complet (postes + charges)</a></li>
+      </ul>
+    </div>
   </div>
 </div>
 
