@@ -79,11 +79,11 @@ urlpatterns = [
         views.ResponseExportView.as_view(),
         name="export_csv",
     ),
-    # Prises en charge (intégrées dans le budget)
+    # Export budget (?format=lignes|charges|complet)
     path(
-        "evenements/<slug:event_slug>/logistique/budget/charges/export.csv",
-        views.BudgetChargeExportView.as_view(),
-        name="budget_charge_export",
+        "evenements/<slug:event_slug>/logistique/budget/export.csv",
+        views.BudgetExportView.as_view(),
+        name="budget_export",
     ),
     path(
         "evenements/<slug:event_slug>/logistique/budget/postes/<int:line_pk>/charges/ajouter/",

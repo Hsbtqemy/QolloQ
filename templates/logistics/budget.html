@@ -6,7 +6,9 @@
 <div class="page-header">
   <h1>Budget</h1>
   <div class="actions">
-    <a href="{% url 'logistics:budget_charge_export' event_slug=event.slug %}" class="btn ghost sm">↓ Export prises en charge</a>
+    <a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=lignes" class="btn ghost sm">↓ Postes</a>
+    <a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=charges" class="btn ghost sm">↓ Prises en charge</a>
+    <a href="{% url 'logistics:budget_export' event_slug=event.slug %}?format=complet" class="btn ghost sm">↓ Complet</a>
   </div>
 </div>
 

@@ -387,29 +387,83 @@ class BudgetChargeStatusView(OrganizerRequiredMixin, View):
         return JsonResponse({"status": charge.status, "label": charge.get_status_display()})
 
 
-class BudgetChargeExportView(OrganizerRequiredMixin, View):
+def _dec(value):
+    """Formate un Decimal pour Excel FR (virgule décimale, chaîne vide si None)."""
+    if value is None:
+        return ""
+    return f"{value:.2f}".replace(".", ",")
+
+
+class BudgetExportView(OrganizerRequiredMixin, View):
+    """Export CSV budget. ?format= lignes | charges | complet (défaut: complet)."""
+
     def get(self, request, event_slug):
+        fmt = request.GET.get("format", "complet")
+        resp = HttpResponse(content_type="text/csv; charset=utf-8")
+        resp.write("﻿")  # BOM UTF-8
+
+        if fmt == "lignes":
+            resp["Content-Disposition"] = (
+                f'attachment; filename="budget-postes-{self.event.slug}.csv"'
+            )
+            self._write_lignes(csv.writer(resp, delimiter=";"))
+        elif fmt == "charges":
+            resp["Content-Disposition"] = (
+                f'attachment; filename="budget-charges-{self.event.slug}.csv"'
+            )
+            self._write_charges(csv.writer(resp, delimiter=";"))
+        else:
+            resp["Content-Disposition"] = (
+                f'attachment; filename="budget-complet-{self.event.slug}.csv"'
+            )
+            w = csv.writer(resp, delimiter=";")
+            self._write_lignes(w, with_charges_total=True)
+            w.writerow([])
+            self._write_charges(w)
+
+        return resp
+
+    def _write_lignes(self, writer, with_charges_total=False):
+        from django.db.models import Sum
+        lines = (
+            self.event.budget_lines
+            .prefetch_related("charges")
+            .order_by("category", "label")
+        )
+        headers = ["Catégorie", "Intitulé", "Prévu (€)", "Réel (€)"]
+        if with_charges_total:
+            headers.append("Prises en charge (€)")
+        headers.append("Notes")
+        writer.writerow(headers)
+
+        for ln in lines:
+            row = [
+                ln.get_category_display(),
+                ln.label,
+                _dec(ln.amount_planned),
+                _dec(ln.amount_actual),
+            ]
+            if with_charges_total:
+                total = sum(c.amount for c in ln.charges.all()) or 0
+                row.append(_dec(total))
+            row.append(ln.notes)
+            writer.writerow(row)
+
+    def _write_charges(self, writer):
         charges = (
             BudgetCharge.objects.filter(budget_line__event=self.event)
             .select_related("budget_line")
             .order_by("budget_line__category", "person_name")
         )
-        http_response = HttpResponse(content_type="text/csv; charset=utf-8")
-        http_response["Content-Disposition"] = (
-            f'attachment; filename="prises-en-charge-{self.event.slug}.csv"'
-        )
-        http_response.write("﻿")
-        writer = csv.writer(http_response, delimiter=";")
         writer.writerow(["Poste", "Catégorie", "Nom", "Email", "Description", "Montant (€)", "Statut", "Notes"])
         for c in charges:
             writer.writerow([
                 c.budget_line.label,
                 c.budget_line.get_category_display(),
                 c.person_name, c.person_email, c.description,
-                f"{c.amount:.2f}".replace(".", ","),
+                _dec(c.amount),
                 c.get_status_display(), c.notes,
             ])
-        return http_response
 
 
 # ---------------------------------------------------------------------------
